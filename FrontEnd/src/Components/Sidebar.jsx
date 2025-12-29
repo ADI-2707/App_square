@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { IoIosArrowForward, IoMdPricetags } from "react-icons/io";
 import { MdSpaceDashboard } from "react-icons/md";
@@ -11,15 +11,28 @@ import { SiAdobeaudition } from "react-icons/si";
 import { HiTemplate } from "react-icons/hi";
 
 const Sidebar = () => {
-
   const [isClosed, setIsClosed] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const hasAnimated = sessionStorage.getItem("sidebar-animated");
+
+    if (!hasAnimated) {
+      requestAnimationFrame(() => {
+        setMounted(true);
+        sessionStorage.setItem("sidebar-animated", "true");
+      });
+    } else {
+      setMounted(true);
+    }
+  }, []);
 
   const toggleSidebar = () => {
     setIsClosed(!isClosed);
   };
 
   return (
-    <nav className={`sidebar ${isClosed ? "close" : ""}`}>
+    <nav className={`sidebar ${mounted ? "sidebar-enter" : ""} ${isClosed ? "close" : ""}`}>
       <header>
         <div className="image-text">
           <span className="image">
@@ -33,15 +46,21 @@ const Sidebar = () => {
           </div>
         </div>
 
-        <IoIosArrowForward className={`toggle ${isClosed ? "collapsed" : "expanded"}`} onClick={toggleSidebar} />
+        <IoIosArrowForward
+          className={`toggle ${isClosed ? "collapsed" : "expanded"}`}
+          onClick={toggleSidebar}
+        />
       </header>
 
       <div className="menu-bar">
         <div className="menu text-black">
-          <li className="search-box" onClick={(e) => {
-            e.stopPropagation();
-            if (isClosed) toggleSidebar();
-          }}>
+          <li
+            className="search-box"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isClosed) toggleSidebar();
+            }}
+          >
             <IoSearch className="icon" />
             <input type="search" placeholder="Search..." />
           </li>
