@@ -5,6 +5,7 @@
   --bg-color: #fff;
   --text-color: #111;
   --accent-color: gray;
+  --sidebar-mobile-width: 72px;
 }
 
 /* Dark Mode override */
@@ -49,6 +50,11 @@ body::before {
   opacity: 0.3;
 }
 
+html,
+body {
+  overflow-x: hidden;
+}
+
 main {
   padding-top: 3rem;
 }
@@ -67,7 +73,7 @@ main {
   border-radius: 50px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); /* Adds depth */
   transition: all 0.3s ease;
-  border: 1px solid var(--text-color);
+  /* border: 1px solid var(--text-color); */
 }
 
 .sidebar.close ~ .mode-toggle-container {
@@ -732,6 +738,9 @@ header .image-text .header-text {
 }
 
 @media (max-width: 768px) {
+  body {
+    padding: var(--sidebar-mobile-width);
+  }
   .sidebar {
     width: 72px;
     padding: 8px;
