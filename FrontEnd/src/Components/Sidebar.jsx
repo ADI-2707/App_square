@@ -133,8 +133,7 @@ const Sidebar = () => {
 
   /* Close context menu on outside click */
   useEffect(() => {
-    const close = () =>
-      setContextMenu((prev) => ({ ...prev, visible: false }));
+    const close = () => setContextMenu((prev) => ({ ...prev, visible: false }));
 
     window.addEventListener("click", close);
     return () => window.removeEventListener("click", close);
@@ -195,13 +194,13 @@ const Sidebar = () => {
     }
   };
 
+  const isDesktop = window.innerWidth > 768;
+
   /* ===================== RENDER ===================== */
 
   return (
     <>
-      <nav
-        className={`sidebar sidebar-enter ${isClosed ? "close" : ""} ${isClosed ? "close" : ""}`}
-      >
+      <nav className={`sidebar sidebar-enter ${isClosed ? "close" : ""}`}>
         {/* ===== HEADER ===== */}
         <header>
           <div className="image-text">
@@ -217,11 +216,12 @@ const Sidebar = () => {
             </div>
           </div>
 
-          {/* ❌ Hidden on mobile via CSS, disabled via JS */}
-          <IoIosArrowForward
-            className={`toggle ${isClosed ? "collapsed" : "expanded"}`}
-            onClick={toggleSidebar}
-          />
+          {isDesktop && (
+            <IoIosArrowForward
+              className={`toggle ${isClosed ? "collapsed" : "expanded"}`}
+              onClick={toggleSidebar}
+            />
+          )}
         </header>
 
         {/* ===== MENU ===== */}
