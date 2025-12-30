@@ -10,6 +10,8 @@ import { HiTemplate } from "react-icons/hi";
 import { FaArrowTrendUp } from "react-icons/fa6";
 import { IoLogOut, IoSearch } from "react-icons/io5";
 
+/* ===================== DATA ===================== */
+
 const SIDEBAR_ITEMS = [
   {
     id: "dashboard",
@@ -86,7 +88,7 @@ const SIDEBAR_ITEMS = [
   },
   {
     id: "audit",
-    label: "Audit Trial",
+    label: "Audit Trail",
     icon: SiAdobeaudition,
     route: "/audit-trial",
     actions: [
@@ -111,6 +113,7 @@ const SIDEBAR_ITEMS = [
 const Sidebar = () => {
   const navigate = useNavigate();
 
+  /* 🔒 Always start collapsed */
   const [isClosed, setIsClosed] = useState(true);
   const [mounted, setMounted] = useState(false);
 
@@ -121,20 +124,14 @@ const Sidebar = () => {
     item: null,
   });
 
-  /* ---- entrance animation ---- */
+  /* ===================== EFFECTS ===================== */
+
+  /* Entrance animation */
   useEffect(() => {
-    const animated = sessionStorage.getItem("sidebar-animated");
-    if (!animated) {
-      requestAnimationFrame(() => {
-        setMounted(true);
-        sessionStorage.setItem("sidebar-animated", "true");
-      });
-    } else {
-      setMounted(true);
-    }
+    requestAnimationFrame(() => setMounted(true));
   }, []);
 
-  /* ---- close context menu on outside click ---- */
+  /* Close context menu on outside click */
   useEffect(() => {
     const close = () =>
       setContextMenu((prev) => ({ ...prev, visible: false }));
@@ -142,6 +139,14 @@ const Sidebar = () => {
     window.addEventListener("click", close);
     return () => window.removeEventListener("click", close);
   }, []);
+
+  /* ===================== HANDLERS ===================== */
+
+  /* 🚫 Prevent expanding sidebar on mobile */
+  const toggleSidebar = () => {
+    if (window.innerWidth <= 768) return;
+    setIsClosed((prev) => !prev);
+  };
 
   const handleItemClick = (e, item) => {
     e.preventDefault();
@@ -155,7 +160,6 @@ const Sidebar = () => {
     });
   };
 
-  /* ---- action handler ---- */
   const handleAction = (action, item) => {
     switch (action) {
       case "open":
@@ -191,18 +195,20 @@ const Sidebar = () => {
     }
   };
 
+  /* ===================== RENDER ===================== */
+
   return (
     <>
       <nav
-        className={`sidebar ${mounted ? "sidebar-enter" : ""} ${
-          isClosed ? "close" : ""
-        }`}
+        className={`sidebar sidebar-enter ${isClosed ? "close" : ""} ${isClosed ? "close" : ""}`}
       >
+        {/* ===== HEADER ===== */}
         <header>
           <div className="image-text">
             <span className="image">
               <img src="app.svg" alt="logo" />
             </span>
+
             <div className="text header-text">
               <span className="name">Web App</span>
               <span className="profession uppercase">
@@ -211,12 +217,14 @@ const Sidebar = () => {
             </div>
           </div>
 
+          {/* ❌ Hidden on mobile via CSS, disabled via JS */}
           <IoIosArrowForward
             className={`toggle ${isClosed ? "collapsed" : "expanded"}`}
-            onClick={() => setIsClosed(!isClosed)}
+            onClick={toggleSidebar}
           />
         </header>
 
+        {/* ===== MENU ===== */}
         <div className="menu-bar">
           <div className="menu">
             <li className="search-box">
@@ -239,6 +247,7 @@ const Sidebar = () => {
             </ul>
           </div>
 
+          {/* ===== FOOTER ===== */}
           <div className="bottom-content">
             <li className="side-link">
               <div
@@ -266,7 +275,7 @@ const Sidebar = () => {
         </div>
       </nav>
 
-      {/* ===== Context Menu ===== */}
+      {/* ===== CONTEXT MENU ===== */}
       {contextMenu.visible && contextMenu.item && (
         <div
           className="context-menu"
@@ -277,7 +286,7 @@ const Sidebar = () => {
               key={opt.label}
               onClick={() => {
                 handleAction(opt.action, contextMenu.item);
-                setContextMenu({ visible: false });
+                setContextMenu({ visible: false, item: null });
               }}
             >
               {opt.label}

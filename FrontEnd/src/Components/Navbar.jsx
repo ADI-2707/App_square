@@ -38,6 +38,7 @@ const Navbar = () => {
           <li>
             <NavLink
               to="/"
+              onClick={() => setIsOpen(false)}
               className={({ isActive }) =>
                 `nav-link ${isActive ? "active" : ""}`
               }
@@ -48,6 +49,7 @@ const Navbar = () => {
           <li>
             <NavLink
               to="/dashboard"
+              onClick={() => setIsOpen(false)}
               className={({ isActive }) =>
                 `nav-link ${isActive ? "active" : ""}`
               }
@@ -58,6 +60,7 @@ const Navbar = () => {
           <li>
             <NavLink
               to="/about"
+              onClick={() => setIsOpen(false)}
               className={({ isActive }) =>
                 `nav-link ${isActive ? "active" : ""}`
               }
@@ -68,6 +71,7 @@ const Navbar = () => {
           <li>
             <NavLink
               to="/contact"
+              onClick={() => setIsOpen(false)}
               className={({ isActive }) =>
                 `nav-link ${isActive ? "active" : ""}`
               }
