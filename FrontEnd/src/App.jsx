@@ -18,7 +18,7 @@ const App = () => {
       <Sidebar />
       <Navbar />
       <Mode />
-      <main>
+      <main className="app-content">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />

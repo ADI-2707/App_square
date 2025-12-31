@@ -234,10 +234,12 @@ const Sidebar = () => {
 
             <ul className="menu-links">
               {SIDEBAR_ITEMS.map((item) => (
-                <li key={item.id} className="side-link">
+                <li key={item.id} className="side-link" style={{ overflow: 'visible' }}>
                   <div
                     className="link"
+                    data-tooltip={item.label}
                     onClick={(e) => handleItemClick(e, item)}
+                    style={{ position: 'relative', overflow: 'visible' }}
                   >
                     <item.icon className="icon" />
                     <span className="text nav-text">{item.label}</span>
@@ -251,7 +253,8 @@ const Sidebar = () => {
           <div className="bottom-content">
             <li className="side-link">
               <div
-                className="link"
+                className="link" 
+                data-tooltip="History"
                 onClick={(e) =>
                   handleItemClick(e, {
                     label: "History",
@@ -266,7 +269,7 @@ const Sidebar = () => {
             </li>
 
             <li className="side-link">
-              <div className="link">
+              <div className="link" data-tooltip="Logout">
                 <IoLogOut className="icon" />
                 <span className="text nav-text">Logout</span>
               </div>

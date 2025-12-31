@@ -6,6 +6,13 @@
   --text-color: #111;
   --accent-color: gray;
   --sidebar-mobile-width: 72px;
+  --tooltip-bg: #1a1a1a;
+  --tooltip-text: #ffffff;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
 }
 
 /* Dark Mode override */
@@ -13,6 +20,8 @@
   --bg-color: #111;
   --text-color: #fff;
   --accent-color: gray;
+  --tooltip-bg: #ffffff;
+  --tooltip-text: #1a1a1a;
 }
 
 [dark-mode="dark"] .navbar-inner {
@@ -48,11 +57,7 @@ body::before {
     );
   pointer-events: none;
   opacity: 0.3;
-}
-
-html,
-body {
-  overflow-x: hidden;
+  z-index: -1;
 }
 
 main {
@@ -495,6 +500,11 @@ input:checked + .slider {
 }
 
 /* ===== Sidebar ===== */
+.sidebar,
+.sidebar * {
+  transform-style: flat;
+}
+
 .sidebar {
   position: fixed;
   top: 0;
@@ -505,14 +515,14 @@ input:checked + .slider {
   background-color: var(--text-color);
   color: var(--bg-color);
   border-right: 1px solid var(--accent-color);
-  z-index: 500;
+  z-index: 1000;
   transform: translateX(-100%);
   opacity: 0;
   pointer-events: auto;
   transition:
     transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
     opacity 0.3s ease;
-  overflow-x: hidden;
+  overflow: visible !important;
 }
 
 .sidebar.sidebar-enter {
@@ -522,6 +532,52 @@ input:checked + .slider {
 
 .sidebar.close {
   width: 88px;
+}
+
+.sidebar.close .link {
+  position: relative;
+}
+
+.sidebar.close .link::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 20px);
+  top: 50%;
+  transform: translateY(-50%) translateX(-5px);
+  background: var(--tooltip-bg) !important;
+  color: var(--tooltip-text) !important;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  z-index: 10001;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  display: block !important;
+}
+
+.sidebar.close .link::before {
+  content: "";
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  border: 4px solid transparent;
+  border-right-color: var(--tooltip-bg);
+  opacity: 0;
+  z-index: 10001;
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+/* Show tooltip on hover */
+.sidebar.close .link:hover::after,
+.sidebar.close .link:hover::before {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
 }
 
 /* ===== Reusable CSS ===== */
@@ -673,8 +729,19 @@ header .image-text .header-text {
 .sidebar .menu-bar {
   height: calc(100% - 50px);
   display: flex;
+  flex: 1;
   flex-direction: column;
   justify-content: space-between;
+  overflow-y: auto; 
+  overflow-x: visible !important;
+}
+
+.sidebar.close, 
+.sidebar.close .menu-bar,
+.sidebar.close .menu,
+.sidebar.close .menu-links,
+.sidebar.close .side-link {
+  overflow: visible !important;
 }
 
 .sidebar.close .search-box input {
@@ -764,4 +831,25 @@ header .image-text .header-text {
   .login-page {
     min-height: 100svh;
   }
+}
+
+.app-content {
+  margin-left: 250px; /* sidebar width */
+  overflow-x: hidden;
+  position: relative;
+  z-index: 0;
+}
+
+.sidebar.close ~ .app-content {
+  margin-left: 88px;
+}
+
+@media (max-width: 768px) {
+  .app-content {
+    margin-left: 72px;
+  }
+}
+
+.bottom-content {
+  margin-bottom: 50px; /* space for mode toggle */
 }
