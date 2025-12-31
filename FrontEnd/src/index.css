@@ -899,3 +899,83 @@ header .image-text .header-text {
     0 0 20px rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
+
+/* Targeting the specific item assigned to 'item-1' */
+[style*="grid-area: item-1"] {
+  animation: slideInLeft 0.8s ease-out forwards;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Targeting the specific item assigned to 'item-2' */
+[style*="grid-area: item-2"] {
+  animation: slideDownUp 0.8s ease-out forwards;
+}
+
+@keyframes slideDownUp {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Targeting the specific item assigned to 'item-3' */
+[style*="grid-area: item-3"] {
+  animation: slideInRight 0.8s ease-out forwards;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Targeting the specific item assigned to 'item-4  ' */
+[style*="grid-area: item-4"] {
+  animation: scaleIn 0.8s ease-out forwards;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.1);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Targeting the specific item assigned to 'item-5' */
+[style*="grid-area: item-5"] {
+  animation: slideUpDown 0.8s ease-out forwards;
+}
+
+@keyframes slideUpDown {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
