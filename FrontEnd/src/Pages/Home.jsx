@@ -9,7 +9,7 @@ const Home = () => {
           Welcome to the Web App
         </h1>
 
-          <p className="text-center mt-6 md:text-lg px-4 hero-subheader">
+          <p className="text-center mt-6 md:text-sm px-4 hero-subheader">
             Streamline your industrial operations with real-time recipe
             management, advanced trend analytics, and comprehensive audit
             compliance in one unified ecosystem.

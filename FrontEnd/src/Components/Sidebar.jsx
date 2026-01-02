@@ -17,7 +17,6 @@ const SIDEBAR_ITEMS = [
     id: "dashboard",
     label: "Dashboard",
     icon: MdSpaceDashboard,
-    route: "/dashboard",
     actions: [
       { label: "Open Dashboard", action: "open" },
       { label: "Open in New Tab", action: "new-tab" },
@@ -28,7 +27,6 @@ const SIDEBAR_ITEMS = [
     id: "alarm",
     label: "Alarm",
     icon: RiAlarmWarningFill,
-    route: "/alarm",
     actions: [
       { label: "View Active Alarms", action: "open" },
       { label: "Alarm History", action: "history" },
@@ -39,7 +37,6 @@ const SIDEBAR_ITEMS = [
     id: "trends",
     label: "Trends",
     icon: FaArrowTrendUp,
-    route: "/trends",
     actions: [
       { label: "View Trends", action: "open" },
       { label: "Export Data", action: "export" },
@@ -49,7 +46,6 @@ const SIDEBAR_ITEMS = [
     id: "data-logger",
     label: "Data Logger",
     icon: BsDatabaseFillGear,
-    route: "/data-logger",
     actions: [
       { label: "Open Logger", action: "open" },
       { label: "Download Logs", action: "download" },
@@ -59,7 +55,6 @@ const SIDEBAR_ITEMS = [
     id: "recipe",
     label: "Recipe Management",
     icon: FaFileCode,
-    route: "/recipe-management",
     actions: [
       { label: "View Recipes", action: "open" },
       { label: "Create Recipe", action: "create" },
@@ -69,7 +64,6 @@ const SIDEBAR_ITEMS = [
     id: "tag",
     label: "Tag Management",
     icon: IoMdPricetags,
-    route: "/tag-management",
     actions: [
       { label: "View Tags", action: "open" },
       { label: "Add Tag", action: "add" },
@@ -79,7 +73,6 @@ const SIDEBAR_ITEMS = [
     id: "users",
     label: "User Management",
     icon: FaUserFriends,
-    route: "/user-management",
     actions: [
       { label: "View Users", action: "open" },
       { label: "Add User", action: "add" },
@@ -90,7 +83,6 @@ const SIDEBAR_ITEMS = [
     id: "audit",
     label: "Audit Trail",
     icon: SiAdobeaudition,
-    route: "/audit-trial",
     actions: [
       { label: "View Logs", action: "open" },
       { label: "Export Audit", action: "export" },
@@ -100,7 +92,6 @@ const SIDEBAR_ITEMS = [
     id: "templates",
     label: "Templates",
     icon: HiTemplate,
-    route: "/templates",
     actions: [
       { label: "Open Templates", action: "open" },
       { label: "Create Template", action: "create" },
