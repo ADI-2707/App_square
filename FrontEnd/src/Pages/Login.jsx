@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaUserShield } from "react-icons/fa";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { toast } from "react-toastify";
+import api from "../Utility/api";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -57,7 +58,11 @@ const Login = () => {
       navigate("/dashboard");
       
     } catch (error) {
-      toast.error("Server not reachable. Try again later.");
+      toast.error(
+        err.response?.data?.non_field_errors?.[0] ||
+        err.response?.data?.detail ||
+        "Invalid email or password"
+      );
     } finally {
       setLoading(false);
     }
@@ -127,8 +132,8 @@ const Login = () => {
               </Link>
             </div>
 
-            <button type="submit" className="button login-btn">
-              Sign In
+            <button type="submit" className="button login-btn" disabled={loading}>
+              {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
 
