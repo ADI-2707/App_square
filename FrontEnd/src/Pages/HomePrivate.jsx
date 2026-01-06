@@ -1,35 +1,52 @@
 import React from "react";
+import { PlusSquare } from "lucide-react";
 
 const formatUserName = (fullName) => {
   if (!fullName || typeof fullName !== "string") return "";
 
   const parts = fullName.trim().split(" ");
 
-  // If only one word, return as-is
   if (parts.length === 1) {
     return parts[0];
   }
 
-  // If multiple words
   const firstName = parts[0];
   const lastName = parts[parts.length - 1];
-  const lastNameInitial = lastName.charAt(0).toUpperCase();
+  const lastInitial = lastName.charAt(0).toUpperCase();
 
-  return `${lastNameInitial}. ${firstName}`;
+  return `${lastInitial}. ${firstName}`;
 };
 
 const HomePrivate = () => {
-
   const user = JSON.parse(localStorage.getItem("user"));
   const fullName = user?.full_name || "";
   const displayName = formatUserName(fullName);
 
+  // TEMP: no projects yet
+  const projects = [];
+
   return (
-    <div className="text-center mt-28">
-      <h1 className="text-4xl font-bold">Welcome {displayName ? `, ${displayName}` : ""}👋</h1>
-      <p className="mt-4 text-gray-400">
-        This is your personalized home (content coming soon).
-      </p>
+    <div className="home-private-container">
+      {/* Header */}
+      <div className="home-header">
+        <h1 className="home-title">
+          Welcome{displayName ? `, ${displayName}` : ""} 👋
+        </h1>
+      </div>
+
+      {/* Empty State */}
+      {projects.length === 0 && (
+        <div className="empty-project-wrapper">
+          <div className="empty-project-card">
+            <div className="empty-project-icon">
+              <PlusSquare size={64} strokeWidth={1.5} />
+            </div>
+            <p className="empty-project-text">
+              Create your first project
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

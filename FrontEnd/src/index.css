@@ -1246,3 +1246,85 @@ header .image-text .header-text {
   border: none;
   cursor: pointer;
 }
+
+/* ===============================
+   HOME PRIVATE – EMPTY STATE
+   =============================== */
+
+.home-private-container {
+  min-height: calc(100vh - 6rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 6rem;
+}
+
+.home-header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.home-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+}
+
+.home-subtitle {
+  margin-top: 0.75rem;
+  color: var(--accent-color);
+  font-size: 0.95rem;
+}
+
+/* Empty project card wrapper */
+.empty-project-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Card itself */
+.empty-project-card {
+  width: 80vw;
+  height: 80vh;
+  border-radius: 18px;
+  border: 1px dashed rgba(128, 128, 128, 0.4);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Hover effect */
+.empty-project-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--text-color);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Icon */
+.empty-project-icon {
+  color: var(--accent-color);
+  margin-bottom: 1rem;
+}
+
+/* Text */
+.empty-project-text {
+  font-size: 1rem;
+  font-weight: 500;
+  opacity: 0.75;
+}
+
+/* Light mode adjustments */
+:root:not([dark-mode="dark"]) .empty-project-card {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px dashed rgba(0, 0, 0, 0.25);
+}
+
+:root:not([dark-mode="dark"]) .empty-project-card:hover {
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+}
