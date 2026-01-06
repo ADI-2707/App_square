@@ -84,7 +84,7 @@ const Navbar = ({ isSidebarClosed }) => {
             )}
           </div>
         </ul>
-
+ 
         <div className="nav-auth-desktop">
           {!loggedIn ? (
             <>

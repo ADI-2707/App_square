@@ -15,7 +15,6 @@ password_validator = RegexValidator(
     ),
 )
 
-
 class RegisterSerializer(serializers.Serializer):
 
     fullname = serializers.CharField(max_length=100)

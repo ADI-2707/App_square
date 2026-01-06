@@ -9,6 +9,29 @@
   --tooltip-text: #ffffff;
 }
 
+/* =========================
+   TYPOGRAPHY SYSTEM
+   ========================= */
+
+:root {
+  /* Base */
+  font-size: 16px;
+
+  /* Text scale */
+  --text-xs: 0.75rem;   /* 12px */
+  --text-sm: 0.8125rem;/* 13px */
+  --text-base: 0.875rem; /* 14px */
+  --text-md: 1rem;     /* 16px */
+  --text-lg: 1.125rem; /* 18px */
+  --text-xl: 1.5rem;   /* 24px */
+  --text-2xl: 2rem;    /* 32px */
+
+  /* Line heights */
+  --lh-tight: 1.25;
+  --lh-normal: 1.45;
+  --lh-relaxed: 1.6;
+}
+
 #root {
   position: relative;
   z-index: 1;
@@ -1004,6 +1027,17 @@ header .image-text .header-text {
 .hero-header {
   animation: fadeInDown 0.6s ease-out forwards;
   opacity: 0;
+  font-size: var(--text-2xl); /* 32px */
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  text-align: center;
+}
+
+/* Desktop enhancement */
+@media (min-width: 768px) {
+  .hero-header {
+    font-size: 3rem; /* 48px */
+  }
 }
 
 @keyframes fadeInDown {
@@ -1022,9 +1056,19 @@ header .image-text .header-text {
   opacity: 0;
   animation-delay: 0.1s;
   color: var(--accent-color);
+  font-size: var(--text-md); /* 16px */
+  line-height: var(--lh-relaxed);
   max-width: 680px;
   margin-left: auto;
   margin-right: auto;
+  text-align: center;
+}
+
+/* Desktop refinement */
+@media (min-width: 768px) {
+  .hero-subheader {
+    font-size: var(--text-base); /* 14–15px looks intentional here */
+  }
 }
 
 .item {
@@ -1265,8 +1309,9 @@ header .image-text .header-text {
 }
 
 .home-title {
-  font-size: 2.25rem;
-  font-weight: 700;
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  line-height: var(--lh-tight);
 }
 
 .home-subtitle {
@@ -1314,9 +1359,9 @@ header .image-text .header-text {
 
 /* Text */
 .empty-project-text {
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 500;
-  opacity: 0.75;
+  line-height: var(--lh-normal);
 }
 
 /* Light mode adjustments */
@@ -1407,6 +1452,9 @@ header .image-text .header-text {
   color: var(--bg-color);
   border-radius: 10px;
   cursor: pointer;
+  font-size: var(--text-base);
+  font-weight: 500;
+  line-height: 1;
 }
 
 /* =========================
@@ -1421,7 +1469,7 @@ header .image-text .header-text {
   );
   gap: 1.5rem;
   max-width: 1100px;
-  margin: 0 auto;          /* centers grid */
+  margin: 0 auto;   /* centers grid */
   padding: 2rem;
 }
 
@@ -1512,13 +1560,14 @@ header .image-text .header-text {
    ========================= */
 
 .project-card-title {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 600;
-  margin-bottom: 0.3rem;
+  line-height: var(--lh-tight);
 }
 
 .project-card-meta {
-  font-size: 0.85rem;
+  font-size: var(--text-sm); /* 13px */
+  line-height: var(--lh-normal);
   opacity: 0.7;
 }
 
@@ -1597,16 +1646,18 @@ header .image-text .header-text {
 
 .modal-card h2 {
   margin-bottom: 16px;
-  font-size: 18px;
+  font-size: var(--text-lg);
   font-weight: 600;
+  line-height: var(--lh-tight);
 }
 
 .modal-card label {
   display: block;
   margin-top: 12px;
   margin-bottom: 6px;
-  font-size: 13px;
+  font-size: var(--text-sm); /* 13px */
   font-weight: 500;
+  line-height: var(--lh-normal);
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -1625,7 +1676,8 @@ header .image-text .header-text {
   color: #111;
   padding: 10px 12px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: var(--text-base);
+  line-height: var(--lh-normal);
 }
 
 /* Dark mode override */
