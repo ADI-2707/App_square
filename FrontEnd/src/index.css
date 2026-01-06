@@ -1474,6 +1474,7 @@ header .image-text .header-text {
     0 0 18px rgba(255, 255, 255, 0.22),
     0 0 36px rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
 }
 
 /* =========================

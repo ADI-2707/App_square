@@ -17,6 +17,7 @@ import Dashboard from "./Pages/Dashboard";
 import About from "./Pages/About";
 import Contact from "./Pages/Contact";
 import ForgetPassword from "./Pages/ForgetPassword";
+import Account from "./Pages/Account.jsx";  
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -80,6 +81,10 @@ const App = () => {
                 </PrivateRoute>
               }
             />
+
+            {/* Account page */}
+            <Route path="/account"
+            element={<PrivateRoute><Account /></PrivateRoute>} />
           </Routes>
         </main>
       </Router>

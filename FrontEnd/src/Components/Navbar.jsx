@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Navigate, NavLink, useNavigate } from "react-router-dom";
 import { isAuthenticated, getUser } from "../Utility/auth";
 
 const Navbar = ({ isSidebarClosed }) => {
@@ -96,10 +96,10 @@ const Navbar = ({ isSidebarClosed }) => {
               <button className="button" onClick={openCreateProject}>
                 {hasProjects ? "Add Project" : "Create Project"}
               </button>
-              <button className="user-avatar">{userInitial}</button>
+              <button className="user-avatar" onClick={() => navigate('/account')}>{userInitial}</button>
             </>
           )}
-        </div>
+        </div>  
       </div>
     </nav>
   );
