@@ -58,14 +58,14 @@ const HomePrivate = () => {
   return (
     <div className="home-private-container">
       {/* Header */}
-      <h1 className="home-title">
+      <h1 className="home-title mt-5">
         Welcome{displayName ? `, ${displayName}` : ""} 👋
       </h1>
 
       {/* Empty State */}
       {projects.length === 0 ? (
         <div
-          className="empty-project-wrapper"
+          className="empty-project-wrapper mt-10"
           onClick={() => setShowModal(true)}
         >
           <div className="empty-project-card">

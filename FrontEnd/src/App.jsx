@@ -5,6 +5,7 @@ import Mode from "./Utility/Mode";
 import PrivateRoute from "./Utility/PrivateRoute";
 import { isAuthenticated } from "./Utility/auth";
 import { useAuth } from "./Utility/AuthContext";
+import PublicRoute from "./Utility/PublicRoute";
 
 import Navbar from "./Components/Navbar";
 import Sidebar from "./Components/Sidebar";
@@ -17,13 +18,12 @@ import Dashboard from "./Pages/Dashboard";
 import About from "./Pages/About";
 import Contact from "./Pages/Contact";
 import ForgetPassword from "./Pages/ForgetPassword";
-import Account from "./Pages/Account.jsx";  
+import Account from "./Pages/Account.jsx";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const App = () => {
-
   const [isSidebarClosed, setIsSidebarClosed] = useState(true);
 
   const loggedIn = isAuthenticated();
@@ -55,9 +55,30 @@ const App = () => {
         >
           <Routes>
             {/* Public */}
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
+            <Route
+              path="/"
+              element={
+                <PublicRoute>
+                  <Home />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/login"
+              element={
+                <PublicRoute>
+                  <Login />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/signup"
+              element={
+                <PublicRoute>
+                  <Signup />
+                </PublicRoute>
+              }
+            />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/forget-password" element={<ForgetPassword />} />
@@ -83,8 +104,14 @@ const App = () => {
             />
 
             {/* Account page */}
-            <Route path="/account"
-            element={<PrivateRoute><Account /></PrivateRoute>} />
+            <Route
+              path="/account"
+              element={
+                <PrivateRoute>
+                  <Account />
+                </PrivateRoute>
+              }
+            />
           </Routes>
         </main>
       </Router>
