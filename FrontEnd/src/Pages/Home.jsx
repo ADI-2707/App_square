@@ -1,17 +1,10 @@
 import React from "react";
 import HeroSection from "../Components/HeroSection";
-import HomePrivate from "./HomePrivate";
-import { isAuthenticated } from "../Utility/auth";
 
 const Home = () => {
-  
-  if (isAuthenticated()) {
-    return <HomePrivate />;
-  }
 
   return (
     <div>
-
         <h1 className="text-center text-3xl md:text-6xl font-bold mt-25 hero-header">
           Welcome to the Web App
         </h1>

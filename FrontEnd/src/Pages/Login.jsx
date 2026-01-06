@@ -55,7 +55,7 @@ const Login = () => {
       localStorage.setItem("user", JSON.stringify(data.user));
 
       toast.success("Login successful");
-      navigate("/");
+      navigate("/home", { replace: true });
       
     } catch (error) {
       toast.error(
