@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { isAuthenticated, getUser, logout } from "../Utility/auth";
+import { isAuthenticated, getUser } from "../Utility/auth";
 
 const Navbar = ({ isSidebarClosed }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,15 +25,15 @@ const Navbar = ({ isSidebarClosed }) => {
     }
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
   return (
+    
     <nav
       className={`navbar ${mounted ? "navbar-enter" : ""} ${
-        isSidebarClosed ? "sidebar-closed" : "sidebar-open"
+        loggedIn
+          ? isSidebarClosed
+            ? "sidebar-closed"
+            : "sidebar-open"
+          : ""
       }`}
     >
       <div className="navbar-inner">
@@ -112,8 +112,11 @@ const Navbar = ({ isSidebarClosed }) => {
               </>
             ) : (
               <>
-                <button className="button" onClick={handleLogout}>
-                  Logout
+                <button
+                  className="button"
+                  onClick={() => navigate("/home")}
+                >
+                  Create / Add Project
                 </button>
                 <button
                   className="user-avatar"
@@ -139,8 +142,11 @@ const Navbar = ({ isSidebarClosed }) => {
             </>
           ) : (
             <>
-              <button className="button" onClick={handleLogout}>
-                Logout
+              <button
+                className="button"
+                onClick={() => navigate("/home")}
+              >
+                Create / Add Project
               </button>
               <button
                 className="user-avatar"

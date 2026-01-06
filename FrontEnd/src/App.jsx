@@ -1,44 +1,67 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import Mode from "./Utility/Mode.jsx";
-import PrivateRoute from "./Utility/PrivateRoute.jsx";
+import Mode from "./Utility/Mode";
+import PrivateRoute from "./Utility/PrivateRoute";
+import { isAuthenticated } from "./Utility/auth";
+import { useAuth } from "./Utility/AuthContext";
 
-import Navbar from "./Components/Navbar.jsx";
-import Sidebar from "./Components/Sidebar.jsx"
+import Navbar from "./Components/Navbar";
+import Sidebar from "./Components/Sidebar";
 
-import Home from "./Pages/Home.jsx"
-import HomePrivate from "./Pages/HomePrivate.jsx";
-import Login from "./Pages/Login.jsx";
-import Signup from "./Pages/Signup.jsx";
-import Dashboard from "./Pages/Dashboard.jsx";
-import About from "./Pages/About.jsx";
-import Contact from "./Pages/Contact.jsx";
-import ForgetPassword from "./Pages/ForgetPassword.jsx";
+import Home from "./Pages/Home";
+import HomePrivate from "./Pages/HomePrivate";
+import Login from "./Pages/Login";
+import Signup from "./Pages/Signup";
+import Dashboard from "./Pages/Dashboard";
+import About from "./Pages/About";
+import Contact from "./Pages/Contact";
+import ForgetPassword from "./Pages/ForgetPassword";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-
 const App = () => {
+
   const [isSidebarClosed, setIsSidebarClosed] = useState(true);
+
+  const loggedIn = isAuthenticated();
+  const { authenticated } = useAuth();
 
   return (
     <>
-    <Router>
-      <Sidebar isClosed={isSidebarClosed} setIsClosed={setIsSidebarClosed} />
-      <Navbar isSidebarClosed={isSidebarClosed} />
-      <Mode />
-      <main className={`app-content ${isSidebarClosed ? "sidebar-closed" : "sidebar-open"}`}>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path='/forget-password' element={<ForgetPassword />} />
+      <Router>
+        <Mode />
 
-        {/* Protected routes */}
+        {/* Sidebar ONLY when logged in */}
+        {authenticated && (
+          <Sidebar
+            isClosed={isSidebarClosed}
+            setIsClosed={setIsSidebarClosed}
+          />
+        )}
+
+        <Navbar isSidebarClosed={isSidebarClosed} />
+
+        <main
+          className={`app-content ${
+            loggedIn
+              ? isSidebarClosed
+                ? "sidebar-closed"
+                : "sidebar-open"
+              : "no-sidebar"
+          }`}
+        >
+          <Routes>
+            {/* Public */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/forget-password" element={<ForgetPassword />} />
+
+            {/* Auth landing */}
             <Route
               path="/home"
               element={
@@ -47,6 +70,8 @@ const App = () => {
                 </PrivateRoute>
               }
             />
+
+            {/* Project dashboard */}
             <Route
               path="/dashboard"
               element={
@@ -55,20 +80,20 @@ const App = () => {
                 </PrivateRoute>
               }
             />
-      </Routes>
-      </main>
-    </Router>
-     <ToastContainer
+          </Routes>
+        </main>
+      </Router>
+
+      <ToastContainer
         position="top-right"
         autoClose={3000}
-        hideProgressBar={false}
         newestOnTop
         closeOnClick
         pauseOnHover
         draggable
         theme="dark"
       />
-      </>
+    </>
   );
 };
 

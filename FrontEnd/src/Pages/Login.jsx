@@ -4,11 +4,14 @@ import { FaUserShield } from "react-icons/fa";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { toast } from "react-toastify";
 import api from "../Utility/api";
+import { useAuth } from "../Utility/AuthContext";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const Login = () => {
   const navigate = useNavigate();
+
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -53,7 +56,7 @@ const Login = () => {
       localStorage.setItem("accessToken", data.tokens.access);
       localStorage.setItem("refreshToken", data.tokens.refresh);
       localStorage.setItem("user", JSON.stringify(data.user));
-
+      login(data.user);
       toast.success("Login successful");
       navigate("/home", { replace: true });
       

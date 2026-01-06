@@ -854,12 +854,25 @@ header .image-text .header-text {
 }
 
 .app-content {
-  margin-left: 250px; /* sidebar width */
   overflow-x: hidden;
   position: relative;
   z-index: 0;
-  padding: 10px; /* Add some breathing room */
+  padding: 10px;
   transition: margin-left 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* NOT LOGGED IN */
+.app-content.no-sidebar {
+  margin-left: 0;
+}
+
+/* LOGGED IN */
+.app-content.sidebar-open {
+  margin-left: 250px;
+}
+
+.app-content.sidebar-closed {
+  margin-left: 88px;
 }
 
 .sidebar.close ~ .app-content {

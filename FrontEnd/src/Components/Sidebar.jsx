@@ -9,6 +9,8 @@ import { SiAdobeaudition } from "react-icons/si";
 import { HiTemplate } from "react-icons/hi";
 import { FaArrowTrendUp } from "react-icons/fa6";
 import { IoLogOut, IoSearch } from "react-icons/io5";
+import { logout } from "../Utility/auth";
+import { useAuth } from "../Utility/AuthContext";
 
 /* ===================== DATA ===================== */
 
@@ -102,6 +104,7 @@ const SIDEBAR_ITEMS = [
 /* ===================== COMPONENT ===================== */
 
 const Sidebar = ({ isClosed, setIsClosed }) => {
+  const { logout } = useAuth();
   const navigate = useNavigate();
 
   /* 🔒 Always start collapsed */
@@ -113,6 +116,12 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
     y: 0,
     item: null,
   });
+
+  const handleLogout = () => {
+    localStorage.clear();
+    logout();
+    navigate("/login");
+  };
 
   /* ===================== EFFECTS ===================== */
 
@@ -224,12 +233,16 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
 
             <ul className="menu-links">
               {SIDEBAR_ITEMS.map((item) => (
-                <li key={item.id} className="side-link" style={{ overflow: 'visible' }}>
+                <li
+                  key={item.id}
+                  className="side-link"
+                  style={{ overflow: "visible" }}
+                >
                   <div
                     className="link"
                     data-tooltip={item.label}
                     onClick={(e) => handleItemClick(e, item)}
-                    style={{ position: 'relative', overflow: 'visible' }}
+                    style={{ position: "relative", overflow: "visible" }}
                   >
                     <item.icon className="icon" />
                     <span className="text nav-text">{item.label}</span>
@@ -243,7 +256,7 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
           <div className="bottom-content">
             <li className="side-link">
               <div
-                className="link" 
+                className="link"
                 data-tooltip="History"
                 onClick={(e) =>
                   handleItemClick(e, {
@@ -259,7 +272,11 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
             </li>
 
             <li className="side-link">
-              <div className="link" data-tooltip="Logout">
+              <div
+                className="link"
+                data-tooltip="Logout"
+                onClick={handleLogout}
+              >
                 <IoLogOut className="icon" />
                 <span className="text nav-text">Logout</span>
               </div>
