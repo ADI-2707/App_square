@@ -1,51 +1,70 @@
-import React from "react";
-import { PlusSquare } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { PlusSquare, Folder } from "lucide-react";
+import CreateProjectModal from "../Components/CreateProjectModal";
 
 const formatUserName = (fullName) => {
-  if (!fullName || typeof fullName !== "string") return "";
-
+  if (!fullName) return "";
   const parts = fullName.trim().split(" ");
-
-  if (parts.length === 1) {
-    return parts[0];
-  }
-
-  const firstName = parts[0];
-  const lastName = parts[parts.length - 1];
-  const lastInitial = lastName.charAt(0).toUpperCase();
-
-  return `${lastInitial}. ${firstName}`;
+  if (parts.length === 1) return parts[0];
+  return `${parts.at(-1)[0].toUpperCase()}. ${parts[0]}`;
 };
 
 const HomePrivate = () => {
   const user = JSON.parse(localStorage.getItem("user"));
-  const fullName = user?.full_name || "";
-  const displayName = formatUserName(fullName);
+  const displayName = formatUserName(user?.full_name);
 
-  // TEMP: no projects yet
-  const projects = [];
+  const [projects, setProjects] = useState(
+    JSON.parse(localStorage.getItem("projects")) || []
+  );
+  const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    const open = () => setShowModal(true);
+    window.addEventListener("open-create-project", open);
+    return () => window.removeEventListener("open-create-project", open);
+  }, []);
+
+  const handleCreate = (project) => {
+    const updated = [...projects, project];
+    setProjects(updated);
+    localStorage.setItem("projects", JSON.stringify(updated));
+    window.dispatchEvent(new Event("projects-updated"));
+  };
 
   return (
     <div className="home-private-container">
-      {/* Header */}
-      <div className="home-header">
-        <h1 className="home-title">
-          Welcome{displayName ? `, ${displayName}` : ""} 👋
-        </h1>
-      </div>
+      <h1 className="home-title">
+        Welcome{displayName ? `, ${displayName}` : ""} 👋
+      </h1>
 
-      {/* Empty State */}
-      {projects.length === 0 && (
-        <div className="empty-project-wrapper">
+      {projects.length === 0 ? (
+        <div className="empty-project-wrapper" onClick={() => setShowModal(true)}>
           <div className="empty-project-card">
-            <div className="empty-project-icon">
-              <PlusSquare size={64} strokeWidth={1.5} />
-            </div>
-            <p className="empty-project-text">
-              Create your first project
-            </p>
+            <PlusSquare size={64} />
+            <p>Create your first project</p>
           </div>
         </div>
+      ) : (
+        <div className="project-grid">
+          {projects.map((p) => (
+            <div key={p.id} className="project-card">
+              <div className="project-card-icon">
+                <Folder size={36} />
+              </div>
+              <h3>{p.name}</h3>
+              <span className="project-role">
+                Root Admin
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {showModal && (
+        <CreateProjectModal
+          onClose={() => setShowModal(false)}
+          onCreate={handleCreate}
+        />
       )}
     </div>
   );
