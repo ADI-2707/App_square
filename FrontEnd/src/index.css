@@ -1489,6 +1489,8 @@ header .image-text .header-text {
     box-shadow 0.35s ease,
     border-color 0.3s ease,
     background 0.3s ease;
+  transform: translateZ(0);
+  will-change: transform, box-shadow;
 }
 
 /* Lift on hover (both modes) */
@@ -1503,13 +1505,17 @@ header .image-text .header-text {
 :root:not([dark-mode="dark"]) .project-card {
   background: rgba(255, 255, 255, 0.95);
   border: 1px solid rgba(0, 0, 0, 0.08);
+
+   /* Top-left light source */
+  box-shadow:
+    6px 10px 22px rgba(0, 0, 0, 0.12),
+    2px 4px 10px rgba(0, 0, 0, 0.06);
 }
 
 :root:not([dark-mode="dark"]) .project-card:hover {
   box-shadow:
-    0 18px 40px rgba(0, 0, 0, 0.18),
-    0 6px 14px rgba(0, 0, 0, 0.08);
-  border-color: rgba(0, 0, 0, 0.2);
+    10px 16px 36px rgba(0, 0, 0, 0.18),
+    4px 8px 18px rgba(0, 0, 0, 0.1);
 }
 
 /* =========================
@@ -1517,17 +1523,34 @@ header .image-text .header-text {
    ========================= */
 
 [dark-mode="dark"] .project-card {
-  background: rgba(255, 255, 255, 0.04);
+  position: relative;
+  background: rgba(255, 255, 255, 0.035);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+
+[dark-mode="dark"] .project-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+
+  background: radial-gradient(
+    140% 140% at 18% 18%,
+    rgba(255, 255, 255, 0.14),
+    rgba(255, 255, 255, 0.06) 35%,
+    transparent 60%
+  );
+
+  opacity: 0.55;
 }
 
 [dark-mode="dark"] .project-card:hover {
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.35),
-    0 0 18px rgba(255, 255, 255, 0.22),
-    0 0 36px rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
+    0 0 22px rgba(255, 255, 255, 0.28),
+    0 0 44px rgba(255, 255, 255, 0.16);
 }
 
 /* =========================
@@ -1543,6 +1566,9 @@ header .image-text .header-text {
   justify-content: center;
   margin-bottom: 1rem;
   color: var(--accent-color);
+  box-shadow:
+    inset 1px 1px 2px rgba(255, 255, 255, 0.15),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.25);
 }
 
 /* Light mode icon */
