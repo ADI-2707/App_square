@@ -5,8 +5,10 @@ const ProjectDetails = () => {
 
   return (
     <>
-      <div>
-        
+      <div className='project-box'>
+        <div className="dashboard-box">
+
+        </div>
       </div>
     </>
   );
