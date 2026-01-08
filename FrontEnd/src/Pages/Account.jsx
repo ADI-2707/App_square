@@ -1,6 +1,11 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 const Account = () => {
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const user = useMemo(() => {
     try {
       return JSON.parse(localStorage.getItem("user"));
@@ -21,17 +26,14 @@ const Account = () => {
 
   return (
     <div className="account-page">
-      <div className="account-card card-surface">
-        <h2 className="account-title">Account Details</h2>
+      <div className="account-intro-wrapper">
+        <div className="account-intro-card">
+          <div className="intro-avatar">
+            {user.full_name?.charAt(0).toUpperCase()}
+          </div>
 
-        <div className="account-field">
-          <label>Full Name</label>
-          <input value={user.full_name || ""} disabled />
-        </div>
-
-        <div className="account-field">
-          <label>Email</label>
-          <input value={user.email || ""} disabled />
+          <div className="intro-name">{user.full_name}</div>
+          <div className="intro-email">{user.email}</div>
         </div>
       </div>
 
@@ -41,17 +43,47 @@ const Account = () => {
         <div className="password-grid">
           <div className="account-field">
             <label>Current Password</label>
-            <input type="password" />
+
+            <div className="password-wrapper">
+              <input type={showCurrent ? "text" : "password"} />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowCurrent((v) => !v)}
+                aria-label="Toggle password visibility"
+              >
+                {showCurrent ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           <div className="account-field">
             <label>New Password</label>
-            <input type="password" />
+            <div className="password-wrapper">
+              <input type={showNew ? "text" : "password"} />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowNew((v) => !v)}
+              >
+                {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           <div className="account-field">
             <label>Confirm Password</label>
-            <input type="password" />
+
+            <div className="password-wrapper">
+              <input type={showConfirm ? "text" : "password"} />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowConfirm((v) => !v)}
+              >
+                {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -59,9 +91,7 @@ const Account = () => {
           Password must be at least 8 characters long.
         </p>
 
-        <button className="primary-btn">
-          Update Password
-        </button>
+        <button className="primary-btn">Update Password</button>
       </div>
     </div>
   );

@@ -2157,16 +2157,15 @@ header .image-text .header-text {
 .account-page {
   max-width: 720px;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem 4rem;
+  padding: 6rem 1.5rem 4rem; /* navbar offset handled ONCE */
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 3rem; /* consistent vertical rhythm */
 }
 
 .account-card {
   padding: 1.75rem;
   border-radius: 18px;
-  margin-top: 85px;
 }
 
 :root:not([dark-mode="dark"]) .account-card {
@@ -2279,4 +2278,192 @@ header .image-text .header-text {
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.35),
     0 0 18px rgba(255, 255, 255, 0.22);
+}
+
+.account-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 0;
+}
+
+.account-info + .account-info {
+  margin-top: 14px;
+}
+
+.account-label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  opacity: 0.6;
+}
+
+.account-value {
+  font-size: var(--text-md);
+  font-weight: 500;
+  color: var(--text-color);
+  line-height: var(--lh-normal);
+}
+
+.account-info:not(:last-child)::after {
+  content: "";
+  margin-top: 12px;
+  height: 1px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+:root:not([dark-mode="dark"])
+.account-info:not(:last-child)::after {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.account-intro-card {
+  width: 260px;
+  height: 260px;
+  border-radius: 22px;
+  will-change: transform;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transform: translateZ(0);
+  position: relative;
+  transform-style: preserve-3d;
+  transition:
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.45s ease;
+}
+
+:root:not([dark-mode="dark"]) .account-intro-card {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.18),
+    0 6px 12px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+[dark-mode="dark"] .account-intro-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.55), /* grounding */
+    0 0 0 1px rgba(255, 255, 255, 0.06), /* edge definition */
+    0 0 18px rgba(255, 255, 255, 0.08); /* glow */
+}
+
+.account-intro-card:hover {
+  transform:
+    translateY(-6px)
+    rotateX(4deg)
+    rotateY(-4deg);
+}
+
+.account-intro-card::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+[dark-mode="dark"] .account-intro-card::after {
+  background: radial-gradient(
+    140% 140% at 20% 20%,
+    rgba(255, 255, 255, 0.18),
+    rgba(255, 255, 255, 0.08) 40%,
+    transparent 65%
+  );
+}
+
+.account-intro-card:hover::after {
+  opacity: 0.8;
+}
+
+.intro-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--text-color);
+
+  background: rgba(255, 255, 255, 0.15);
+
+  box-shadow:
+    inset 2px 2px 4px rgba(255, 255, 255, 0.25),
+    inset -2px -2px 4px rgba(0, 0, 0, 0.35);
+}
+
+[dark-mode="dark"] .intro-avatar {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.intro-name {
+  margin-top: 6px;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: var(--lh-tight);
+  text-align: center;
+}
+
+.intro-email {
+  font-size: var(--text-sm);
+  opacity: 0.65;
+  text-align: center;
+}
+
+.account-intro-wrapper {
+  display: flex;
+  justify-content: center;
+  perspective: 900px; /* critical */
+  margin-top: 22px;
+}
+
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 44px; /* space for eye */
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+  opacity: 0.9;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.password-toggle:hover {
+  opacity: 0.9;
+}
+
+.password-toggle:active {
+  transform: scale(0.95);
+}
+
+[dark-mode="dark"] .password-toggle {
+  color: rgba(255, 255, 255, 0.7);
 }
