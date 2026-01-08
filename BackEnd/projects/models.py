@@ -1,19 +1,45 @@
 import uuid
+import secrets
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password, check_password
 
+def generate_public_code():
+    """
+    Human-friendly, searchable project code
+    Example: APSQ-8F3K9A2Q
+    """
+    return f"APSQ-{secrets.token_hex(4).upper()}"
+
 class Project(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    # Human-visible
     name = models.CharField(max_length=255)
+    public_code = models.CharField(
+        max_length=16,
+        unique=True,
+        db_index=True,
+        default=generate_public_code
+    )
+
     root_admin = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name="root_admin_projects"
     )
-    
+
+    # Secrets
+    access_key_hash = models.CharField(max_length=128)
     pin_hash = models.CharField(max_length=128)
+
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def set_access_key(self, raw_key: str):
+        self.access_key_hash = make_password(raw_key)
+
+    def check_access_key(self, raw_key: str) -> bool:
+        return check_password(raw_key, self.access_key_hash)
 
     def set_pin(self, raw_pin: str):
         """Hash and store the project PIN"""

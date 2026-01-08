@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { PlusSquare, Folder } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import CreateProjectModal from "../Components/CreateProjectModal";
 import SecurityPinModal from "../Components/SecurityPinModal";
-import api from "../Utility/api"; // axios instance with auth headers
+import api from "../Utility/api";
 
 /* ---------- Utils ---------- */
 
@@ -18,11 +18,13 @@ const formatUserName = (fullName) => {
 
 const HomePrivate = () => {
   const navigate = useNavigate();
+  const debounceRef = useRef(null);
 
   const user = JSON.parse(localStorage.getItem("user"));
   const displayName = formatUserName(user?.full_name);
 
   const [projects, setProjects] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
 
   const [loading, setLoading] = useState(true);
@@ -45,34 +47,52 @@ const HomePrivate = () => {
     }
   };
 
-  /* ---------- On Mount ---------- */
   useEffect(() => {
     fetchProjects();
   }, []);
 
-  /* ---------- Listen from Navbar ---------- */
+  /* ---------- Open modal from navbar ---------- */
   useEffect(() => {
     const openModal = () => setShowModal(true);
     window.addEventListener("open-create-project", openModal);
-    return () => window.removeEventListener("open-create-project", openModal);
+    return () =>
+      window.removeEventListener("open-create-project", openModal);
   }, []);
 
   /* ---------- Create Project ---------- */
   const handleCreate = async (payload) => {
-    try {
-      const res = await api.post("/api/projects/create/", payload);
-      setSecurityPin(res.data.pin);
-      setShowPinModal(true);
+    const res = await api.post("/api/projects/create/", payload);
+    setSecurityPin(res.data.pin);
+    setShowPinModal(true);
+    fetchProjects();
+    return res.data;
+  };
 
-      // refresh list
-      fetchProjects();
+  /* ---------- Debounced Search ---------- */
+  useEffect(() => {
+    if (!searchQuery.trim()) return;
 
-      // ✅ RETURN BACKEND RESPONSE (contains PIN)
-      return res.data;
-    } catch (err) {
-      console.error(err);
-      throw err; // let modal handle error
+    // clear previous debounce
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
     }
+
+    debounceRef.current = setTimeout(() => {
+      // 🔒 Minimum length rule
+      if (searchQuery.length < 3) return;
+
+      console.log("Debounced search:", searchQuery);
+
+      // 🔗 future API call
+      // api.get(`/api/projects/search?q=${searchQuery}`)
+    }, 450);
+
+    return () => clearTimeout(debounceRef.current);
+  }, [searchQuery]);
+
+  const handleSearchClick = () => {
+    if (!searchQuery.trim()) return;
+    console.log("Manual search:", searchQuery);
   };
 
   /* ---------- Open Project ---------- */
@@ -84,20 +104,25 @@ const HomePrivate = () => {
   /* ---------- Render ---------- */
   return (
     <div className="home-private-container">
-      {/* Header */}
       <h1 className="home-title mt-5">
         Welcome{displayName ? `, ${displayName}` : ""}
       </h1>
 
-      {/* Loading */}
-      {loading && <p className="opacity-60 mt-10">Loading projects…</p>}
+      {/* 🔍 SEARCH BAR */}
+          <div className="project-search-bar">
+            <input
+              type="text"
+              placeholder="Search project by ID or name"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <button onClick={handleSearchClick}>Search</button>
+          </div>
 
-      {/* Error */}
-      {!loading && error && <p className="text-red-500 mt-10">{error}</p>}
-
-      {/* Empty State */}
       {!loading && projects.length === 0 && !error && (
         <div className="empty-project-wrapper mt-10">
+
+          {/* CREATE CARD */}
           <div
             className="empty-project-card card-surface"
             onClick={() => setShowModal(true)}
@@ -108,7 +133,6 @@ const HomePrivate = () => {
         </div>
       )}
 
-      {/* Project Grid */}
       {!loading && projects.length > 0 && (
         <div className="project-grid">
           {projects.map((project) => (
@@ -120,9 +144,7 @@ const HomePrivate = () => {
               <div className="project-card-icon">
                 <Folder size={36} />
               </div>
-
               <div className="project-card-title">{project.name}</div>
-
               <div className="project-card-meta">
                 Role: {project.role.toUpperCase()}
               </div>
@@ -131,7 +153,6 @@ const HomePrivate = () => {
         </div>
       )}
 
-      {/* Modal */}
       {showModal && (
         <CreateProjectModal
           onClose={() => setShowModal(false)}
@@ -139,7 +160,6 @@ const HomePrivate = () => {
         />
       )}
 
-      {/* 🔐 SECURITY PIN MODAL */}
       {showPinModal && securityPin && (
         <SecurityPinModal
           pin={securityPin}

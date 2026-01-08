@@ -198,11 +198,11 @@ const Signup = () => {
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </span>
               </div>
-              <small className="password-hint">
+              {/* <small className="password-hint">
                 Must include at least 1 uppercase & 1 lowercase letter, 1
                 number, and a special character (@ / # / _) and at least 8
                 characters long
-              </small>
+              </small> */}
             </div>
             <div className="password-checklist">
               {Object.entries(PASSWORD_RULES).map(([key, rule]) => {

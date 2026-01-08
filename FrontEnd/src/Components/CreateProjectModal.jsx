@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { X, Trash2 } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { X, Trash2, Copy } from "lucide-react";
 
 const MAX_MEMBERS = 3;
 
@@ -7,14 +7,22 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
   const user = JSON.parse(localStorage.getItem("user"));
 
   const [name, setName] = useState("");
-  const [members, setMembers] = useState([
-    { email: "", role: "admin" }, // first member is admin by default
-  ]);
+  const [members, setMembers] = useState([{ email: "", role: "admin" }]);
+
+  const [projectId, setProjectId] = useState("");
+  const [accessKey, setAccessKey] = useState("");
 
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  /* -------------------- HANDLERS -------------------- */
+  /* -------------------- INIT -------------------- */
+
+  useEffect(() => {
+    const id = "APSQ-" + crypto.randomUUID().slice(0, 8).toUpperCase();
+    setProjectId(id);
+  }, []);
+
+  /* -------------------- MEMBER HANDLERS -------------------- */
 
   const addMemberRow = () => {
     if (members.length >= MAX_MEMBERS) return;
@@ -23,18 +31,14 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
 
   const updateMemberEmail = (index, value) => {
     setMembers((prev) =>
-      prev.map((m, i) =>
-        i === index ? { ...m, email: value } : m
-      )
+      prev.map((m, i) => (i === index ? { ...m, email: value } : m))
     );
   };
 
   const toggleAdmin = (index) => {
     setMembers((prev) =>
       prev.map((m, i) =>
-        i === index
-          ? { ...m, role: m.role === "admin" ? "user" : "admin" }
-          : m
+        i === index ? { ...m, role: m.role === "admin" ? "user" : "admin" } : m
       )
     );
   };
@@ -43,6 +47,8 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
     if (members.length === 1) return;
     setMembers((prev) => prev.filter((_, i) => i !== index));
   };
+
+  /* -------------------- CREATE -------------------- */
 
   const handleCreate = async () => {
     if (submitting) return;
@@ -54,18 +60,16 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
       return;
     }
 
-    const validMembers = members.filter(
-      (m) => m.email.trim() !== ""
-    );
+    if (accessKey.length < 6) {
+      setError("Project password must be at least 6 characters");
+      return;
+    }
 
-    const adminCount = validMembers.filter(
-      (m) => m.role === "admin"
-    ).length;
+    const validMembers = members.filter((m) => m.email.trim() !== "");
+    const adminCount = validMembers.filter((m) => m.role === "admin").length;
 
     if (adminCount < 1) {
-      setError(
-        "At least one member must be marked as Admin"
-      );
+      setError("At least one member must be marked as Admin");
       return;
     }
 
@@ -77,22 +81,13 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
     const payload = {
       name: name.trim(),
       members: validMembers,
+      access_key: accessKey,
     };
 
     try {
       setSubmitting(true);
-
-      /**
-       * Backend is expected to return:
-       * {
-       *   project: {...},
-       *   pin: "A9f#K2qL"
-       * }
-       */
-      const res = await onCreate(payload);
-
+      await onCreate(payload);
       onClose();
-      
     } catch (err) {
       console.error(err);
       setError("Project creation failed");
@@ -106,21 +101,13 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
   return (
     <div className="modal-backdrop">
       <div className="modal-card">
-        <button
-          className="modal-close"
-          onClick={onClose}
-          disabled={submitting}
-        >
+        <button className="modal-close" onClick={onClose} disabled={submitting}>
           <X size={18} />
         </button>
 
         <h2>Create Project</h2>
 
-        {error && (
-          <p className="text-red-500 text-sm mb-3">
-            {error}
-          </p>
-        )}
+        {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
         {/* Project Name */}
         <label>Project Name</label>
@@ -130,6 +117,31 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
           placeholder="Project name"
           disabled={submitting}
         />
+
+        {/* Project ID */}
+        <label>Project ID</label>
+        <div className="copy-field">
+          <input value={projectId} disabled />
+          <button
+            onClick={() => navigator.clipboard.writeText(projectId)}
+            title="Copy Project ID"
+          >
+            <Copy size={16} />
+          </button>
+        </div>
+
+        {/* Project Password */}
+        <label>Project Password</label>
+        <input
+          type="password"
+          value={accessKey}
+          onChange={(e) => setAccessKey(e.target.value)}
+          placeholder="Set project access password"
+          disabled={submitting}
+        />
+        <p className="password-hint">
+          This password will be required to join the project
+        </p>
 
         {/* Root Admin */}
         <label>Root Admin</label>
@@ -156,7 +168,6 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
                   className="delete-member-btn"
                   onClick={() => removeMember(index)}
                   disabled={members.length === 1 || submitting}
-                  title="Remove member"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -167,9 +178,7 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
               type="email"
               className="member-email"
               value={member.email}
-              onChange={(e) =>
-                updateMemberEmail(index, e.target.value)
-              }
+              onChange={(e) => updateMemberEmail(index, e.target.value)}
               placeholder="user@example.com"
               disabled={submitting}
             />
@@ -181,9 +190,7 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
           <button
             className="primary-btn"
             onClick={addMemberRow}
-            disabled={
-              members.length >= MAX_MEMBERS || submitting
-            }
+            disabled={members.length >= MAX_MEMBERS || submitting}
           >
             Add Member
           </button>

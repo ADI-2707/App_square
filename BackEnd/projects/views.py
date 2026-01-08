@@ -1,9 +1,11 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework import status
+
 from django.contrib.auth.models import User
 from django.db import transaction
-from rest_framework import status
+from django.db.models import Q
 
 from .models import Project, ProjectMember
 from .serializers import ProjectListSerializer
@@ -15,24 +17,48 @@ from .utils import generate_project_pin
 def my_projects(request):
     """
     HOME PAGE:
-    Only projects where the logged-in user is ROOT ADMIN
+    All projects where the user is a MEMBER or ROOT ADMIN
     """
-    projects = Project.objects.filter(root_admin=request.user).order_by("-created_at")
+    projects = (
+        Project.objects
+        .filter(projectmember__user=request.user)
+        .distinct()
+        .order_by("-created_at")
+    )
 
-    serializer = ProjectListSerializer(projects, many=True)
+    serializer = ProjectListSerializer(
+        projects,
+        many=True,
+        context={"request": request}
+    )
     return Response(serializer.data)
 
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def create_project(request):
+    """
+    Creates a project with:
+    - public project code
+    - admin-defined access key
+    - system-generated security PIN (returned ONCE)
+    """
     user = request.user
     data = request.data
     members = data.get("members", [])
 
-    if not data.get("name"):
+    name = data.get("name", "").strip()
+    access_key = data.get("access_key", "").strip()
+
+    if not name:
         return Response(
             {"error": "Project name is required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if not access_key or len(access_key) < 6:
+        return Response(
+            {"error": "Access Key must be at least 6 characters"},
             status=status.HTTP_400_BAD_REQUEST
         )
 
@@ -49,20 +75,21 @@ def create_project(request):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # Generate secure PIN
     raw_pin = generate_project_pin()
 
     with transaction.atomic():
         project = Project.objects.create(
-            name=data["name"],
+            name=name,
             root_admin=user,
+            access_key_hash="temp",
             pin_hash="temp",
         )
-        
+
+        project.set_access_key(access_key)
         project.set_pin(raw_pin)
         project.save()
 
-        # Root admin as member
+        # Root admin is always admin member
         ProjectMember.objects.create(
             project=project,
             user=user,
@@ -73,21 +100,52 @@ def create_project(request):
             try:
                 member_user = User.objects.get(email=m["email"])
             except User.DoesNotExist:
-                continue  # or raise error if you want strict behavior
+                continue
 
             ProjectMember.objects.create(
                 project=project,
                 user=member_user,
-                role=m["role"]
+                role=m.get("role", "user")
             )
 
     return Response(
         {
             "project": {
                 "id": project.id,
-                "name": project.name
+                "name": project.name,
+                "public_code": project.public_code,
             },
-            "pin": raw_pin  # ⚠️ returned ONCE ONLY
+            "pin": raw_pin,  # ⚠️ RETURNED ONCE ONLY
         },
         status=status.HTTP_201_CREATED
     )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def search_projects(request):
+    """
+    Search by project name or public code
+    """
+    q = request.query_params.get("q", "").strip()
+
+    if not q:
+        return Response([])
+
+    projects = (
+        Project.objects
+        .filter(
+            Q(name__icontains=q) |
+            Q(public_code__icontains=q)
+        )
+        .filter(projectmember__user=request.user)
+        .distinct()
+        .order_by("-created_at")
+    )
+
+    serializer = ProjectListSerializer(
+        projects,
+        many=True,
+        context={"request": request}
+    )
+    return Response(serializer.data)
