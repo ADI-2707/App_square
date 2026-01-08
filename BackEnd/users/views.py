@@ -6,6 +6,8 @@ from rest_framework import status
 from rest_framework.views import APIView
 
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.hashers import check_password
+from .serializers import ChangePasswordSerializer
 
 from .models import UserProfile, Project, ProjectMember
 from .serializers import RegisterSerializer, LoginSerializer
@@ -206,5 +208,40 @@ class ProjectDetailView(APIView):
                 "owner": project.owner.email,
                 "created_at": project.created_at,
             },
+            status=status.HTTP_200_OK,
+        )
+
+
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = request.user
+        current_password = serializer.validated_data["current_password"]
+        new_password = serializer.validated_data["new_password"]
+
+        # Verify current password
+        if not user.check_password(current_password):
+            return Response(
+                {"detail": "Current password is incorrect."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Prevent reusing same password
+        if current_password == new_password:
+            return Response(
+                {"detail": "New password cannot be the same as the current password."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Set new password securely
+        user.set_password(new_password)
+        user.save()
+
+        return Response(
+            {"detail": "Password updated successfully. Please log in again."},
             status=status.HTTP_200_OK,
         )

@@ -373,14 +373,21 @@ input:checked + .slider {
 }
 
 .login-card {
-  background-color: var(--bg-color);
-  color: var(--text-color);
   width: 100%;
   max-width: 400px;
   padding: 40px;
-  border-radius: 12px;
-  border: 1px solid var(--accent-color);
+  border-radius: 18px;
   text-align: center;
+  position: relative;
+  /* SURFACE */
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+
+  /* ELEVATION */
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.14),
+    0 2px 6px rgba(0, 0, 0, 0.08);
+
   animation: login-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -421,7 +428,12 @@ input:checked + .slider {
 
 /* Make shadow stronger in dark mode for visibility */
 [dark-mode="dark"] .login-card {
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .login-card h2 {
@@ -2136,6 +2148,7 @@ header .image-text .header-text {
   padding: 0.5rem 0.5rem 1rem;
   scroll-snap-type: x mandatory;
   contain: layout paint;
+  border-radius: 22px;
 }
 
 .project-row::-webkit-scrollbar {

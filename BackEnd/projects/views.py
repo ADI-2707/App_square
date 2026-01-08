@@ -50,6 +50,7 @@ def create_project(request):
     name = data.get("name", "").strip()
     access_key = data.get("access_key", "").strip()
 
+    # ---------------- VALIDATION ----------------
     if not name:
         return Response(
             {"error": "Project name is required"},
@@ -75,6 +76,7 @@ def create_project(request):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+    # ---------------- CREATION ----------------
     raw_pin = generate_project_pin()
 
     with transaction.atomic():
@@ -90,22 +92,31 @@ def create_project(request):
         project.save()
 
         # Root admin is always admin member
-        ProjectMember.objects.create(
+        ProjectMember.objects.get_or_create(
             project=project,
             user=user,
-            role="admin"
+            defaults={"role": "admin"}
         )
 
         for m in members:
+            email = m.get("email")
+            role = m.get("role", "user")
+
+            if not email:
+                continue
+            
             try:
-                member_user = User.objects.get(email=m["email"])
+                member_user = User.objects.get(email=email)
             except User.DoesNotExist:
                 continue
 
-            ProjectMember.objects.create(
+            if member_user == user:
+                continue
+
+            ProjectMember.objects.get_or_create(
                 project=project,
                 user=member_user,
-                role=m.get("role", "user")
+                role=m.get("role", role)
             )
 
     return Response(

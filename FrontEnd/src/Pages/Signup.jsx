@@ -146,6 +146,7 @@ const Signup = () => {
       <h1 className="text-center text-3xl md:text-6xl font-bold mt-25 hero-header mb-15">
         Start managing your recipes here!
       </h1>
+      <div className="auth-page">
       <div className="login-page">
         <div className={`mt-20 login-card ${shake ? "error" : ""}`}>
           <div className="icon-header">
@@ -282,6 +283,7 @@ const Signup = () => {
             </span>
           </p>
         </div>
+      </div>
       </div>
     </>
   );
