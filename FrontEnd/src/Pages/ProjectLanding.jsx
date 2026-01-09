@@ -43,7 +43,7 @@ const ProjectLanding = () => {
   return (
     <div className="app-content sidebar-open">
       <div className="page-container">
-        <div className="page-inner">
+        <div className="page-inner mx-auto">
           <ProjectHeader project={project} />
 
           {/* ACTIONS SECTION */}

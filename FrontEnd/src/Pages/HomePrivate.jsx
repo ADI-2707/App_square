@@ -103,15 +103,34 @@ const HomePrivate = () => {
 
   /* ---------- Search (UI-only for now) ---------- */
   useEffect(() => {
-  if (!searchQuery.trim()) {
-    setSearchResults([]);
-    return;
-  }
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
 
-  if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
 
-  debounceRef.current = setTimeout(async () => {
-    if (searchQuery.length < 2) return;
+    debounceRef.current = setTimeout(async () => {
+      if (searchQuery.length < 2) return;
+
+      try {
+        setIsSearching(true);
+        const res = await api.get("/api/projects/search/", {
+          params: { q: searchQuery },
+        });
+        setSearchResults(res.data.results);
+      } catch (err) {
+        console.error("Search failed", err);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 450);
+
+    return () => clearTimeout(debounceRef.current);
+  }, [searchQuery]);
+
+  const handleSearchClick = async () => {
+    if (!searchQuery.trim()) return;
 
     try {
       setIsSearching(true);
@@ -124,26 +143,6 @@ const HomePrivate = () => {
     } finally {
       setIsSearching(false);
     }
-  }, 450);
-
-  return () => clearTimeout(debounceRef.current);
-}, [searchQuery]);
-
-
-  const handleSearchClick = async () => {
-    if (!searchQuery.trim()) return;
-
-  try {
-    setIsSearching(true);
-    const res = await api.get("/api/projects/search/", {
-      params: { q: searchQuery },
-    });
-    setSearchResults(res.data.results);
-  } catch (err) {
-    console.error("Search failed", err);
-  } finally {
-    setIsSearching(false);
-  }
   };
 
   /* ---------- Open Project ---------- */
@@ -171,13 +170,13 @@ const HomePrivate = () => {
       </div>
 
       {searchResults.length > 0 && (
-  <ProjectSection
-    title="Search Results"
-    projects={searchResults}
-    hasMore={false}
-    onOpenProject={openProject}
-  />
-)}
+        <ProjectSection
+          title="Search Results"
+          projects={searchResults}
+          hasMore={false}
+          onOpenProject={openProject}
+        />
+      )}
 
       <>
         <ProjectSection

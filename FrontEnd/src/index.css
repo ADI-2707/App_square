@@ -45,12 +45,16 @@
   width: 100%;
   display: flex;
   justify-content: center;
+  min-height: calc(100vh - 4rem);
 }
 
 .page-inner {
   width: 100%;
   max-width: 1100px;
   padding: 0 1rem;
+  margin: 0 auto; 
+  display: flex;
+  flex-direction: column;
 }
 
 /* Dark Mode override */
@@ -920,10 +924,12 @@ header .image-text .header-text {
 /* LOGGED IN */
 .app-content.sidebar-open {
   margin-left: 250px;
+  width: calc(100% - 250px);
 }
 
 .app-content.sidebar-closed {
   margin-left: 88px;
+  width: calc(100% - 88px);
 }
 
 .sidebar.close ~ .app-content {
@@ -1533,8 +1539,7 @@ header .image-text .header-text {
   );
   gap: 1.5rem;
   max-width: 1100px;
-  margin: 0 auto;   /* centers grid */
-  padding: 2rem;
+  padding: 2rem 0;
 }
 
 /* =========================
