@@ -1,7 +1,13 @@
 import { useEffect, useRef } from "react";
 import { Folder } from "lucide-react";
 
-export default function ProjectSection({ title, projects, loadMore, hasMore, onOpenProject }) {
+export default function ProjectSection({
+  title,
+  projects,
+  loadMore,
+  hasMore,
+  onOpenProject,
+}) {
   const observerRef = useRef(null);
 
   useEffect(() => {
@@ -25,10 +31,15 @@ export default function ProjectSection({ title, projects, loadMore, hasMore, onO
 
       <div className="project-row">
         {projects.map((p) => (
-          <div key={`${title}-${p.id}`} className="project-card card-surface" onClick={() => onOpenProject(p)}>
+          <div
+            key={`${title}-${p.id}`}
+            className="project-card card-surface"
+            onClick={() => onOpenProject(p)}
+          >
             <div className="project-card-icon">
               <Folder size={28} />
             </div>
+            
             <div className="project-card-title">{p.name}</div>
             <div className="project-card-meta">
               Role: {p.role.toUpperCase()}
@@ -36,9 +47,7 @@ export default function ProjectSection({ title, projects, loadMore, hasMore, onO
           </div>
         ))}
 
-        {hasMore && (
-          <div ref={observerRef} className="project-card skeleton" />
-        )}
+        {hasMore && <div ref={observerRef} className="project-card skeleton" />}
       </div>
     </section>
   );

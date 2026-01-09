@@ -38,6 +38,9 @@ const HomePrivate = () => {
   const [ownedHasMore, setOwnedHasMore] = useState(true);
   const [joinedHasMore, setJoinedHasMore] = useState(true);
 
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+
   /* ---------- Initial Load ---------- */
   useEffect(() => {
     loadOwned();
@@ -100,21 +103,47 @@ const HomePrivate = () => {
 
   /* ---------- Search (UI-only for now) ---------- */
   useEffect(() => {
+  if (!searchQuery.trim()) {
+    setSearchResults([]);
+    return;
+  }
+
+  if (debounceRef.current) clearTimeout(debounceRef.current);
+
+  debounceRef.current = setTimeout(async () => {
+    if (searchQuery.length < 2) return;
+
+    try {
+      setIsSearching(true);
+      const res = await api.get("/api/projects/search/", {
+        params: { q: searchQuery },
+      });
+      setSearchResults(res.data.results);
+    } catch (err) {
+      console.error("Search failed", err);
+    } finally {
+      setIsSearching(false);
+    }
+  }, 450);
+
+  return () => clearTimeout(debounceRef.current);
+}, [searchQuery]);
+
+
+  const handleSearchClick = async () => {
     if (!searchQuery.trim()) return;
 
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-
-    debounceRef.current = setTimeout(() => {
-      if (searchQuery.length < 3) return;
-      console.log("Debounced search:", searchQuery);
-    }, 450);
-
-    return () => clearTimeout(debounceRef.current);
-  }, [searchQuery]);
-
-  const handleSearchClick = () => {
-    if (!searchQuery.trim()) return;
-    console.log("Manual search:", searchQuery);
+  try {
+    setIsSearching(true);
+    const res = await api.get("/api/projects/search/", {
+      params: { q: searchQuery },
+    });
+    setSearchResults(res.data.results);
+  } catch (err) {
+    console.error("Search failed", err);
+  } finally {
+    setIsSearching(false);
+  }
   };
 
   /* ---------- Open Project ---------- */
@@ -140,6 +169,15 @@ const HomePrivate = () => {
         />
         <button onClick={handleSearchClick}>Search</button>
       </div>
+
+      {searchResults.length > 0 && (
+  <ProjectSection
+    title="Search Results"
+    projects={searchResults}
+    hasMore={false}
+    onOpenProject={openProject}
+  />
+)}
 
       <>
         <ProjectSection

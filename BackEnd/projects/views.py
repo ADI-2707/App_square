@@ -3,9 +3,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.db import transaction
-from django.db.models import F, Value, BooleanField
+from django.db.models import Q, Value, BooleanField
+from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_datetime
 import secrets
+
 from .models import Project, ProjectMember
 from .serializers import ProjectListSerializer
 from .utils import generate_project_pin
@@ -19,31 +21,28 @@ def cursor_paginate(queryset, cursor, limit):
 
     items = list(queryset[: limit + 1])
     has_more = len(items) > limit
-
     return items[:limit], has_more
 
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def owned_projects(request):
-    cursor_param = request.query_params.get("cursor")
-    cursor = parse_datetime(cursor_param) if cursor_param else None
-
+    cursor = parse_datetime(request.query_params.get("cursor")) if request.query_params.get("cursor") else None
     limit = int(request.query_params.get("limit", DEFAULT_LIMIT))
 
     qs = (
         Project.objects
         .filter(root_admin=request.user)
         .annotate(
-            role=Value("admin"),
+            role=Value("root_admin"),
             is_owner=Value(True, output_field=BooleanField()),
         )
         .order_by("-created_at")
     )
 
     projects, has_more = cursor_paginate(qs, cursor, limit)
-
     serializer = ProjectListSerializer(projects, many=True)
+
     return Response({
         "results": serializer.data,
         "has_more": has_more,
@@ -54,9 +53,7 @@ def owned_projects(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def joined_projects(request):
-    cursor_param = request.query_params.get("cursor")
-    cursor = parse_datetime(cursor_param) if cursor_param else None
-
+    cursor = parse_datetime(request.query_params.get("cursor")) if request.query_params.get("cursor") else None
     limit = int(request.query_params.get("limit", DEFAULT_LIMIT))
 
     memberships = (
@@ -81,6 +78,7 @@ def joined_projects(request):
         projects.append(p)
 
     serializer = ProjectListSerializer(projects, many=True)
+
     return Response({
         "results": serializer.data,
         "has_more": has_more,
@@ -90,43 +88,47 @@ def joined_projects(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def search_projects(request):
-    q = request.query_params.get("q", "").strip()
+def project_overview(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
 
-    if not q:
-        return Response([])
+    if project.root_admin == request.user:
+        role = "root_admin"
+        is_owner = True
+    else:
+        membership = ProjectMember.objects.filter(
+            project=project,
+            user=request.user
+        ).first()
 
-    qs = (
-        Project.objects
-        .filter(
-            projectmember__user=request.user,
-        )
-        .filter(name__icontains=q)
-        .distinct()
-        .order_by("-created_at")
-    )
+        if not membership:
+            return Response(
+                {"detail": "Access denied"},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
-    serializer = ProjectListSerializer(qs[:25], many=True)
-    return Response(serializer.data)
+        role = membership.role
+        is_owner = False
+
+    return Response({
+        "id": str(project.id),
+        "name": project.name,
+        "public_code": project.public_code,
+        "created_at": project.created_at,
+        "role": role,
+        "is_owner": is_owner,
+    })
+
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def create_project(request):
     name = request.data.get("name", "").strip()
-
     if not name:
-        return Response(
-            {"error": "Project name is required"},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        return Response({"error": "Project name is required"}, status=400)
 
     with transaction.atomic():
-        project = Project(
-            name=name,
-            root_admin=request.user
-        )
+        project = Project(name=name, root_admin=request.user)
 
-        # creator becomes admin member
         raw_access_key = secrets.token_urlsafe(16)
         raw_pin = generate_project_pin()
 
@@ -140,12 +142,57 @@ def create_project(request):
             role="admin"
         )
 
-    return Response(
-        {
+    return Response({
+        "id": str(project.id),
+        "name": project.name,
+        "public_code": project.public_code,
+        "pin": raw_pin,
+    }, status=201)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def search_projects(request):
+    q = request.query_params.get("q", "").strip()
+
+    if not q:
+        return Response({"results": []})
+
+    # Projects where user is owner or member
+    owned_qs = Project.objects.filter(
+        root_admin=request.user
+    )
+
+    joined_qs = Project.objects.filter(
+        projectmember__user=request.user
+    )
+
+    qs = (
+        owned_qs | joined_qs
+    ).filter(
+        Q(name__icontains=q) |
+        Q(public_code__icontains=q)
+    ).distinct().order_by("-created_at")[:10]
+
+    results = []
+    for project in qs:
+        if project.root_admin == request.user:
+            role = "root_admin"
+            is_owner = True
+        else:
+            membership = ProjectMember.objects.filter(
+                project=project,
+                user=request.user
+            ).first()
+            role = membership.role if membership else "user"
+            is_owner = False
+
+        results.append({
             "id": str(project.id),
             "name": project.name,
             "public_code": project.public_code,
-            "pin": raw_pin,
-        },
-        status=status.HTTP_201_CREATED
-    )
+            "role": role,
+            "is_owner": is_owner,
+        })
+
+    return Response({"results": results})
