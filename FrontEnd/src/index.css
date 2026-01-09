@@ -2179,12 +2179,23 @@ header .image-text .header-text {
 }
 
 .project-row::-webkit-scrollbar {
-  height: 6px;
+  height: 10px;
+  cursor: pointer;
 }
 
 .project-row::-webkit-scrollbar-thumb {
-  background: rgba(128, 128, 128, 0.4);
-  border-radius: 4px;
+  background: linear-gradient(180deg, #b5b5b5, #8f8f8f);
+  border-radius: 10px;
+  border: 2px solid #f1f1f1;
+}
+
+.project-row::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.project-row::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #9a9a9a, #6f6f6f);
 }
 
 .project-card {
