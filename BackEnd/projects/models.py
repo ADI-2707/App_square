@@ -57,14 +57,20 @@ class ProjectMember(models.Model):
     ROLE_CHOICES = (
         ("admin", "Admin"),
         ("user", "User"),
+        ("invited", "Invited"),
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
 
+    joined_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
     class Meta:
         unique_together = ("user", "project")
+        indexes = [
+            models.Index(fields=["user", "joined_at"]),
+        ]
 
     def __str__(self):
         return f"{self.user.email} - {self.project.name}"
