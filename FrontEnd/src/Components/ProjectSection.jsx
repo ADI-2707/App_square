@@ -1,6 +1,22 @@
+import { useEffect, useRef } from "react";
 import { Folder } from "lucide-react";
 
-const ProjectSection = ({ title, projects, onOpen }) => {
+export default function ProjectSection({ title, projects, loadMore, hasMore }) {
+  const observerRef = useRef(null);
+
+  useEffect(() => {
+    if (!hasMore) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => entry.isIntersecting && loadMore(),
+      { threshold: 0.6 }
+    );
+
+    if (observerRef.current) observer.observe(observerRef.current);
+
+    return () => observer.disconnect();
+  }, [hasMore]);
+
   if (!projects.length) return null;
 
   return (
@@ -8,25 +24,22 @@ const ProjectSection = ({ title, projects, onOpen }) => {
       <h2 className="project-section-title">{title}</h2>
 
       <div className="project-row">
-        {projects.map((project) => (
-          <div
-            key={project.id}
-            className="project-card card-surface"
-            onClick={() => onOpen(project)}
-          >
+        {projects.map((p) => (
+          <div key={`${title}-${p.id}`} className="project-card card-surface">
             <div className="project-card-icon">
-              <Folder size={32} />
+              <Folder size={28} />
             </div>
-
-            <div className="project-card-title">{project.name}</div>
+            <div className="project-card-title">{p.name}</div>
             <div className="project-card-meta">
-              Role: {project.role.toUpperCase()}
+              Role: {p.role.toUpperCase()}
             </div>
           </div>
         ))}
+
+        {hasMore && (
+          <div ref={observerRef} className="project-card skeleton" />
+        )}
       </div>
     </section>
   );
-};
-
-export default ProjectSection;
+}

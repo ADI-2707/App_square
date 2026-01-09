@@ -7,7 +7,7 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
   const user = JSON.parse(localStorage.getItem("user"));
 
   const [name, setName] = useState("");
-  const [members, setMembers] = useState([{ email: "", role: "admin" }]);
+  const [members, setMembers] = useState([{ email: "", role: "ADMIN" }]);
 
   const [projectId, setProjectId] = useState("");
   const [accessKey, setAccessKey] = useState("");
@@ -26,7 +26,7 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
 
   const addMemberRow = () => {
     if (members.length >= MAX_MEMBERS) return;
-    setMembers((prev) => [...prev, { email: "", role: "user" }]);
+    setMembers((prev) => [...prev, { email: "", role: "USER" }]);
   };
 
   const updateMemberEmail = (index, value) => {
@@ -38,7 +38,7 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
   const toggleAdmin = (index) => {
     setMembers((prev) =>
       prev.map((m, i) =>
-        i === index ? { ...m, role: m.role === "admin" ? "user" : "admin" } : m
+        i === index ? { ...m, role: m.role === "ADMIN" ? "USER" : "ADMIN" } : m
       )
     );
   };
@@ -66,7 +66,7 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
     }
 
     const validMembers = members.filter((m) => m.email.trim() !== "");
-    const adminCount = validMembers.filter((m) => m.role === "admin").length;
+    const adminCount = validMembers.filter((m) => m.role.toUpperCase() === "ADMIN").length;
 
     if (adminCount < 1) {
       setError("At least one member must be marked as Admin");
@@ -80,8 +80,9 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
 
     const payload = {
       name: name.trim(),
-      members: validMembers,
+      project_id: projectId,
       access_key: accessKey,
+      members: validMembers,
     };
 
     try {
@@ -157,7 +158,7 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
                 <label className="admin-toggle">
                   <input
                     type="checkbox"
-                    checked={member.role === "admin"}
+                    checked={member.role === "ADMIN"}
                     onChange={() => toggleAdmin(index)}
                     disabled={submitting}
                   />

@@ -2130,7 +2130,9 @@ header .image-text .header-text {
 .project-section {
   width: 100%;
   max-width: 1100px;
-  margin-top: 2.5rem;
+  margin: 2.5rem auto 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 .project-section-title {
@@ -2145,8 +2147,12 @@ header .image-text .header-text {
   display: flex;
   gap: 1.5rem;
   overflow-x: auto;
-  padding: 0.5rem 0.5rem 1rem;
+  padding: 0.5rem 1rem 1rem;   /* 👈 LEFT PADDING HERE */
+  
   scroll-snap-type: x mandatory;
+  scroll-padding-left: 1rem;  /* 👈 SNAP OFFSET */
+  scroll-padding-right: 1rem;
+
   contain: layout paint;
   border-radius: 22px;
 }
@@ -2479,4 +2485,22 @@ header .image-text .header-text {
 
 [dark-mode="dark"] .password-toggle {
   color: rgba(255, 255, 255, 0.7);
+}
+
+.skeleton {
+  min-width: 260px;
+  height: 160px;
+  border-radius: 18px;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.05),
+    rgba(255,255,255,0.12),
+    rgba(255,255,255,0.05)
+  );
+  animation: shimmer 1.2s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
 }

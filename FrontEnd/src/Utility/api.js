@@ -31,14 +31,14 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem("refreshToken");
+        const refreshToken = localStorage.getItem("refresh");
 
         const res = await axios.post(
           `${API_BASE_URL}/api/auth/token/refresh/`,
-          { refresh: refreshToken }
+          { refresh }
         );
 
-        localStorage.setItem("accessToken", res.data.access);
+        localStorage.setItem("access", res.data.access);
 
         originalRequest.headers.Authorization = `Bearer ${res.data.access}`;
         return api(originalRequest);
