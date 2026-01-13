@@ -33,7 +33,7 @@ class Project(models.Model):
     access_key_hash = models.CharField(max_length=128)
     pin_hash = models.CharField(max_length=128)
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def set_access_key(self, raw_key: str):
         self.access_key_hash = make_password(raw_key)

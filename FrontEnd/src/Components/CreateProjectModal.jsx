@@ -52,11 +52,17 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
 
   const handleCreate = async () => {
     if (submitting) return;
-
     setError("");
 
     if (!name.trim()) {
       setError("Project name is required");
+      return;
+    }
+
+    // NEW CHECK: Prevent adding self as member
+    const hasSelf = members.some(m => m.email.toLowerCase() === user.email.toLowerCase());
+    if (hasSelf) {
+      setError("You are the Root Admin. You cannot add yourself as a member.");
       return;
     }
 
@@ -90,8 +96,7 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
       await onCreate(payload);
       onClose();
     } catch (err) {
-      console.error(err);
-      setError("Project creation failed");
+      setError(err.response?.data?.error || "Project creation failed");
     } finally {
       setSubmitting(false);
     }

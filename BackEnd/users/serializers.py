@@ -19,7 +19,7 @@ password_validator = RegexValidator(
 class RegisterSerializer(serializers.Serializer):
 
     fullname = serializers.CharField(max_length=100)
-    email = serializers.EmailField()
+    email = serializers.EmailField(required=True)
     password = serializers.CharField(
         write_only=True,
         validators=[password_validator]
@@ -27,7 +27,8 @@ class RegisterSerializer(serializers.Serializer):
     confirmPassword = serializers.CharField(write_only=True)
 
     def validate_email(self, value):
-        if User.objects.filter(email=value).exists():
+        # Ensure unique email (case-insensitive)
+        if User.objects.filter(email__iexact=value).exists():
             raise serializers.ValidationError("Email already registered.")
         return value
 
@@ -41,7 +42,7 @@ class RegisterSerializer(serializers.Serializer):
     def create(self, validated_data):
         validated_data.pop("confirmPassword")
 
-        email = validated_data["email"]
+        email = validated_data["email"].lower()
         password = validated_data["password"]
         fullname = validated_data["fullname"]
 
@@ -95,7 +96,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 class ChangePasswordSerializer(serializers.Serializer):
     current_password = serializers.CharField(write_only=True)
-    new_password = serializers.CharField(write_only=True, min_length=8)
+    new_password = serializers.CharField(write_only=True, validators=[password_validator])
 
     def validate_new_password(self, value):
         if len(value) < 8:

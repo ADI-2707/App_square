@@ -6,6 +6,7 @@ from django.db import transaction
 from django.db.models import Q, Value, BooleanField
 from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_datetime
+from django.contrib.auth.models import User
 import secrets
 
 from .models import Project, ProjectMember
@@ -17,7 +18,7 @@ DEFAULT_LIMIT = 10
 def cursor_paginate(queryset, cursor, limit):
     """
     Standard cursor pagination for descending order (-created_at).
-    We want items where created_at is LESS THAN the cursor.
+    Uses microsecond precision to prevent skip/repeat loops.
     """
     if cursor:
         queryset = queryset.filter(created_at__lt=cursor)
@@ -25,18 +26,21 @@ def cursor_paginate(queryset, cursor, limit):
     # Fetch limit + 1 to determine if there's a next page
     items = list(queryset[: limit + 1])
     has_more = len(items) > limit
-    return items[:limit], has_more
+    results = items[:limit]
+    
+    # Generate the cursor string using isoformat for standard parsing
+    next_cursor = results[-1].created_at.isoformat() if results and has_more else None
+    
+    return results, has_more, next_cursor
 
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def owned_projects(request):
-    # Parse the cursor from query params
     cursor_str = request.query_params.get("cursor")
     cursor = parse_datetime(cursor_str) if cursor_str else None
     limit = int(request.query_params.get("limit", DEFAULT_LIMIT))
 
-    # Ensure we order by newest first
     qs = (
         Project.objects
         .filter(root_admin=request.user)
@@ -45,13 +49,13 @@ def owned_projects(request):
             is_owner=Value(True, output_field=BooleanField()),
         )
         .order_by("-created_at")
+        .distinct()
     )
 
-    projects, has_more = cursor_paginate(qs, cursor, limit)
+    # Unpack three values (results, has_more, next_cursor)
+    projects, has_more, next_cursor = cursor_paginate(qs, cursor, limit)
     serializer = ProjectListSerializer(projects, many=True)
-    
-    # The next_cursor is the timestamp of the LAST item in the current page
-    next_cursor = projects[-1].created_at if projects and has_more else None
+
     return Response({
         "results": serializer.data,
         "has_more": has_more,
@@ -76,7 +80,6 @@ def joined_projects(request):
         .order_by("-joined_at")
     )
 
-    # FIX: Use the same logic as owned_projects for consistency
     if cursor:
         memberships_qs = memberships_qs.filter(joined_at__lt=cursor)
 
@@ -92,9 +95,7 @@ def joined_projects(request):
         projects.append(p)
 
     serializer = ProjectListSerializer(projects, many=True)
-
-    # FIX: Use the last item's joined_at for the next cursor
-    next_cursor = current_page_members[-1].joined_at if current_page_members and has_more else None
+    next_cursor = current_page_members[-1].joined_at.isoformat() if current_page_members and has_more else None
 
     return Response({
         "results": serializer.data,
@@ -140,18 +141,39 @@ def project_overview(request, project_id):
 @permission_classes([IsAuthenticated])
 def create_project(request):
     name = request.data.get("name", "").strip()
+    members_list = request.data.get("members", []) 
+
     if not name:
         return Response({"error": "Project name is required"}, status=400)
 
+    # Scoped outside transaction block so it's accessible to Response
+    raw_pin = generate_project_pin()
+    raw_access_key = secrets.token_urlsafe(16)
+
     with transaction.atomic():
         project = Project(name=name, root_admin=request.user)
-
-        raw_access_key = secrets.token_urlsafe(16)
-        raw_pin = generate_project_pin()
-
         project.set_access_key(raw_access_key)
         project.set_pin(raw_pin)
         project.save()
+
+        for m_data in members_list:
+            email = m_data.get("email", "").strip()
+            role = m_data.get("role", "user").lower()
+
+            if email:
+                # ROOT ADMIN PROTECTION: Prevent root admin from being added as a member
+                if email.lower() == request.user.email.lower():
+                    continue 
+
+                # REGISTERED USER CHECK: Only add if user exists
+                target_user = User.objects.filter(email__iexact=email).first()
+                if target_user:
+                    ProjectMember.objects.get_or_create(
+                        project=project,
+                        user=target_user,
+                        defaults={'role': role}
+                    )
+                # Else: Non-registered emails are ignored for security
 
     return Response({
         "id": str(project.id),
@@ -169,14 +191,8 @@ def search_projects(request):
     if not q:
         return Response({"results": []})
 
-    # Projects where user is owner or member
-    owned_qs = Project.objects.filter(
-        root_admin=request.user
-    )
-
-    joined_qs = Project.objects.filter(
-        projectmember__user=request.user
-    )
+    owned_qs = Project.objects.filter(root_admin=request.user)
+    joined_qs = Project.objects.filter(projectmember__user=request.user)
 
     qs = (
         owned_qs | joined_qs
