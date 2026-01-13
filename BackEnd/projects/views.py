@@ -146,6 +146,13 @@ def create_project(request):
     if not name:
         return Response({"error": "Project name is required"}, status=400)
 
+    # NEW CHECK: Validation for unique project name
+    if Project.objects.filter(name__iexact=name).exists():
+        return Response(
+            {"error": "A project with this name already exists. Please choose a different name."}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
     # Scoped outside transaction block so it's accessible to Response
     raw_pin = generate_project_pin()
     raw_access_key = secrets.token_urlsafe(16)
