@@ -12,7 +12,6 @@ export default function ProjectSection({
 
   const handleIntersect = useCallback(
     ([entry]) => {
-      // Only trigger if intersecting AND we actually have a next page
       if (entry.isIntersecting && hasMore && projects.length > 0) {
         loadMore?.();
       }
@@ -21,11 +20,10 @@ export default function ProjectSection({
   );
 
   useEffect(() => {
-    // If no more items or no sentinel, don't observe
     if (!hasMore || !observerRef.current) return;
 
     const observer = new IntersectionObserver(handleIntersect, {
-      threshold: 0.1, // Trigger earlier so the user doesn't see a "pop"
+      threshold: 0.1,
       root: null, 
     });
 
@@ -51,9 +49,15 @@ export default function ProjectSection({
           </div>
         ))}
 
-        {/* The sentinel div only exists if there is more to load */}
+        {/* This skeleton serves as the "Sentinel" for infinite scroll */}
         {hasMore && (
-          <div ref={observerRef} className="project-card skeleton" style={{ minWidth: '10px' }} />
+          <div ref={observerRef} className="project-card skeleton-card">
+             <div className="card-surface skeleton-surface">
+                <div className="skeleton-icon pulse"></div>
+                <div className="skeleton-title pulse"></div>
+                <div className="skeleton-meta pulse"></div>
+             </div>
+          </div>
         )}
       </div>
     </section>

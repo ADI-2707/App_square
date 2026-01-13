@@ -2519,24 +2519,6 @@ header .image-text .header-text {
   color: rgba(255, 255, 255, 0.7);
 }
 
-.skeleton {
-  min-width: 260px;
-  height: 160px;
-  border-radius: 18px;
-  background: linear-gradient(
-    90deg,
-    rgba(255,255,255,0.05),
-    rgba(255,255,255,0.12),
-    rgba(255,255,255,0.05)
-  );
-  animation: shimmer 1.2s infinite;
-}
-
-@keyframes shimmer {
-  0% { background-position: -200px 0; }
-  100% { background-position: 200px 0; }
-}
-
 /* =========================
    PROJECT HERO
    ========================= */
@@ -2609,58 +2591,104 @@ header .image-text .header-text {
 }
 
 /* =========================
-   GLOBAL LOADER
+   YOUTUBE STYLE TOP LOADER
    ========================= */
 
-.loader-overlay {
+:root {
+  /* High visibility color for Light Mode (Blue or Amber) */
+  --loader-color: #7488a8; 
+}
+
+[dark-mode="dark"] {
+  /* High visibility color for Dark Mode (Cyan or Gold) */
+  --loader-color: #7488a8; 
+}
+
+.yt-loader-container {
   position: fixed;
-  inset: 0;
-  z-index: 10000; /* Above sidebar and navbar */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(8px);
-  background: rgba(0, 0, 0, 0.2);
-  animation: fadeIn 0.3s ease-out;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px; 
+  z-index: 100001; /* Ensure it stays above EVERYTHING including modals */
+  pointer-events: none;
 }
 
-[dark-mode="dark"] .loader-overlay {
-  background: rgba(0, 0, 0, 0.4);
+.yt-loader-bar {
+  height: 100%;
+  background: var(--loader-color);
+  /* The glow makes it pop against different backgrounds */
+  box-shadow: 0 0 15px var(--loader-color), 0 0 5px var(--loader-color);
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: 0 2px 2px 0;
 }
 
-.loader-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
+.yt-loader-glow {
+  position: absolute;
+  top: 0;
+  width: 100px;
+  height: 100%;
+  background: transparent;
+  /* Adds that "shooting star" trailing effect */
+  box-shadow: 10px 0 15px 2px var(--loader-color);
+  opacity: 0.6;
+  transform: rotate(3deg) translate(0px, -4px);
 }
 
-.loader-spinner {
-  width: 48px;
-  height: 48px;
-  border: 3px solid var(--accent-color);
-  border-bottom-color: transparent;
-  border-radius: 50%;
-  display: inline-block;
-  box-sizing: border-box;
-  animation: rotation 1s linear infinite;
-  filter: drop-shadow(0 0 8px var(--accent-color));
+/* =========================
+   SKELETON ANIMATIONS
+   ========================= */
+.skeleton-card {
+  min-width: 260px;
+  pointer-events: none;
 }
 
-.loader-text {
-  font-size: var(--text-base);
-  font-weight: 500;
-  color: var(--text-color);
-  letter-spacing: 0.05em;
-  opacity: 0.8;
+.skeleton-surface {
+  background: rgba(128, 128, 128, 0.05) !important;
+  border: 1px solid rgba(128, 128, 128, 0.1) !important;
+  box-shadow: none !important;
+  padding: 1.5rem;
 }
 
-@keyframes rotation {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+[dark-mode="dark"] .skeleton-surface {
+  background: rgba(255, 255, 255, 0.03) !important;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.skeleton-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: rgba(128, 128, 128, 0.15);
+  margin-bottom: 1rem;
+}
+
+.skeleton-title {
+  height: 1.2rem;
+  width: 70%;
+  background: rgba(128, 128, 128, 0.15);
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+}
+
+.skeleton-meta {
+  height: 0.8rem;
+  width: 40%;
+  background: rgba(128, 128, 128, 0.1);
+  border-radius: 4px;
+}
+
+.pulse {
+  background: linear-gradient(
+    90deg,
+    rgba(128, 128, 128, 0.1) 25%,
+    rgba(128, 128, 128, 0.2) 50%,
+    rgba(128, 128, 128, 0.1) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-swipe 1.5s infinite linear;
+}
+
+@keyframes shimmer-swipe {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
