@@ -10,10 +10,14 @@ __pycache__/
 *.log
 *.pyc
 
+# ========================
 # Django database
+# ========================
 db.sqlite3
 
+# ========================
 # Django env files
+# ========================
 .env
 .env.*
 
@@ -32,4 +36,7 @@ Thumbs.db
 htmlcov/
 .pytest_cache/
 
+# ========================
+# Folders
+# ========================
 Testing/

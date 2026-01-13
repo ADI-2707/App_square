@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { X, Trash2, Copy } from "lucide-react";
+import { X, Trash2, Copy, Check } from "lucide-react";
 
 const MAX_MEMBERS = 3;
 
@@ -10,6 +10,7 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
   const [members, setMembers] = useState([{ email: "", role: "ADMIN" }]);
 
   const [projectId, setProjectId] = useState("");
+  const [copied, setCopied] = useState(false);
   const [accessKey, setAccessKey] = useState("");
 
   const [error, setError] = useState("");
@@ -21,6 +22,13 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
     const id = "APSQ-" + crypto.randomUUID().slice(0, 8).toUpperCase();
     setProjectId(id);
   }, []);
+
+  const handleCopyId = () => {
+    navigator.clipboard.writeText(projectId);
+    setCopied(true);
+    // Reset back to copy icon after 2 seconds
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   /* -------------------- MEMBER HANDLERS -------------------- */
 
@@ -60,7 +68,9 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
     }
 
     // NEW CHECK: Prevent adding self as member
-    const hasSelf = members.some(m => m.email.toLowerCase() === user.email.toLowerCase());
+    const hasSelf = members.some(
+      (m) => m.email.toLowerCase() === user.email.toLowerCase()
+    );
     if (hasSelf) {
       setError("You are the Root Admin. You cannot add yourself as a member.");
       return;
@@ -72,7 +82,9 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
     }
 
     const validMembers = members.filter((m) => m.email.trim() !== "");
-    const adminCount = validMembers.filter((m) => m.role.toUpperCase() === "ADMIN").length;
+    const adminCount = validMembers.filter(
+      (m) => m.role.toUpperCase() === "ADMIN"
+    ).length;
 
     if (adminCount < 1) {
       setError("At least one member must be marked as Admin");
@@ -129,10 +141,15 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
         <div className="copy-field">
           <input value={projectId} disabled />
           <button
-            onClick={() => navigator.clipboard.writeText(projectId)}
+            onClick={handleCopyId}
             title="Copy Project ID"
+            className={copied ? "copied" : ""}
           >
-            <Copy size={16} />
+            {copied ? (
+              <Check size={16} className="text-green-500" />
+            ) : (
+              <Copy size={16} />
+            )}
           </button>
         </div>
 
