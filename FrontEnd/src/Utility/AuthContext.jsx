@@ -10,7 +10,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(getUser());
   const [globalLoading, setGlobalLoading] = useState(false);
 
-  // Link the API interceptor to this state
   useEffect(() => {
     injectLoader(setGlobalLoading);
   }, []);
@@ -30,7 +29,6 @@ export const AuthProvider = ({ children }) => {
       value={{ authenticated, user, login, logout, globalLoading, setGlobalLoading }}
     >
       {children}
-      {/* The loader is now global and controlled by network activity */}
       <Loader isLoading={globalLoading} />
     </AuthContext.Provider>
   );

@@ -12,8 +12,6 @@ import { IoLogOut, IoSearch } from "react-icons/io5";
 import { logout } from "../Utility/auth";
 import { useAuth } from "../Utility/AuthContext";
 
-/* ===================== DATA ===================== */
-
 const SIDEBAR_ITEMS = [
   {
     id: "dashboard",
@@ -101,8 +99,6 @@ const SIDEBAR_ITEMS = [
   },
 ];
 
-/* ===================== COMPONENT ===================== */
-
 const Sidebar = ({ isClosed, setIsClosed }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
@@ -123,14 +119,10 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
     navigate("/login");
   };
 
-  /* ===================== EFFECTS ===================== */
-
-  /* Entrance animation */
   useEffect(() => {
     requestAnimationFrame(() => setMounted(true));
   }, []);
 
-  /* Close context menu on outside click */
   useEffect(() => {
     const close = () => setContextMenu((prev) => ({ ...prev, visible: false }));
 
@@ -138,9 +130,6 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
     return () => window.removeEventListener("click", close);
   }, []);
 
-  /* ===================== HANDLERS ===================== */
-
-  /* 🚫 Prevent expanding sidebar on mobile */
   const toggleSidebar = () => {
     if (window.innerWidth <= 768) return;
     setIsClosed((prev) => !prev);
@@ -195,12 +184,9 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
 
   const isDesktop = window.innerWidth > 768;
 
-  /* ===================== RENDER ===================== */
-
   return (
     <>
       <nav className={`sidebar sidebar-enter ${isClosed ? "close" : ""}`}>
-        {/* ===== HEADER ===== */}
         <header>
           <div className="image-text">
             <span className="image">
@@ -223,7 +209,6 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
           )}
         </header>
 
-        {/* ===== MENU ===== */}
         <div className="menu-bar">
           <div className="menu">
             <li className="search-box">
@@ -252,7 +237,6 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
             </ul>
           </div>
 
-          {/* ===== FOOTER ===== */}
           <div className="bottom-content">
             <li className="side-link">
               <div
@@ -285,7 +269,6 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
         </div>
       </nav>
 
-      {/* ===== CONTEXT MENU ===== */}
       {contextMenu.visible && contextMenu.item && (
         <div
           className="context-menu"

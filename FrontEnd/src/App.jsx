@@ -3,9 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Mode from "./Utility/Mode";
 import PrivateRoute from "./Utility/PrivateRoute";
-import { isAuthenticated } from "./Utility/auth";
-import { useAuth } from "./Utility/AuthContext";
 import PublicRoute from "./Utility/PublicRoute";
+import { useAuth } from "./Utility/AuthContext";
 
 import Navbar from "./Components/Navbar";
 import Sidebar from "./Components/Sidebar";
@@ -18,44 +17,40 @@ import Dashboard from "./Pages/Dashboard";
 import About from "./Pages/About";
 import Contact from "./Pages/Contact";
 import ForgetPassword from "./Pages/ForgetPassword";
-import Account from "./Pages/Account.jsx";
+import Account from "./Pages/Account";
 import ProjectLanding from "./Pages/ProjectLanding";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const App = () => {
-  const [isSidebarClosed, setIsSidebarClosed] = useState(true);
-
-  const loggedIn = isAuthenticated();
   const { authenticated } = useAuth();
+  const [isSidebarClosed, setIsSidebarClosed] = useState(true);
+  const hasSidebar = authenticated;
+
+  const contentClass = hasSidebar
+    ? isSidebarClosed
+      ? "sidebar-closed"
+      : "sidebar-open"
+    : "no-sidebar";
 
   return (
     <>
       <Router>
         <Mode />
 
-        {/* Sidebar ONLY when logged in */}
-        {authenticated && (
+        {hasSidebar && (
           <Sidebar
             isClosed={isSidebarClosed}
             setIsClosed={setIsSidebarClosed}
           />
         )}
 
-        <Navbar isSidebarClosed={isSidebarClosed} />
+        <Navbar hasSidebar={hasSidebar} />
 
-        <main
-          className={`app-content ${
-            loggedIn
-              ? isSidebarClosed
-                ? "sidebar-closed"
-                : "sidebar-open"
-              : "no-sidebar"
-          }`}
-        >
+        <main className={`app-content ${contentClass}`}>
           <Routes>
-            {/* Public */}
+
             <Route
               path="/"
               element={
@@ -84,7 +79,6 @@ const App = () => {
             <Route path="/contact" element={<Contact />} />
             <Route path="/forget-password" element={<ForgetPassword />} />
 
-            {/* Auth landing */}
             <Route
               path="/home"
               element={
@@ -93,8 +87,6 @@ const App = () => {
                 </PrivateRoute>
               }
             />
-
-            {/* Project dashboard */}
             <Route
               path="/dashboard"
               element={
@@ -103,8 +95,6 @@ const App = () => {
                 </PrivateRoute>
               }
             />
-
-            {/* Account page */}
             <Route
               path="/account"
               element={
@@ -113,14 +103,14 @@ const App = () => {
                 </PrivateRoute>
               }
             />
-
-            {/* Project Landing Page */}
             <Route
               path="/projects/:projectId"
               element={
                 <PrivateRoute>
                   <ProjectLanding />
-                </PrivateRoute>} />
+                </PrivateRoute>
+              }
+            />
           </Routes>
         </main>
       </Router>

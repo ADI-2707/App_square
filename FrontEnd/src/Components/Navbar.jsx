@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
-import { Navigate, NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { isAuthenticated, getUser } from "../Utility/auth";
 
-const Navbar = ({ isSidebarClosed }) => {
+const Navbar = ({ hasSidebar }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [hasProjects, setHasProjects] = useState(false);
@@ -14,21 +14,20 @@ const Navbar = ({ isSidebarClosed }) => {
   const userInitial = user?.email?.charAt(0)?.toUpperCase();
 
   useEffect(() => {
-    const projects = JSON.parse(localStorage.getItem("projects")) || [];
-    setHasProjects(projects.length > 0);
-
-    const sync = () => {
-      const updated = JSON.parse(localStorage.getItem("projects")) || [];
-      setHasProjects(updated.length > 0);
+    const loadProjects = () => {
+      const projects = JSON.parse(localStorage.getItem("projects")) || [];
+      setHasProjects(projects.length > 0);
     };
 
-    window.addEventListener("projects-updated", sync);
-    return () => window.removeEventListener("projects-updated", sync);
+    loadProjects();
+    window.addEventListener("projects-updated", loadProjects);
+    return () =>
+      window.removeEventListener("projects-updated", loadProjects);
   }, []);
 
   useEffect(() => {
-    const hasAnimated = sessionStorage.getItem("navbar-animated");
-    if (!hasAnimated) {
+    const animated = sessionStorage.getItem("navbar-animated");
+    if (!animated) {
       requestAnimationFrame(() => {
         setMounted(true);
         sessionStorage.setItem("navbar-animated", "true");
@@ -45,13 +44,7 @@ const Navbar = ({ isSidebarClosed }) => {
 
   return (
     <nav
-      className={`navbar ${mounted ? "navbar-enter" : ""} ${
-        loggedIn
-          ? isSidebarClosed
-            ? "sidebar-closed"
-            : "sidebar-open"
-          : ""
-      }`}
+      className={`navbar ${mounted ? "navbar-enter" : ""}`}
     >
       <div className="navbar-inner">
         <div className="nav-logo">
@@ -64,7 +57,9 @@ const Navbar = ({ isSidebarClosed }) => {
 
         <ul className={`nav-links ${isOpen ? "active" : ""}`}>
           <li><NavLink to="/" className="nav-link">Home</NavLink></li>
-          {loggedIn && <li><NavLink to="/dashboard" className="nav-link">Dashboard</NavLink></li>}
+          {loggedIn && (
+            <li><NavLink to="/dashboard" className="nav-link">Dashboard</NavLink></li>
+          )}
           <li><NavLink to="/about" className="nav-link">About</NavLink></li>
           <li><NavLink to="/contact" className="nav-link">Contact</NavLink></li>
 
@@ -79,12 +74,14 @@ const Navbar = ({ isSidebarClosed }) => {
                 <button className="button" onClick={openCreateProject}>
                   {hasProjects ? "Add Project" : "Create Project"}
                 </button>
-                <button className="user-avatar">{userInitial}</button>
+                <button className="user-avatar" onClick={() => navigate("/account")}>
+                  {userInitial}
+                </button>
               </>
             )}
           </div>
         </ul>
- 
+
         <div className="nav-auth-desktop">
           {!loggedIn ? (
             <>
@@ -96,10 +93,12 @@ const Navbar = ({ isSidebarClosed }) => {
               <button className="button" onClick={openCreateProject}>
                 {hasProjects ? "Add Project" : "Create Project"}
               </button>
-              <button className="user-avatar" onClick={() => navigate('/account')}>{userInitial}</button>
+              <button className="user-avatar" onClick={() => navigate("/account")}>
+                {userInitial}
+              </button>
             </>
           )}
-        </div>  
+        </div>
       </div>
     </nav>
   );

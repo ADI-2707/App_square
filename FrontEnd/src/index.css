@@ -9,24 +9,15 @@
   --tooltip-text: #ffffff;
 }
 
-/* =========================
-   TYPOGRAPHY SYSTEM
-   ========================= */
-
 :root {
-  /* Base */
   font-size: 16px;
-
-  /* Text scale */
-  --text-xs: 0.75rem;   /* 12px */
-  --text-sm: 0.8125rem;/* 13px */
-  --text-base: 0.875rem; /* 14px */
-  --text-md: 1rem;     /* 16px */
-  --text-lg: 1.125rem; /* 18px */
-  --text-xl: 1.5rem;   /* 24px */
-  --text-2xl: 2rem;    /* 32px */
-
-  /* Line heights */
+  --text-xs: 0.75rem;   
+  --text-sm: 0.8125rem;
+  --text-base: 0.875rem; 
+  --text-md: 1rem;     
+  --text-lg: 1.125rem; 
+  --text-xl: 1.5rem;   
+  --text-2xl: 2rem;    
   --lh-tight: 1.25;
   --lh-normal: 1.45;
   --lh-relaxed: 1.6;
@@ -36,10 +27,6 @@
   position: relative;
   z-index: 1;
 }
-
-/* =========================
-   PAGE CONTAINER (NEW)
-   ========================= */
 
 .page-container {
   width: 100%;
@@ -57,7 +44,6 @@
   flex-direction: column;
 }
 
-/* Dark Mode override */
 [dark-mode="dark"] {
   --bg-color: #111;
   --text-color: #fff;
@@ -101,23 +87,18 @@ body::before {
   z-index: -1;
 }
 
-main {
-  padding-top: 3rem;
-}
-
-/* Container to hold the toggle in the corner */
 .mode-toggle-container {
-  position: fixed; /* Fixes it to the viewport */
-  bottom: 25px; /* Distance from bottom */
-  left: 100px; /* Distance from left */
-  z-index: 9999; /* Ensures it stays above all other content */
+  position: fixed;
+  bottom: 25px;
+  left: 100px;
+  z-index: 9999;
   display: flex;
   align-items: center;
-  gap: 5px; /* Space between toggle and text if needed */
-  background: var(--bg-color); /* Matches theme */
+  gap: 5px;
+  background: var(--bg-color);
   padding: 8px;
   border-radius: 50px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); /* Adds depth */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   transition: all 0.3s ease;
 }
 
@@ -129,7 +110,6 @@ main {
   left: 260px;
 }
 
-/* --- Toggle Switch Styling --- */
 .switch {
   position: relative;
   display: inline-block;
@@ -137,7 +117,6 @@ main {
   height: 24px;
 }
 
-/* --- The slider track --- */
 .slider {
   position: absolute;
   cursor: pointer;
@@ -150,7 +129,6 @@ main {
   border-radius: 34px;
 }
 
-/* --- The sliding circle --- */
 .slider:before {
   position: absolute;
   content: "";
@@ -169,17 +147,14 @@ main {
   height: 0;
 }
 
-/* Move the circle when checked */
 input:checked + .slider:before {
-  transform: translateX(16px); /* This makes the circle slide */
+  transform: translateX(16px);
 }
 
-/* Optional: change the slider background color when checked */
 input:checked + .slider {
   background-color: var(--accent-color);
 }
 
-/* --- NAVBAR --- */
 .navbar {
   position: fixed;
   z-index: 100;
@@ -187,9 +162,11 @@ input:checked + .slider {
   display: flex;
   justify-content: center;
   background: transparent;
+  left: 0;
+  right: 0;
   top: 15px;
   pointer-events: none;
-  opacity: 0; /* Start invisible */
+  opacity: 0;
   transform: translateY(-24px);
   transition: left 0.45s cubic-bezier(0.22, 1, 0.36, 1), 
               width 0.45s cubic-bezier(0.22, 1, 0.36, 1),
@@ -197,14 +174,17 @@ input:checked + .slider {
               transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.navbar.navbar-enter {
+.navbar.with-sidebar.sidebar-closed {
+  left: 88px;
+}
+
+.navbar-enter {
   opacity: 1;
   transform: translateY(0);
   transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: auto;
 }
 
-/* THE ACTUAL NAVBAR */
 .navbar-inner {
   width: 100%;
   max-width: 1100px;
@@ -230,19 +210,6 @@ input:checked + .slider {
   pointer-events: none;
 }
 
-/* Navbar width when sidebar is open (250px) */
-.navbar.sidebar-open {
-  left: 250px;
-  width: calc(100% - 250px);
-}
-
-/* Navbar width when sidebar is closed (88px) */
-.navbar.sidebar-closed {
-  left: 88px;
-  width: calc(100% - 88px);
-}
-
-/* --- LIGHT MODE glass --- */
 .navbar.navbar-enter .navbar-inner {
   background: rgba(255, 255, 255, 0.85);
   border: 1px solid rgba(0, 0, 0, 0.08);
@@ -278,7 +245,6 @@ input:checked + .slider {
   padding: 0.25rem 0;
 }
 
-/* underline */
 .nav-link::after {
   content: "";
   position: absolute;
@@ -292,13 +258,11 @@ input:checked + .slider {
   transition: transform 0.25s ease;
 }
 
-/* hover animation */
 .nav-link:hover::after {
   transform: scaleX(1);
   transform-origin: left;
 }
 
-/* active route */
 .nav-link.active::after {
   transform: scaleX(1);
 }
@@ -311,7 +275,7 @@ input:checked + .slider {
 }
 
 .menu-icon {
-  display: none; /* Hidden on desktop */
+  display: none;
   cursor: pointer;
   color: var(--text-color);
 }
@@ -320,17 +284,16 @@ input:checked + .slider {
   display: none;
 }
 
-/* --- Responsive Breakpoint (Mobile) --- */
 @media (max-width: 768px) {
   .menu-icon {
     display: block;
-    padding-right: 62px; /* Show hamburger on mobile */
+    padding-right: 62px;
   }
 
   .nav-links {
     position: absolute;
     top: 4rem;
-    left: -100%; /* Hide off-screen */
+    left: -100%;
     flex-direction: column;
     background-color: var(--bg-color);
     width: 100%;
@@ -341,7 +304,7 @@ input:checked + .slider {
   }
 
   .nav-links.active {
-    left: 0; /* Slide in */
+    left: 0;
   }
 
   .nav-auth-mobile {
@@ -359,7 +322,6 @@ input:checked + .slider {
   gap: 1rem;
 }
 
-/* Enhancing the button appearance */
 .button {
   color: var(--text-color);
   padding: 0.5rem 1.2rem;
@@ -387,7 +349,7 @@ input:checked + .slider {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: calc(100vh - 4rem); /* Adjusting for navbar height */
+  min-height: calc(100vh - 4rem);
   padding: 20px;
   margin-top: -80px;
 }
@@ -399,11 +361,9 @@ input:checked + .slider {
   border-radius: 18px;
   text-align: center;
   position: relative;
-  /* SURFACE */
   background: rgba(255, 255, 255, 0.95);
   border: 1px solid rgba(0, 0, 0, 0.08);
 
-  /* ELEVATION */
   box-shadow:
     0 10px 24px rgba(0, 0, 0, 0.14),
     0 2px 6px rgba(0, 0, 0, 0.08);
@@ -446,7 +406,6 @@ input:checked + .slider {
   border-color: #ff4d4d;
 }
 
-/* Make shadow stronger in dark mode for visibility */
 [dark-mode="dark"] .login-card {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -533,13 +492,11 @@ input:checked + .slider {
   justify-content: center;
 }
 
-/* Ensure inputs are clearly visible in both modes */
 .input-group input::placeholder {
   color: var(--text-color);
   opacity: 0.4;
 }
 
-/* Add a subtle hover effect to the redirect link */
 .link-text:hover {
   text-decoration: underline;
   opacity: 0.8;
@@ -551,7 +508,7 @@ input:checked + .slider {
   justify-content: center;
   gap: 8px;
   background-color: rgba(255, 0, 0, 0.1);
-  color: #ff4d4d; /* Bright red for visibility */
+  color: #ff4d4d;
   padding: 10px;
   border-radius: 6px;
   margin-bottom: 15px;
@@ -567,12 +524,10 @@ input:checked + .slider {
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08);
 }
 
-/* Optional: Turn border red if passwords don't match (Advanced) */
 .input-error {
   border-color: #ff4d4d !important;
 }
 
-/* ===== Sidebar ===== */
 .sidebar,
 .sidebar * {
   transform-style: flat;
@@ -644,14 +599,12 @@ input:checked + .slider {
   transition: all 0.2s ease;
 }
 
-/* Show tooltip on hover */
 .sidebar.close .link:hover::after,
 .sidebar.close .link:hover::before {
   opacity: 1;
   transform: translateY(-50%) translateX(0);
 }
 
-/* ===== Reusable CSS ===== */
 .sidebar .text {
   font-size: 16px;
   font-weight: 500;
@@ -743,11 +696,11 @@ header .image-text .header-text {
 }
 
 .toggle.collapsed {
-  transform: translateY(-50%) rotate(0deg); /* > */
+  transform: translateY(-50%) rotate(0deg);
 }
 
 .toggle.expanded {
-  transform: translateY(-50%) rotate(180deg); /* < */
+  transform: translateY(-50%) rotate(180deg);
 }
 
 .toggle:hover {
@@ -866,14 +819,15 @@ header .image-text .header-text {
   .navbar-inner {
     width: calc(100vw - 24px);
     max-width: 100%;
-    padding: 0 1rem 0 88px; /* sidebar width */
+    padding: 0 1rem 0 88px;
     border-radius: 16px;
   }
 }
 
 @media (max-width: 768px) {
-  body {
-    padding: var(--sidebar-mobile-width);
+  .app-content {
+    margin-left: 72px;
+    width: calc(100% - 72px);
   }
 
   .sidebar {
@@ -909,19 +863,16 @@ header .image-text .header-text {
 }
 
 .app-content {
-  overflow-x: hidden;
-  position: relative;
-  z-index: 0;
+  min-height: 100vh;
   padding: 10px;
   transition: margin-left 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* NOT LOGGED IN */
 .app-content.no-sidebar {
   margin-left: 0;
+  width: 100%;
 }
 
-/* LOGGED IN */
 .app-content.sidebar-open {
   margin-left: 250px;
   width: calc(100% - 250px);
@@ -932,21 +883,8 @@ header .image-text .header-text {
   width: calc(100% - 88px);
 }
 
-.sidebar.close ~ .app-content {
-  margin-left: 88px;
-}
-
-/* Use the same class logic you applied to the navbar */
-.app-content.sidebar-open {
-  margin-left: 250px;
-}
-
-.app-content.sidebar-closed {
-  margin-left: 88px;
-}
-
 .bottom-content {
-  margin-bottom: 50px; /* space for mode toggle */
+  margin-bottom: 50px;
 }
 
 .grid-containers {
@@ -973,12 +911,11 @@ header .image-text .header-text {
   }
 
   .item {
-    font-size: 1.2rem; /* Shrink text slightly for mobile */
+    font-size: 1.2rem;
     padding: 1em;
   }
 }
 
-/* Targeting the specific item assigned to 'item-1' */
 [style*="grid-area: item-1"] {
   animation: slideInLeft 0.6s ease-out forwards;
 }
@@ -994,7 +931,6 @@ header .image-text .header-text {
   }
 }
 
-/* Targeting the specific item assigned to 'item-2' */
 [style*="grid-area: item-2"] {
   animation: slideDownUp 0.6s ease-out forwards;
 }
@@ -1010,7 +946,6 @@ header .image-text .header-text {
   }
 }
 
-/* Targeting the specific item assigned to 'item-3' */
 [style*="grid-area: item-3"] {
   animation: slideInRight 0.6s ease-out forwards;
 }
@@ -1026,7 +961,6 @@ header .image-text .header-text {
   }
 }
 
-/* Targeting the specific item assigned to 'item-4  ' */
 [style*="grid-area: item-4"] {
   animation: scaleIn 0.6s ease-out forwards;
 }
@@ -1042,7 +976,6 @@ header .image-text .header-text {
   }
 }
 
-/* Targeting the specific item assigned to 'item-5' */
 [style*="grid-area: item-5"] {
   animation: slideUpDown 0.6s ease-out forwards;
 }
@@ -1061,16 +994,15 @@ header .image-text .header-text {
 .hero-header {
   animation: fadeInDown 0.6s ease-out forwards;
   opacity: 0;
-  font-size: var(--text-2xl); /* 32px */
+  font-size: var(--text-2xl);
   font-weight: 700;
   line-height: var(--lh-tight);
   text-align: center;
 }
 
-/* Desktop enhancement */
 @media (min-width: 768px) {
   .hero-header {
-    font-size: 3rem; /* 48px */
+    font-size: 3rem;
   }
 }
 
@@ -1090,7 +1022,7 @@ header .image-text .header-text {
   opacity: 0;
   animation-delay: 0.1s;
   color: var(--accent-color);
-  font-size: var(--text-md); /* 16px */
+  font-size: var(--text-md);
   line-height: var(--lh-relaxed);
   max-width: 680px;
   margin-left: auto;
@@ -1098,10 +1030,9 @@ header .image-text .header-text {
   text-align: center;
 }
 
-/* Desktop refinement */
 @media (min-width: 768px) {
   .hero-subheader {
-    font-size: var(--text-base); /* 14–15px looks intentional here */
+    font-size: var(--text-base);
   }
 }
 
@@ -1119,20 +1050,18 @@ header .image-text .header-text {
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Light mode cards */
 :root:not([dark-mode="dark"]) .item {
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(0, 0, 0, 0.08);
   backdrop-filter: none;
 }
 
-/* Video Reveal Styling */
 .video-reveal-container {
   margin-top: 1.5rem;
   opacity: 0.5;
   transform: translateY(10px) scale(0.95);
   transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-  filter: blur(4px); /* Starts slightly soft */
+  filter: blur(4px);
   pointer-events: none;
 }
 
@@ -1143,17 +1072,16 @@ header .image-text .header-text {
 }
 
 .video-element {
-  width: 11rem; /* w-48 */
-  height: 7rem; /* h-32 */
-  border-radius: 9999px; /* rounded-full */
+  width: 11rem;
+  height: 7rem;
+  border-radius: 9999px;
   object-fit: cover;
-  border: 1px solid rgba(168, 85, 247, 0.04); /* Invisible purple border */
+  border: 1px solid rgba(168, 85, 247, 0.04);
   box-shadow: 0 0 0 rgba(0, 0, 0, 0);
   transition: all 0.8s ease;
   margin-top: 2px;
 }
 
-/* Light Mode Enhancement */
 :root:not([dark-mode="dark"])
 .video-reveal-container.active .video-element {
   box-shadow:
@@ -1165,7 +1093,6 @@ header .image-text .header-text {
   text-shadow: none;
 }
 
-/* 2. Minimal Text Glows */
 .item.activated .item-head {
   opacity: 1;
   color: var(--text-color);
@@ -1173,38 +1100,37 @@ header .image-text .header-text {
 }
 
 .item-p1.activated {
-  color: #fbbf24 !important; /* Tailwind yellow-400 */
+  color: #fbbf24 !important;
   text-shadow: 0 0 12px rgba(251, 191, 36, 0.35);
   transition: all 0.6s ease;
 }
 
 .item-p2.activated {
-  color: #a855f7 !important; /* Tailwind's purple-500 */
+  color: #a855f7 !important;
   text-shadow: 0 0 12px rgba(168, 85, 247, 0.35);
   transition: all 0.6s ease;
 }
 
 .item-p3.activated {
-  color: #ef4444 !important; /* Tailwind's red-500 */
+  color: #ef4444 !important;
   text-shadow: 0 0 12px rgba(239, 68, 68, 0.35);
   transition: all 0.6s ease;
 }
 
 .item-p4.activated {
-  color: #22C55E !important; /* Tailwind's green-500 */
+  color: #22C55E !important;
   text-shadow: 0 0 12px rgba(34, 197, 94, 0.35);
   transition: all 0.6s ease;
 }
 
 .item-p5.activated {
-  color: #3B82F6 !important; /* Tailwind's blue-500 */
+  color: #3B82F6 !important;
   text-shadow: 0 0 12px rgba(59, 130, 246, 0.35);
   transition: all 0.6s ease;
 }
 
-/* ===== Light mode text activation ===== */
 :root:not([dark-mode="dark"]) .item-p1.activated {
-  color: #f59e0b !important; /* slightly darker yellow */
+  color: #f59e0b !important;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
 }
 
@@ -1242,7 +1168,7 @@ header .image-text .header-text {
 
 .password-wrapper input {
   width: 100%;
-  padding-right: 42px; /* space for eye icon */
+  padding-right: 42px;
 }
 
 .password-toggle {
@@ -1259,7 +1185,6 @@ header .image-text .header-text {
   opacity: 0.8;
 }
 
-/* ===== Password checklist ===== */
 .password-checklist {
   margin-top: 10px;
   font-size: 13px;
@@ -1274,14 +1199,13 @@ header .image-text .header-text {
 }
 
 .password-rule.valid {
-  color: #22c55e; /* green */
+  color: #22c55e;
 }
 
 .password-rule.invalid {
-  color: #ef4444; /* red */
+  color: #ef4444;
 }
 
-/* ===== Strength bar ===== */
 .password-strength {
   margin-top: 10px;
 }
@@ -1325,10 +1249,6 @@ header .image-text .header-text {
   cursor: pointer;
 }
 
-/* ===============================
-   HOME PRIVATE – EMPTY STATE
-   =============================== */
-
 .home-private-container {
   min-height: calc(100vh - 6rem);
   display: flex;
@@ -1354,17 +1274,15 @@ header .image-text .header-text {
   font-size: 0.95rem;
 }
 
-/* Empty project card wrapper */
 .empty-project-wrapper {
   width: 100%;
   display: flex;
   justify-content: center;
-  flex-direction: column;     /* 🔑 KEY FIX */
+  flex-direction: column;
   align-items: center;
   gap: 24px;
 }
 
-/* Card itself */
 .empty-project-card {
   width: 80vw;
   height: 80vh;
@@ -1381,13 +1299,11 @@ header .image-text .header-text {
   position: relative;
 }
 
-/* Icon */
 .empty-project-icon {
   color: var(--accent-color);
   margin-bottom: 1rem;
 }
 
-/* Text */
 .empty-project-text {
   font-size: var(--text-md);
   font-weight: 500;
@@ -1399,12 +1315,10 @@ header .image-text .header-text {
   color: var(--accent-color);
 }
 
-/* Disable lift on empty state */
 .empty-project-card:hover {
   transform: none;
 }
 
-/* Light mode adjustments */
 :root:not([dark-mode="dark"]) .empty-project-card {
   background: rgba(255, 255, 255, 0.85);
   border: 1px dashed rgba(0, 0, 0, 0.25);
@@ -1527,10 +1441,6 @@ header .image-text .header-text {
   line-height: 1;
 }
 
-/* =========================
-   PROJECT GRID
-   ========================= */
-
 .project-grid {
   display: grid;
   grid-template-columns: repeat(
@@ -1541,10 +1451,6 @@ header .image-text .header-text {
   max-width: 1100px;
   padding: 2rem 0;
 }
-
-/* =========================
-   BASE CARD (MODE-AGNOSTIC)
-   ========================= */
 
 .project-card {
   padding: 1.5rem;
@@ -1568,14 +1474,10 @@ header .image-text .header-text {
   height: 100%;
 }
 
-/* =========================
-   LIGHT MODE — SHADOW
-   ========================= */
 :root:not([dark-mode="dark"]) .card-surface {
   background: rgba(255, 255, 255, 0.95);
   border: 1px solid rgba(0, 0, 0, 0.08);
 
-  /* Top-left light source */
   box-shadow:
     6px 10px 22px rgba(0, 0, 0, 0.12),
     2px 4px 10px rgba(0, 0, 0, 0.06);
@@ -1596,10 +1498,6 @@ header .image-text .header-text {
   opacity: 0.8;
   transition: all 0.2s ease-in;
 }
-
-/* =========================
-   DARK MODE — WHITE GLOW
-   ========================= */
 
 [dark-mode="dark"] .project-card {
   position: relative;
@@ -1631,10 +1529,6 @@ header .image-text .header-text {
     0 0 22px rgba(255, 255, 255, 0.14);
 }
 
-/* =========================
-   ICON
-   ========================= */
-
 .project-card-icon {
   width: 56px;
   height: 56px;
@@ -1649,19 +1543,13 @@ header .image-text .header-text {
     inset -1px -1px 2px rgba(0, 0, 0, 0.25);
 }
 
-/* Light mode icon */
 :root:not([dark-mode="dark"]) .project-card-icon {
   background: rgba(0, 0, 0, 0.05);
 }
 
-/* Dark mode icon */
 [dark-mode="dark"] .project-card-icon {
   background: rgba(255, 255, 255, 0.06);
 }
-
-/* =========================
-   TEXT
-   ========================= */
 
 .project-card-title {
   font-size: var(--text-lg);
@@ -1670,14 +1558,10 @@ header .image-text .header-text {
 }
 
 .project-card-meta {
-  font-size: var(--text-sm); /* 13px */
+  font-size: var(--text-sm);
   line-height: var(--lh-normal);
   opacity: 0.7;
 }
-
-/* =========================
-   MODAL BASE
-   ========================= */
 
 .modal-backdrop {
   position: fixed;
@@ -1690,12 +1574,10 @@ header .image-text .header-text {
   margin-top: 85px;
 }
 
-/* Light mode */
 :root:not([dark-mode="dark"]) .modal-backdrop {
   background: rgba(0, 0, 0, 0.35);
 }
 
-/* Dark mode */
 [dark-mode="dark"] .modal-backdrop {
   background: rgba(0, 0, 0, 0.65);
 }
@@ -1721,7 +1603,6 @@ header .image-text .header-text {
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-/* Close button */
 .modal-close {
   position: absolute;
   top: 14px;
@@ -1744,10 +1625,6 @@ header .image-text .header-text {
   color: #fff;
 }
 
-/* =========================
-   HEADINGS & LABELS
-   ========================= */
-
 .modal-card h2 {
   margin-bottom: 16px;
   font-size: var(--text-lg);
@@ -1759,7 +1636,7 @@ header .image-text .header-text {
   display: block;
   margin-top: 12px;
   margin-bottom: 6px;
-  font-size: var(--text-sm); /* 13px */
+  font-size: var(--text-sm);
   font-weight: 500;
   line-height: var(--lh-normal);
   color: rgba(0, 0, 0, 0.6);
@@ -1768,10 +1645,6 @@ header .image-text .header-text {
 [dark-mode="dark"] .modal-card label {
   color: rgba(255, 255, 255, 0.75);
 }
-
-/* =========================
-   INPUTS (COMMON)
-   ========================= */
 
 .modal-card input:not([type="checkbox"]) {
   width: 100%;
@@ -1784,7 +1657,6 @@ header .image-text .header-text {
   line-height: var(--lh-normal);
 }
 
-/* Dark mode override */
 [dark-mode="dark"] .modal-card input:not([type="checkbox"]) {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -1823,15 +1695,10 @@ header .image-text .header-text {
   color: rgba(255, 255, 255, 0.45);
 }
 
-/* =========================
-   MEMBER BLOCK
-   ========================= */
-
 .member-block {
   margin-top: 14px;
 }
 
-/* Header: "Add Member" + Admin checkbox */
 .member-header {
   display: flex;
   align-items: center;
@@ -1839,7 +1706,6 @@ header .image-text .header-text {
   margin-bottom: 6px;
 }
 
-/* Admin toggle */
 .admin-toggle {
   display: flex;
   align-items: center;
@@ -1858,14 +1724,9 @@ header .image-text .header-text {
   cursor: pointer;
 }
 
-/* Email input */
 .member-email {
   width: 100%;
 }
-
-/* =========================
-   ACTION BUTTONS
-   ========================= */
 
 .modal-actions {
   display: flex;
@@ -1877,7 +1738,6 @@ header .image-text .header-text {
   flex: 1;
 }
 
-/* Container for Admin + Delete */
 .member-actions {
   display: flex;
   align-items: center;
@@ -1885,7 +1745,6 @@ header .image-text .header-text {
   gap: 10px;
 }
 
-/* Delete icon button */
 .delete-member-btn {
   background: transparent;
   border: none;
@@ -1895,7 +1754,6 @@ header .image-text .header-text {
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* Hover */
 .delete-member-btn:hover:not(:disabled) {
   color: #dc2626;
   background: rgba(0, 0, 0, 0.06);
@@ -1910,15 +1768,10 @@ header .image-text .header-text {
   background: rgba(255, 255, 255, 0.08);
 }
 
-/* Disabled (when only one row exists) */
 .delete-member-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
 }
-
-/* =========================
-   SECURITY PIN MODAL
-   ========================= */
 
 .pin-backdrop {
   animation: fadeIn 220ms ease-out;
@@ -2021,10 +1874,6 @@ header .image-text .header-text {
   margin-top: 6px;
 }
 
-/* =========================
-   PROJECT SEARCH BAR — FINAL
-   ========================= */
-
 .project-search-bar {
   display: flex;
   gap: 10px;
@@ -2034,7 +1883,6 @@ header .image-text .header-text {
   margin-bottom: 12px;
 }
 
-/* ---------- INPUT ---------- */
 .project-search-bar input {
   flex: 1;
   padding: 12px 14px;
@@ -2044,7 +1892,6 @@ header .image-text .header-text {
   transition: all 0.25s ease;
 }
 
-/*  LIGHT MODE  */
 :root:not([dark-mode="dark"]) .project-search-bar input {
   background: rgba(255, 255, 255, 0.7);
   border: 1px solid rgba(0, 0, 0, 0.12);
@@ -2055,7 +1902,6 @@ header .image-text .header-text {
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
-/* Light mode focus */
 :root:not([dark-mode="dark"]) .project-search-bar input:focus {
   background: rgba(255, 255, 255, 0.9);
   border-color: rgba(0, 0, 0, 0.25);
@@ -2064,7 +1910,6 @@ header .image-text .header-text {
     0 0 0 2px rgba(0, 0, 0, 0.08);
 }
 
-/* ---------- DARK MODE (unchanged but explicit) ---------- */
 [dark-mode="dark"] .project-search-bar input {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.25);
@@ -2074,7 +1919,6 @@ header .image-text .header-text {
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-/* DARK MODE WHITE GLOW ON FOCUS */
 [dark-mode="dark"] .project-search-bar input:focus {
   border-color: rgba(255, 255, 255, 0.45);
   background: rgba(255, 255, 255, 0.08);
@@ -2085,7 +1929,6 @@ header .image-text .header-text {
     0 0 32px rgba(255, 255, 255, 0.12);
 }
 
-/* ---------- BUTTON ---------- */
 .project-search-bar button {
   padding: 12px 18px;
   border-radius: 10px;
@@ -2104,10 +1947,6 @@ header .image-text .header-text {
 .project-search-bar button:active {
   transform: translateY(0);
 }
-
-/* =========================
-   CREATE PROJECT — EXTRAS
-   ========================= */
 
 .copy-field {
   display: flex;
@@ -2139,14 +1978,9 @@ header .image-text .header-text {
   opacity: 0.6;
 }
 
-/* Dark mode adjustments */
 [dark-mode="dark"] .copy-field button:hover {
   background: rgba(255, 255, 255, 0.08);
 }
-
-/* =========================
-   PROJECT SECTIONS
-   ========================= */
 
 .project-section {
   width: 100%;
@@ -2163,15 +1997,14 @@ header .image-text .header-text {
   padding-left: 0.5rem;
 }
 
-/* Horizontal scroll row */
 .project-row {
   display: flex;
   gap: 1.5rem;
   overflow-x: auto;
-  padding: 0.5rem 1rem 1rem;   /* 👈 LEFT PADDING HERE */
+  padding: 0.5rem 1rem 1rem;
   
   scroll-snap-type: x mandatory;
-  scroll-padding-left: 1rem;  /* 👈 SNAP OFFSET */
+  scroll-padding-left: 1rem;
   scroll-padding-right: 1rem;
 
   contain: layout paint;
@@ -2208,10 +2041,10 @@ header .image-text .header-text {
 .account-page {
   max-width: 720px;
   margin: 0 auto;
-  padding: 6rem 1.5rem 4rem; /* navbar offset handled ONCE */
+  padding: 6rem 1.5rem 4rem;
   display: flex;
   flex-direction: column;
-  gap: 3rem; /* consistent vertical rhythm */
+  gap: 3rem;
 }
 
 .account-card {
@@ -2401,9 +2234,9 @@ header .image-text .header-text {
   border: 1px solid rgba(255, 255, 255, 0.14);
 
   box-shadow:
-    0 8px 20px rgba(0, 0, 0, 0.55), /* grounding */
-    0 0 0 1px rgba(255, 255, 255, 0.06), /* edge definition */
-    0 0 18px rgba(255, 255, 255, 0.08); /* glow */
+    0 8px 20px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 0 18px rgba(255, 255, 255, 0.08);
 }
 
 .account-intro-card:hover {
@@ -2477,7 +2310,7 @@ header .image-text .header-text {
 .account-intro-wrapper {
   display: flex;
   justify-content: center;
-  perspective: 900px; /* critical */
+  perspective: 900px;
   margin-top: 22px;
 }
 
@@ -2489,7 +2322,7 @@ header .image-text .header-text {
 
 .password-wrapper input {
   width: 100%;
-  padding-right: 44px; /* space for eye */
+  padding-right: 44px;
 }
 
 .password-toggle {
@@ -2519,12 +2352,8 @@ header .image-text .header-text {
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* =========================
-   PROJECT HERO
-   ========================= */
-
 .project-hero {
-  margin-top: 5.5rem; /* clears navbar */
+  margin-top: 5.5rem;
   margin-bottom: 2.5rem;
 }
 
@@ -2573,10 +2402,6 @@ header .image-text .header-text {
   opacity: 0.65;
 }
 
-/* =========================
-   ACTION SECTION
-   ========================= */
-
 .project-actions-section {
   max-width: 1100px;
   margin: 0 auto;
@@ -2590,17 +2415,11 @@ header .image-text .header-text {
   opacity: 0.85;
 }
 
-/* =========================
-   YOUTUBE STYLE TOP LOADER
-   ========================= */
-
 :root {
-  /* High visibility color for Light Mode (Blue or Amber) */
   --loader-color: #7488a8; 
 }
 
 [dark-mode="dark"] {
-  /* High visibility color for Dark Mode (Cyan or Gold) */
   --loader-color: #7488a8; 
 }
 
@@ -2610,14 +2429,13 @@ header .image-text .header-text {
   left: 0;
   width: 100%;
   height: 3px; 
-  z-index: 100001; /* Ensure it stays above EVERYTHING including modals */
+  z-index: 100001;
   pointer-events: none;
 }
 
 .yt-loader-bar {
   height: 100%;
   background: var(--loader-color);
-  /* The glow makes it pop against different backgrounds */
   box-shadow: 0 0 15px var(--loader-color), 0 0 5px var(--loader-color);
   transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   border-radius: 0 2px 2px 0;
@@ -2629,15 +2447,11 @@ header .image-text .header-text {
   width: 100px;
   height: 100%;
   background: transparent;
-  /* Adds that "shooting star" trailing effect */
   box-shadow: 10px 0 15px 2px var(--loader-color);
   opacity: 0.6;
   transform: rotate(3deg) translate(0px, -4px);
 }
 
-/* =========================
-   SKELETON ANIMATIONS
-   ========================= */
 .skeleton-card {
   min-width: 260px;
   pointer-events: none;
@@ -2693,15 +2507,11 @@ header .image-text .header-text {
   100% { background-position: -200% 0; }
 }
 
-/* =========================
-   PROJECT LANDING SKELETONS
-   ========================= */
-
 .project-hero-skeleton {
   margin-top: 5.5rem;
   margin-bottom: 2.5rem;
   width: 100%;
-  height: 160px; /* Matches ProjectHeader height */
+  height: 160px;
   border-radius: 20px;
   background: rgba(128, 128, 128, 0.05);
   border: 1px solid rgba(128, 128, 128, 0.1);
@@ -2721,26 +2531,21 @@ header .image-text .header-text {
   margin-bottom: 1.2rem;
 }
 
-/* Light Mode specific skeleton brightness */
 :root:not([dark-mode="dark"]) .project-hero-skeleton {
   background: rgba(255, 255, 255, 0.8);
   border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-/* =========================
-   CONTENT FADE-IN ANIMATION
-   ========================= */
-
 .fade-in {
   animation: fadeInMove 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  opacity: 0; /* Start hidden */
+  opacity: 0; 
   will-change: opacity, transform;
 }
 
 @keyframes fadeInMove {
   from {
     opacity: 0;
-    transform: translateY(10px); /* Subtle lift effect */
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
