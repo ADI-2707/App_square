@@ -24,7 +24,7 @@ const ProjectLanding = () => {
     } catch (err) {
       console.error("Failed to load project", err);
     } finally {
-      setIsPageLoading(false);
+      setTimeout(() => setIsPageLoading(false), 100);
     }
   };
 
@@ -63,7 +63,7 @@ const ProjectLanding = () => {
 
   return (
     <div className="app-content sidebar-open">
-      <div className="page-container">
+      <div className="page-container fade-in">
         <div className="page-inner mx-auto">
           <ProjectHeader project={project} />
 

@@ -29,7 +29,7 @@ def cursor_paginate(queryset, cursor, limit):
     results = items[:limit]
     
     # Generate the cursor string using isoformat for standard parsing
-    next_cursor = results[-1].created_at.isoformat() if results and has_more else None
+    next_cursor = results[-1].created_at.strftime('%Y-%m-%dT%H:%M:%S.%f%z') if results and has_more else None
     
     return results, has_more, next_cursor
 
@@ -95,7 +95,7 @@ def joined_projects(request):
         projects.append(p)
 
     serializer = ProjectListSerializer(projects, many=True)
-    next_cursor = current_page_members[-1].joined_at.isoformat() if current_page_members and has_more else None
+    next_cursor = current_page_members[-1].joined_at.strftime('%Y-%m-%dT%H:%M:%S.%f%z') if current_page_members and has_more else None
 
     return Response({
         "results": serializer.data,

@@ -2726,3 +2726,24 @@ header .image-text .header-text {
   background: rgba(255, 255, 255, 0.8);
   border: 1px solid rgba(0, 0, 0, 0.05);
 }
+
+/* =========================
+   CONTENT FADE-IN ANIMATION
+   ========================= */
+
+.fade-in {
+  animation: fadeInMove 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  opacity: 0; /* Start hidden */
+  will-change: opacity, transform;
+}
+
+@keyframes fadeInMove {
+  from {
+    opacity: 0;
+    transform: translateY(10px); /* Subtle lift effect */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { PlusSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import CreateProjectModal from "../Components/CreateProjectModal";
@@ -9,7 +9,6 @@ import { isAuthenticated } from "../Utility/auth";
 
 const LIMIT = 10;
 
-/* ---------- Utils ---------- */
 const formatUserName = (fullName) => {
   if (!fullName || typeof fullName !== "string") return "";
   const parts = fullName.trim().split(" ");
@@ -26,75 +25,102 @@ const HomePrivate = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
-
   const [showPinModal, setShowPinModal] = useState(false);
   const [securityPin, setSecurityPin] = useState(null);
 
   const [owned, setOwned] = useState([]);
   const [joined, setJoined] = useState([]);
-
   const [ownedCursor, setOwnedCursor] = useState(null);
   const [joinedCursor, setJoinedCursor] = useState(null);
-
   const [ownedHasMore, setOwnedHasMore] = useState(true);
   const [joinedHasMore, setJoinedHasMore] = useState(true);
 
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const loadingOwnedRef = useRef(false);
   const loadingJoinedRef = useRef(false);
 
-  /* ---------- Initial Load (AUTH-SAFE) ---------- */
+  /* ---------- THE ONLY INITIAL LOAD EFFECT ---------- */
   useEffect(() => {
     if (!isAuthenticated()) return;
 
-    loadOwned();
-    loadJoined();
+    const initFetch = async () => {
+      // SET LOCKS IMMEDIATELY
+      loadingOwnedRef.current = true;
+      loadingJoinedRef.current = true;
+      setIsInitialLoading(true);
+
+      try {
+        const [ownedRes, joinedRes] = await Promise.all([
+          api.get("/api/projects/owned/", {
+            params: { cursor: null, limit: LIMIT },
+          }),
+          api.get("/api/projects/joined/", {
+            params: { cursor: null, limit: LIMIT },
+          }),
+        ]);
+
+        setOwned(ownedRes.data.results || []);
+        setOwnedCursor(ownedRes.data.next_cursor);
+        setOwnedHasMore(ownedRes.data.has_more);
+
+        setJoined(joinedRes.data.results || []);
+        setJoinedCursor(joinedRes.data.next_cursor);
+        setJoinedHasMore(joinedRes.data.has_more);
+      } catch (err) {
+        console.error("Initial load failed", err);
+      } finally {
+        loadingOwnedRef.current = false;
+        loadingJoinedRef.current = false;
+        setIsInitialLoading(false);
+      }
+    };
+
+    initFetch();
   }, []);
 
-  /* ---------- LOAD OWNED PROJECTS ---------- */
-  const loadOwned = async () => {
-    // 1. Strict guard: if already loading, exit.
-    if (!ownedHasMore || loadingOwnedRef.current) return;
-    loadingOwnedRef.current = true;
+  /* ---------- INFINITE SCROLL HANDLERS ---------- */
+  // Wrapped in useCallback to prevent ProjectSection from re-rendering/re-observing constantly
+  const loadOwned = useCallback(async () => {
+    if (!ownedHasMore || loadingOwnedRef.current || isInitialLoading) return;
 
+    loadingOwnedRef.current = true;
     try {
       const res = await api.get("/api/projects/owned/", {
         params: { cursor: ownedCursor, limit: LIMIT },
       });
 
       setOwned((prev) => {
-        // If cursor is null, we are on page 1. REPLACE the list.
         if (!ownedCursor) return res.data.results;
-
-        // If appending, deduplicate by ID to ensure no repeats.
+        // Deduplicate using a Map
         const map = new Map(prev.map((p) => [p.id, p]));
         res.data.results.forEach((p) => map.set(p.id, p));
-        return Array.from(map.values());
+
+        return Array.from(map.values()).sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
       });
 
       setOwnedCursor(res.data.next_cursor);
       setOwnedHasMore(res.data.has_more);
-    } catch (err) {
-      console.error("Load failed", err);
     } finally {
-      // 2. Only unlock after the state is fully committed.
       loadingOwnedRef.current = false;
     }
-  };
+  }, [ownedHasMore, ownedCursor, isInitialLoading]);
 
-  /* ---------- LOAD JOINED PROJECTS ---------- */
-  const loadJoined = async () => {
-    if (!joinedHasMore || loadingJoinedRef.current) return;
+  const loadJoined = useCallback(async () => {
+    if (!joinedHasMore || loadingJoinedRef.current || isInitialLoading) return;
+
     loadingJoinedRef.current = true;
-
     try {
       const res = await api.get("/api/projects/joined/", {
         params: { cursor: joinedCursor, limit: LIMIT },
       });
 
       setJoined((prev) => {
+        if (!joinedCursor) return res.data.results;
         const map = new Map(prev.map((p) => [p.id, p]));
         res.data.results.forEach((p) => map.set(p.id, p));
         return Array.from(map.values());
@@ -105,31 +131,16 @@ const HomePrivate = () => {
     } finally {
       loadingJoinedRef.current = false;
     }
-  };
+  }, [joinedHasMore, joinedCursor, isInitialLoading]);
 
-  /* ---------- Modal trigger from navbar ---------- */
-  useEffect(() => {
-    const openModal = () => setShowModal(true);
-    window.addEventListener("open-create-project", openModal);
-    return () => window.removeEventListener("open-create-project", openModal);
-  }, []);
-
-  /* ---------- Create Project ---------- */
+  /* ---------- CREATE PROJECT ---------- */
   const handleCreate = async (payload) => {
     try {
       const res = await api.post("/api/projects/create/", payload);
       setSecurityPin(res.data.pin);
       setShowPinModal(true);
 
-      // LOCK: Prevent any background observer triggers.
       loadingOwnedRef.current = true;
-
-      // RESET: Clear state for a fresh start.
-      setOwned([]);
-      setOwnedCursor(null);
-      setOwnedHasMore(true);
-
-      // FETCH: Get the fresh page 1 immediately.
       const refreshRes = await api.get("/api/projects/owned/", {
         params: { cursor: null, limit: LIMIT },
       });
@@ -140,23 +151,19 @@ const HomePrivate = () => {
     } catch (err) {
       console.error("Creation failed", err);
     } finally {
-      // UNLOCK: Allow infinite scroll for page 2 now.
       loadingOwnedRef.current = false;
     }
   };
 
-  /* ---------- Search (UI-only for now) ---------- */
+  /* ---------- SEARCH LOGIC ---------- */
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSearchResults([]);
       return;
     }
-
     if (debounceRef.current) clearTimeout(debounceRef.current);
-
     debounceRef.current = setTimeout(async () => {
       if (searchQuery.length < 2) return;
-
       try {
         setIsSearching(true);
         const res = await api.get("/api/projects/search/", {
@@ -169,27 +176,9 @@ const HomePrivate = () => {
         setIsSearching(false);
       }
     }, 450);
-
     return () => clearTimeout(debounceRef.current);
   }, [searchQuery]);
 
-  const handleSearchClick = async () => {
-    if (!searchQuery.trim()) return;
-
-    try {
-      setIsSearching(true);
-      const res = await api.get("/api/projects/search/", {
-        params: { q: searchQuery },
-      });
-      setSearchResults(res.data.results);
-    } catch (err) {
-      console.error("Search failed", err);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  /* ---------- Open Project ---------- */
   const openProject = (project) => {
     localStorage.setItem("activeProjectId", project.id);
     navigate(`/projects/${project.id}`);
@@ -201,7 +190,6 @@ const HomePrivate = () => {
         Welcome{displayName ? `, ${displayName}` : ""}
       </h1>
 
-      {/* SEARCH */}
       <div className="project-search-bar">
         <input
           type="text"
@@ -209,7 +197,7 @@ const HomePrivate = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <button onClick={handleSearchClick}>Search</button>
+        <button onClick={() => {}}>Search</button>
       </div>
 
       {searchResults.length > 0 && (
@@ -221,7 +209,8 @@ const HomePrivate = () => {
         />
       )}
 
-      <>
+      {/* Show sections only when they have data or are still loading the first page */}
+      {(owned.length > 0 || isInitialLoading) && (
         <ProjectSection
           title="Owned Projects"
           projects={owned}
@@ -229,7 +218,9 @@ const HomePrivate = () => {
           hasMore={ownedHasMore}
           onOpenProject={openProject}
         />
+      )}
 
+      {(joined.length > 0 || isInitialLoading) && (
         <ProjectSection
           title="Joined Projects"
           projects={joined}
@@ -237,16 +228,15 @@ const HomePrivate = () => {
           hasMore={joinedHasMore}
           onOpenProject={openProject}
         />
+      )}
 
-        {/* CREATE PROJECT CARD */}
-        <div
-          className="empty-project-card mt-10"
-          onClick={() => setShowModal(true)}
-        >
-          <PlusSquare size={52} className="plus" />
-          <p className="empty-project-text">Create new project</p>
-        </div>
-      </>
+      <div
+        className="empty-project-card mt-10"
+        onClick={() => setShowModal(true)}
+      >
+        <PlusSquare size={52} className="plus" />
+        <p className="empty-project-text">Create new project</p>
+      </div>
 
       {showModal && (
         <CreateProjectModal
@@ -254,7 +244,6 @@ const HomePrivate = () => {
           onCreate={handleCreate}
         />
       )}
-
       {showPinModal && securityPin && (
         <SecurityPinModal
           pin={securityPin}
