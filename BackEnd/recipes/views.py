@@ -41,19 +41,16 @@ class CreateRecipeView(APIView):
 
         data = serializer.validated_data
 
-        # Create recipe
         recipe = Recipe.objects.create(
             name=data["name"],
             project_id=project_id
         )
 
         for index, combo_data in enumerate(data["combinations"]):
-            # Create combination
             combination = Combination.objects.create(
                 name=combo_data["name"]
             )
 
-            # Attach tags to combination
             for tag_data in combo_data["tags"]:
                 tag = Tag.objects.get(id=tag_data["tag_id"])
                 CombinationTag.objects.create(
@@ -62,7 +59,6 @@ class CreateRecipeView(APIView):
                     value=tag_data["value"]
                 )
 
-            # Attach combination to recipe
             RecipeCombination.objects.create(
                 recipe=recipe,
                 combination=combination,
