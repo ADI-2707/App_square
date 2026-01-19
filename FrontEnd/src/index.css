@@ -2624,3 +2624,25 @@ header .image-text .header-text {
   font-size: 0.9rem;
   opacity: 0.4;
 }
+
+.recipe-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.recipe-table th,
+.recipe-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  text-align: left;
+}
+
+.recipe-table th {
+  font-weight: 600;
+  background: #f6f6f6;
+}
+
+.recipe-table tr:hover {
+  background: #fafafa;
+}

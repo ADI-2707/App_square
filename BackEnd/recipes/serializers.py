@@ -44,3 +44,17 @@ class RecipeDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ["id", "name", "recipe_combinations"]
+
+class CombinationTagCreateSerializer(serializers.Serializer):
+    tag_id = serializers.IntegerField()
+    value = serializers.FloatField()
+
+
+class CombinationCreateSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    tags = CombinationTagCreateSerializer(many=True)
+
+
+class RecipeCreateSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    combinations = CombinationCreateSerializer(many=True)

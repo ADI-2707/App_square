@@ -103,7 +103,6 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
-  /* 🔒 Always start collapsed */
   const [mounted, setMounted] = useState(false);
 
   const [contextMenu, setContextMenu] = useState({
@@ -148,6 +147,18 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
   };
 
   const handleAction = (action, item) => {
+    if (item.id === "recipe") {
+      if (action === "open") {
+        window.dispatchEvent(new Event("open-view-recipe"));
+        return;
+      }
+
+      if (action === "create") {
+        window.dispatchEvent(new Event("open-create-recipe"));
+        return;
+      }
+    }
+
     switch (action) {
       case "open":
         navigate(item.route);
@@ -164,18 +175,6 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
         break;
       case "permissions":
         navigate(`${item.route}/permissions`);
-        break;
-      case "export":
-        console.log("Exporting from", item.label);
-        break;
-      case "download":
-        console.log("Downloading logs");
-        break;
-      case "silence":
-        alert("All alarms silenced");
-        break;
-      case "stats":
-        console.log("Viewing stats");
         break;
       default:
         console.warn("Unknown action:", action);
