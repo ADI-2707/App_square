@@ -9,125 +9,32 @@ import { SiAdobeaudition } from "react-icons/si";
 import { HiTemplate } from "react-icons/hi";
 import { FaArrowTrendUp } from "react-icons/fa6";
 import { IoLogOut, IoSearch } from "react-icons/io5";
-import { logout } from "../Utility/auth";
 import { useAuth } from "../Utility/AuthContext";
 
 const SIDEBAR_ITEMS = [
-  {
-    id: "dashboard",
-    label: "Dashboard",
-    icon: MdSpaceDashboard,
-    actions: [
-      { label: "Open Dashboard", action: "open" },
-      { label: "Open in New Tab", action: "new-tab" },
-      { label: "View Stats", action: "stats" },
-    ],
-  },
-  {
-    id: "alarm",
-    label: "Alarm",
-    icon: RiAlarmWarningFill,
-    actions: [
-      { label: "View Active Alarms", action: "open" },
-      { label: "Alarm History", action: "history" },
-      { label: "Silence All", action: "silence" },
-    ],
-  },
-  {
-    id: "trends",
-    label: "Trends",
-    icon: FaArrowTrendUp,
-    actions: [
-      { label: "View Trends", action: "open" },
-      { label: "Export Data", action: "export" },
-    ],
-  },
-  {
-    id: "data-logger",
-    label: "Data Logger",
-    icon: BsDatabaseFillGear,
-    actions: [
-      { label: "Open Logger", action: "open" },
-      { label: "Download Logs", action: "download" },
-    ],
-  },
-  {
-    id: "recipe",
-    label: "Recipe Management",
-    icon: FaFileCode,
-    actions: [
-      { label: "View Recipes", action: "open" },
-      { label: "Create Recipe", action: "create" },
-    ],
-  },
-  {
-    id: "tag",
-    label: "Tag Management",
-    icon: IoMdPricetags,
-    actions: [
-      { label: "View Tags", action: "open" },
-      { label: "Add Tag", action: "add" },
-    ],
-  },
-  {
-    id: "users",
-    label: "User Management",
-    icon: FaUserFriends,
-    actions: [
-      { label: "View Users", action: "open" },
-      { label: "Add User", action: "add" },
-      { label: "Permissions", action: "permissions" },
-    ],
-  },
-  {
-    id: "audit",
-    label: "Audit Trail",
-    icon: SiAdobeaudition,
-    actions: [
-      { label: "View Logs", action: "open" },
-      { label: "Export Audit", action: "export" },
-    ],
-  },
-  {
-    id: "templates",
-    label: "Templates",
-    icon: HiTemplate,
-    actions: [
-      { label: "Open Templates", action: "open" },
-      { label: "Create Template", action: "create" },
-    ],
-  },
+  { id: "dashboard", label: "Dashboard", icon: MdSpaceDashboard },
+  { id: "alarm", label: "Alarm", icon: RiAlarmWarningFill },
+  { id: "trends", label: "Trends", icon: FaArrowTrendUp },
+  { id: "data-logger", label: "Data Logger", icon: BsDatabaseFillGear },
+  { id: "recipe", label: "Recipe Management", icon: FaFileCode },
+  { id: "tag", label: "Tag Management", icon: IoMdPricetags },
+  { id: "users", label: "User Management", icon: FaUserFriends },
+  { id: "audit", label: "Audit Trail", icon: SiAdobeaudition },
+  { id: "templates", label: "Templates", icon: HiTemplate },
 ];
 
-const Sidebar = ({ isClosed, setIsClosed }) => {
-  const { logout } = useAuth();
+const PROJECT_REQUIRED = SIDEBAR_ITEMS.map((i) => i.id);
+
+const Sidebar = ({ isClosed, setIsClosed, forceOpen }) => {
+  useEffect(() => {
+    if (forceOpen) {
+      setIsClosed(false);
+    }
+  }, [forceOpen]);
   const navigate = useNavigate();
+  const { logout, hasProjectAccess, loadingProjects } = useAuth();
 
-  const [mounted, setMounted] = useState(false);
-
-  const [contextMenu, setContextMenu] = useState({
-    visible: false,
-    x: 0,
-    y: 0,
-    item: null,
-  });
-
-  const handleLogout = () => {
-    localStorage.clear();
-    logout();
-    navigate("/login");
-  };
-
-  useEffect(() => {
-    requestAnimationFrame(() => setMounted(true));
-  }, []);
-
-  useEffect(() => {
-    const close = () => setContextMenu((prev) => ({ ...prev, visible: false }));
-
-    window.addEventListener("click", close);
-    return () => window.removeEventListener("click", close);
-  }, []);
+  const [contextMenu, setContextMenu] = useState(null);
 
   const toggleSidebar = () => {
     if (window.innerWidth <= 768) return;
@@ -138,155 +45,75 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
     e.preventDefault();
     e.stopPropagation();
 
-    setContextMenu({
-      visible: true,
-      x: e.clientX,
-      y: e.clientY,
-      item,
-    });
-  };
+    if (loadingProjects) return;
 
-  const handleAction = (action, item) => {
-    if (item.id === "recipe") {
-      if (action === "open") {
-        window.dispatchEvent(new Event("open-view-recipe"));
-        return;
-      }
-
-      if (action === "create") {
-        window.dispatchEvent(new Event("open-create-recipe"));
-        return;
-      }
+    if (!hasProjectAccess && PROJECT_REQUIRED.includes(item.id)) {
+      return;
     }
 
-    switch (action) {
-      case "open":
-        navigate(item.route);
-        break;
-      case "new-tab":
-        window.open(item.route, "_blank");
-        break;
-      case "history":
-        navigate(`${item.route}/history`);
-        break;
-      case "add":
-      case "create":
-        navigate(`${item.route}/create`);
-        break;
-      case "permissions":
-        navigate(`${item.route}/permissions`);
-        break;
-      default:
-        console.warn("Unknown action:", action);
-    }
+    navigate(`/${item.id}`);
   };
 
-  const isDesktop = window.innerWidth > 768;
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
-    <>
-      <nav className={`sidebar sidebar-enter ${isClosed ? "close" : ""}`}>
-        <header>
-          <div className="image-text">
-            <span className="image">
-              <img src="/app.svg" alt="logo" />
-            </span>
+    <nav className={`sidebar sidebar-enter ${isClosed ? "close" : ""}`}>
+      <header>
+        <div className="image-text">
+          <img src="/app.svg" alt="logo" />
+          <div className="text">
+            <span className="name">App Square</span>
+            <span className="profession">Authorized Personnel Only</span>
+          </div>
+        </div>
 
-            <div className="text header-text">
-              <span className="name">App Square</span>
-              <span className="profession uppercase">
-                ⚠️ Authorized Personnel Only
-              </span>
+        <IoIosArrowForward
+          className={`toggle ${isClosed ? "collapsed" : "expanded"}`}
+          onClick={toggleSidebar}
+        />
+      </header>
+
+      <div className="menu-bar">
+        <ul className="menu-links">
+          {SIDEBAR_ITEMS.map((item) => {
+            const disabled =
+              loadingProjects ||
+              (!hasProjectAccess && PROJECT_REQUIRED.includes(item.id));
+
+            return (
+              <li
+                key={item.id}
+                className={`side-link ${disabled ? "disabled" : ""}`}
+              >
+                <div className="link" onClick={(e) => handleItemClick(e, item)}>
+                  <item.icon className="icon" />
+                  <span className="text">{item.label}</span>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+
+        <div className="bottom-content">
+          <li className="side-link">
+            <div className="link" onClick={() => navigate("/history")}>
+              <FaHistory className="icon" />
+              <span className="text">History</span>
             </div>
-          </div>
+          </li>
 
-          {isDesktop && (
-            <IoIosArrowForward
-              className={`toggle ${isClosed ? "collapsed" : "expanded"}`}
-              onClick={toggleSidebar}
-            />
-          )}
-        </header>
-
-        <div className="menu-bar">
-          <div className="menu">
-            <li className="search-box">
-              <IoSearch className="icon" />
-              <input type="search" placeholder="Search..." />
-            </li>
-
-            <ul className="menu-links">
-              {SIDEBAR_ITEMS.map((item) => (
-                <li
-                  key={item.id}
-                  className="side-link"
-                  style={{ overflow: "visible" }}
-                >
-                  <div
-                    className="link"
-                    data-tooltip={item.label}
-                    onClick={(e) => handleItemClick(e, item)}
-                    style={{ position: "relative", overflow: "visible" }}
-                  >
-                    <item.icon className="icon h-7 w-7" />
-                    <span className="text nav-text">{item.label}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="bottom-content">
-            <li className="side-link">
-              <div
-                className="link"
-                data-tooltip="History"
-                onClick={(e) =>
-                  handleItemClick(e, {
-                    label: "History",
-                    route: "/history",
-                    actions: [{ label: "Open History", action: "open" }],
-                  })
-                }
-              >
-                <FaHistory className="icon h-7 w-7" />
-                <span className="text nav-text">History</span>
-              </div>
-            </li>
-
-            <li className="side-link">
-              <div
-                className="link"
-                data-tooltip="Logout"
-                onClick={handleLogout}
-              >
-                <IoLogOut className="icon h-7 w-7" />
-                <span className="text nav-text">Logout</span>
-              </div>
-            </li>
-          </div>
+          <li className="side-link">
+            <div className="link" onClick={handleLogout}>
+              <IoLogOut className="icon" />
+              <span className="text">Logout</span>
+            </div>
+          </li>
         </div>
-      </nav>
-
-      {contextMenu.visible && contextMenu.item && (
-        <div
-          className="context-menu"
-          style={{ top: contextMenu.y, left: contextMenu.x }}
-        >
-          {contextMenu.item.actions.map((opt) => (
-            <button
-              key={opt.label}
-              onClick={() => {
-                handleAction(opt.action, contextMenu.item);
-                setContextMenu({ visible: false, item: null });
-              }}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </>
+      </div>
+    </nav>
   );
 };
 

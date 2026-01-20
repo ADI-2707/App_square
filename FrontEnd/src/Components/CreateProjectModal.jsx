@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, Trash2, Copy, Check } from "lucide-react";
+import { useAuth } from "../Utility/AuthContext";
 
 const MAX_MEMBERS = 3;
 
@@ -16,7 +17,7 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  /* -------------------- INIT -------------------- */
+  const { refreshProjectAccess } = useAuth();
 
   useEffect(() => {
     const id = "APSQ-" + crypto.randomUUID().slice(0, 8).toUpperCase();
@@ -26,11 +27,8 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
   const handleCopyId = () => {
     navigator.clipboard.writeText(projectId);
     setCopied(true);
-    // Reset back to copy icon after 2 seconds
     setTimeout(() => setCopied(false), 2000);
   };
-
-  /* -------------------- MEMBER HANDLERS -------------------- */
 
   const addMemberRow = () => {
     if (members.length >= MAX_MEMBERS) return;
@@ -56,8 +54,6 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
     setMembers((prev) => prev.filter((_, i) => i !== index));
   };
 
-  /* -------------------- CREATE -------------------- */
-
   const handleCreate = async () => {
     if (submitting) return;
     setError("");
@@ -67,7 +63,6 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
       return;
     }
 
-    // NEW CHECK: Prevent adding self as member
     const hasSelf = members.some(
       (m) => m.email.toLowerCase() === user.email.toLowerCase()
     );
@@ -106,6 +101,7 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
     try {
       setSubmitting(true);
       await onCreate(payload);
+      await refreshProjectAccess();
       onClose();
     } catch (err) {
       setError(err.response?.data?.error || "Project creation failed");
@@ -113,8 +109,6 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
       setSubmitting(false);
     }
   };
-
-  /* -------------------- UI -------------------- */
 
   return (
     <div className="modal-backdrop">
@@ -127,7 +121,6 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
 
         {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
-        {/* Project Name */}
         <label>Project Name</label>
         <input
           value={name}
@@ -136,7 +129,6 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
           disabled={submitting}
         />
 
-        {/* Project ID */}
         <label>Project ID</label>
         <div className="copy-field">
           <input value={projectId} disabled />
@@ -153,7 +145,6 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
           </button>
         </div>
 
-        {/* Project Password */}
         <label>Project Password</label>
         <input
           type="password"
@@ -166,11 +157,9 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
           This password will be required to join the project
         </p>
 
-        {/* Root Admin */}
         <label>Root Admin</label>
         <input value={user?.full_name || ""} disabled />
 
-        {/* Members */}
         {members.map((member, index) => (
           <div className="member-block" key={index}>
             <div className="member-header">
@@ -208,7 +197,6 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
           </div>
         ))}
 
-        {/* Actions */}
         <div className="modal-actions">
           <button
             className="primary-btn"

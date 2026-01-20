@@ -2,48 +2,38 @@ import React, { useEffect, useState } from "react";
 import api from "../../Utility/api";
 
 const CreateRecipeModal = ({ projectId, onClose, onCreated }) => {
-  const [recipeName, setRecipeName] = useState("");
+  const [name, setName] = useState("");
   const [tags, setTags] = useState([]);
   const [combinations, setCombinations] = useState([]);
 
   useEffect(() => {
-    fetchTags();
+    api.get("/api/tags/").then(res => setTags(res.data));
   }, []);
 
-  const fetchTags = async () => {
-    const res = await api.get(`/api/tags/`);
-    setTags(res.data);
-  };
-
   const addCombination = () => {
-    setCombinations([
-      ...combinations,
+    setCombinations(prev => [
+      ...prev,
       {
-        name: `C${combinations.length + 1}`,
-        tags: tags.map(t => ({
+        name: `C${prev.length + 1}`,
+        tag_values: tags.map(t => ({
           tag_id: t.id,
-          value: t.default_value
+          value: t.default_value ?? 0
         }))
       }
     ]);
   };
 
-  const updateValue = (cIndex, tIndex, value) => {
+  const updateValue = (c, t, value) => {
     const updated = [...combinations];
-    updated[cIndex].tags[tIndex].value = value;
+    updated[c].tag_values[t].value = value;
     setCombinations(updated);
   };
 
-  const submitRecipe = async () => {
-    await api.post(
-      `/api/projects/${projectId}/recipes/create/`,
-      {
-        name: recipeName,
-        combinations
-      }
-    );
-
-    window.dispatchEvent(new Event("recipes-updated"));
+  const submit = async () => {
+    await api.post(`/api/projects/${projectId}/recipes/create/`, {
+      name,
+      combinations
+    });
     onCreated();
   };
 
@@ -53,51 +43,44 @@ const CreateRecipeModal = ({ projectId, onClose, onCreated }) => {
         <h3>Create Recipe</h3>
 
         <input
-          placeholder="Recipe Name (R1, R2...)"
-          value={recipeName}
-          onChange={e => setRecipeName(e.target.value)}
+          placeholder="Recipe name"
+          value={name}
+          onChange={e => setName(e.target.value)}
         />
 
         <button className="button" onClick={addCombination}>
           Add Combination
         </button>
 
-        {combinations.map((combo, cIndex) => (
-          <div key={cIndex} className="combo-builder">
-            <h4>{combo.name}</h4>
-
-            <table className="recipe-table">
-              <thead>
-                <tr>
-                  <th>Tag</th>
-                  <th>Value</th>
+        {combinations.map((c, ci) => (
+          <table key={ci} className="recipe-table">
+            <thead>
+              <tr>
+                <th colSpan={2}>{c.name}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {c.tag_values.map((tv, ti) => (
+                <tr key={tv.tag_id}>
+                  <td>{tags.find(t => t.id === tv.tag_id)?.name}</td>
+                  <td>
+                    <input
+                      type="number"
+                      value={tv.value}
+                      onChange={e => updateValue(ci, ti, e.target.value)}
+                    />
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {combo.tags.map((t, tIndex) => (
-                  <tr key={t.tag_id}>
-                    <td>{tags.find(x => x.id === t.tag_id)?.name}</td>
-                    <td>
-                      <input
-                        type="number"
-                        value={t.value}
-                        onChange={e =>
-                          updateValue(cIndex, tIndex, e.target.value)
-                        }
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         ))}
 
         <div className="modal-actions">
           <button className="button secondary" onClick={onClose}>
             Cancel
           </button>
-          <button className="button" onClick={submitRecipe}>
+          <button className="button" onClick={submit}>
             Save Recipe
           </button>
         </div>

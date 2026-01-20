@@ -23,12 +23,10 @@ def cursor_paginate(queryset, cursor, limit):
     if cursor:
         queryset = queryset.filter(created_at__lt=cursor)
 
-    # Fetch limit + 1 to determine if there's a next page
     items = list(queryset[: limit + 1])
     has_more = len(items) > limit
     results = items[:limit]
     
-    # Generate the cursor string using isoformat for standard parsing
     next_cursor = results[-1].created_at.strftime('%Y-%m-%dT%H:%M:%S.%f%z') if results and has_more else None
     
     return results, has_more, next_cursor
@@ -52,7 +50,6 @@ def owned_projects(request):
         .distinct()
     )
 
-    # Unpack three values (results, has_more, next_cursor)
     projects, has_more, next_cursor = cursor_paginate(qs, cursor, limit)
     serializer = ProjectListSerializer(projects, many=True)
 
@@ -146,14 +143,12 @@ def create_project(request):
     if not name:
         return Response({"error": "Project name is required"}, status=400)
 
-    # NEW CHECK: Validation for unique project name
     if Project.objects.filter(name__iexact=name).exists():
         return Response(
             {"error": "A project with this name already exists. Please choose a different name."}, 
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # Scoped outside transaction block so it's accessible to Response
     raw_pin = generate_project_pin()
     raw_access_key = secrets.token_urlsafe(16)
 
@@ -168,11 +163,10 @@ def create_project(request):
             role = m_data.get("role", "user").lower()
 
             if email:
-                # ROOT ADMIN PROTECTION: Prevent root admin from being added as a member
+                
                 if email.lower() == request.user.email.lower():
                     continue 
 
-                # REGISTERED USER CHECK: Only add if user exists
                 target_user = User.objects.filter(email__iexact=email).first()
                 if target_user:
                     ProjectMember.objects.get_or_create(
@@ -180,7 +174,6 @@ def create_project(request):
                         user=target_user,
                         defaults={'role': role}
                     )
-                # Else: Non-registered emails are ignored for security
 
     return Response({
         "id": str(project.id),
@@ -230,3 +223,44 @@ def search_projects(request):
         })
 
     return Response({"results": results})
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def my_projects(request):
+    """
+    Lightweight endpoint for frontend access checks.
+    Returns a flat list of all projects the user can access.
+    """
+
+    owned = Project.objects.filter(root_admin=request.user)
+    joined = Project.objects.filter(projectmember__user=request.user)
+
+    qs = (owned | joined).distinct()
+
+    return Response([
+        {
+            "id": str(p.id),
+            "name": p.name,
+        }
+        for p in qs
+    ])
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def user_projects(request):
+    owned = Project.objects.filter(root_admin=request.user)
+    joined = Project.objects.filter(projectmember__user=request.user)
+
+    qs = (owned | joined).distinct().order_by("-created_at")
+
+    return Response({
+        "results": [
+            {
+                "id": str(p.id),
+                "name": p.name,
+            }
+            for p in qs
+        ]
+    })

@@ -1,13 +1,10 @@
-import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Mode from "./Utility/Mode";
-import PrivateRoute from "./Utility/PrivateRoute";
 import PublicRoute from "./Utility/PublicRoute";
-import { useAuth } from "./Utility/AuthContext";
 
 import Navbar from "./Components/Navbar";
-import Sidebar from "./Components/Sidebar";
+import PrivateLayout from "./Layouts/PrivateLayout";
 
 import Home from "./Pages/Home";
 import HomePrivate from "./Pages/HomePrivate";
@@ -24,106 +21,33 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const App = () => {
-  const { authenticated } = useAuth();
-  const [isSidebarClosed, setIsSidebarClosed] = useState(true);
-  const hasSidebar = authenticated;
-
-  const contentClass = hasSidebar
-    ? isSidebarClosed
-      ? "sidebar-closed"
-      : "sidebar-open"
-    : "no-sidebar";
-
   return (
     <>
       <Router>
         <Mode />
+        <Navbar />
 
-        {hasSidebar && (
-          <Sidebar
-            isClosed={isSidebarClosed}
-            setIsClosed={setIsSidebarClosed}
-          />
-        )}
+        <Routes>
+          <Route element={<PublicRoute />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+          </Route>
 
-        <Navbar hasSidebar={hasSidebar} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/forget-password" element={<ForgetPassword />} />
 
-        <main className={`app-content ${contentClass}`}>
-          <Routes>
-
-            <Route
-              path="/"
-              element={
-                <PublicRoute>
-                  <Home />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/login"
-              element={
-                <PublicRoute>
-                  <Login />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/signup"
-              element={
-                <PublicRoute>
-                  <Signup />
-                </PublicRoute>
-              }
-            />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/forget-password" element={<ForgetPassword />} />
-
-            <Route
-              path="/home"
-              element={
-                <PrivateRoute>
-                  <HomePrivate />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={
-                <PrivateRoute>
-                  <Dashboard />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/account"
-              element={
-                <PrivateRoute>
-                  <Account />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/projects/:projectId"
-              element={
-                <PrivateRoute>
-                  <ProjectLanding />
-                </PrivateRoute>
-              }
-            />
-          </Routes>
-        </main>
+          <Route element={<PrivateLayout />}>
+            <Route path="/home" element={<HomePrivate />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/account" element={<Account />} />
+            <Route path="/projects/:projectId" element={<ProjectLanding />} />
+          </Route>
+        </Routes>
       </Router>
 
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        newestOnTop
-        closeOnClick
-        pauseOnHover
-        draggable
-        theme="dark"
-      />
+      <ToastContainer position="top-right" autoClose={3000} theme="dark" />
     </>
   );
 };

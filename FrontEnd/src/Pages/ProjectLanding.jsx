@@ -20,7 +20,6 @@ const ProjectLanding = () => {
   const [showViewRecipe, setShowViewRecipe] = useState(false);
   const [showCreateRecipe, setShowCreateRecipe] = useState(false);
 
-  const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [recipeDetail, setRecipeDetail] = useState(null);
 
   useEffect(() => {
@@ -28,17 +27,17 @@ const ProjectLanding = () => {
   }, [projectId]);
 
   useEffect(() => {
-  const openView = () => setShowViewRecipe(true);
-  const openCreate = () => setShowCreateRecipe(true);
+    const openView = () => setShowViewRecipe(true);
+    const openCreate = () => setShowCreateRecipe(true);
 
-  window.addEventListener("open-view-recipe", openView);
-  window.addEventListener("open-create-recipe", openCreate);
+    window.addEventListener("open-view-recipe", openView);
+    window.addEventListener("open-create-recipe", openCreate);
 
-  return () => {
-    window.removeEventListener("open-view-recipe", openView);
-    window.removeEventListener("open-create-recipe", openCreate);
-  };
-}, []);
+    return () => {
+      window.removeEventListener("open-view-recipe", openView);
+      window.removeEventListener("open-create-recipe", openCreate);
+    };
+  }, []);
 
   const fetchProject = async () => {
     try {
@@ -47,6 +46,7 @@ const ProjectLanding = () => {
       setProject(res.data);
     } catch (err) {
       console.error(err);
+      setProject(null);
     } finally {
       setLoading(false);
     }
@@ -54,28 +54,16 @@ const ProjectLanding = () => {
 
   const handleRecipeSelect = async (recipeId) => {
     try {
-      setShowViewRecipe(false);
-      const res = await api.get(`/api/recipes/${recipeId}/`);
-      setSelectedRecipe(recipeId);
+      const res = await api.get(`/api/projects/${projectId}/recipes/${recipeId}/`);
       setRecipeDetail(res.data);
+      setShowViewRecipe(false);
     } catch (err) {
       console.error(err);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="page-container">
-        <div className="page-inner">
-          <div className="project-hero-skeleton pulse" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!project) {
-    return <div className="page-container">Project not found</div>;
-  }
+  if (loading) return <div className="project-hero-skeleton pulse" />;
+  if (!project) return <div>Project not found</div>;
 
   return (
     <div className="page-container fade-in">
@@ -86,28 +74,25 @@ const ProjectLanding = () => {
           <div className="project-overview-header">
             <h2 className="project-overview-title">Project Overview</h2>
             <p className="project-overview-subtitle">
-              Live insights, trends, and operational visibility
+              Recipe-driven operational structure
             </p>
           </div>
 
           <div className="project-overview-canvas">
             {!recipeDetail ? (
               <div className="overview-empty-state">
-                Select a recipe to view its structure
+                Select a recipe to render
               </div>
             ) : (
               <RecipeTable recipe={recipeDetail} />
             )}
-          </div>
-
-          <div className="project-overview-controls bottom">
           </div>
         </section>
 
         <section className="project-actions-section">
           <h2 className="project-actions-title">Project Controls</h2>
           <div className="project-grid">
-            {project.role === "root_admin" && <ProjectActionsRoot />}
+            {project.role === "root" && <ProjectActionsRoot />}
             {project.role === "admin" && <ProjectActionsAdmin />}
             {project.role === "user" && <ProjectActionsUser />}
           </div>
@@ -126,9 +111,7 @@ const ProjectLanding = () => {
         <CreateRecipeModal
           projectId={projectId}
           onClose={() => setShowCreateRecipe(false)}
-          onCreated={() => {
-            setShowCreateRecipe(false);
-          }}
+          onCreated={() => setShowCreateRecipe(false)}
         />
       )}
     </div>

@@ -157,7 +157,7 @@ input:checked + .slider {
 
 .navbar {
   position: fixed;
-  z-index: 100;
+  z-index: 900;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -825,11 +825,6 @@ header .image-text .header-text {
 }
 
 @media (max-width: 768px) {
-  .app-content {
-    margin-left: 72px;
-    width: calc(100% - 72px);
-  }
-
   .sidebar {
     width: 72px;
     padding: 8px;
@@ -2645,4 +2640,15 @@ header .image-text .header-text {
 
 .recipe-table tr:hover {
   background: #fafafa;
+}
+
+.side-link.disabled {
+  opacity: 0.35;
+  pointer-events: none;
+  filter: grayscale(100%);
+}
+
+.side-link.disabled .icon,
+.side-link.disabled .text {
+  cursor: not-allowed;
 }

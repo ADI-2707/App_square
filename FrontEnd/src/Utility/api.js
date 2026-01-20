@@ -56,7 +56,7 @@ api.interceptors.response.use(
       }
     }
 
-    setLoadingCallback(false); // STOP LOADER ON ERROR
+    setLoadingCallback(false);
     return Promise.reject(error);
   }
 );

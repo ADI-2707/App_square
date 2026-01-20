@@ -1,37 +1,25 @@
 import React from "react";
 
 const RecipeTable = ({ recipe }) => {
-  const tags = new Set();
-
-  recipe.recipe_combinations.forEach((rc) => {
-    rc.combination.tag_values.forEach((tv) => {
-      tags.add(tv.tag.name);
-    });
-  });
-
-  const tagList = Array.from(tags);
+  const tags = recipe.combinations[0]?.tags.map(t => t.tag.name) ?? [];
 
   return (
     <table className="recipe-table">
       <thead>
         <tr>
           <th>Combination</th>
-          {tagList.map((tag) => (
-            <th key={tag}>{tag}</th>
+          {tags.map(t => (
+            <th key={t}>{t}</th>
           ))}
         </tr>
       </thead>
-
       <tbody>
-        {recipe.recipe_combinations.map((rc) => (
-          <tr key={rc.combination.id}>
-            <td>{rc.combination.name}</td>
-            {tagList.map((tag) => {
-              const tv = rc.combination.tag_values.find(
-                (t) => t.tag.name === tag
-              );
-              return <td key={tag}>{tv ? tv.value : "-"}</td>;
-            })}
+        {recipe.combinations.map(c => (
+          <tr key={c.id}>
+            <td>{c.name}</td>
+            {c.tags.map(tv => (
+              <td key={tv.tag.id}>{tv.value}</td>
+            ))}
           </tr>
         ))}
       </tbody>
