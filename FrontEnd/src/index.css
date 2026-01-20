@@ -548,7 +548,7 @@ input:checked + .slider {
   opacity: 0;
   pointer-events: auto;
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
-  overflow: visible !important;
+  overflow: hidden;
 }
 
 .sidebar.sidebar-enter {
@@ -672,7 +672,7 @@ header .image-text .header-text {
 }
 
 .header-text .profession {
-  font-size: 8px;
+  font-size: var(--text-sm);
   margin-top: 1px;
   color: red;
 }
@@ -757,7 +757,7 @@ header .image-text .header-text {
   flex-direction: column;
   justify-content: space-between;
   overflow-y: auto;
-  overflow-x: visible !important;
+  overflow-x: hidden;
 }
 
 .sidebar.close,

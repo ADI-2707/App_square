@@ -3,18 +3,13 @@ import { useState, useEffect } from "react";
 import Sidebar from "../Components/Sidebar";
 
 const PrivateLayout = () => {
-  const [isClosed, setIsClosed] = useState(false);
-
-  useEffect(() => {
-    setIsClosed(false);
-  }, []);
+  const [isClosed, setIsClosed] = useState(true);
 
   return (
     <>
       <Sidebar
         isClosed={isClosed}
         setIsClosed={setIsClosed}
-        forceOpen
       />
 
       <main

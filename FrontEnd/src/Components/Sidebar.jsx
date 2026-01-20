@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { IoIosArrowForward, IoMdPricetags } from "react-icons/io";
 import { MdSpaceDashboard } from "react-icons/md";
 import { RiAlarmWarningFill } from "react-icons/ri";
@@ -26,15 +26,14 @@ const SIDEBAR_ITEMS = [
 const PROJECT_REQUIRED = SIDEBAR_ITEMS.map((i) => i.id);
 
 const Sidebar = ({ isClosed, setIsClosed, forceOpen }) => {
-  useEffect(() => {
-    if (forceOpen) {
-      setIsClosed(false);
-    }
-  }, [forceOpen]);
-  const navigate = useNavigate();
-  const { logout, hasProjectAccess, loadingProjects } = useAuth();
 
+  const navigate = useNavigate();
+
+  const { logout, hasProjectAccess, loadingProjects } = useAuth();
   const [contextMenu, setContextMenu] = useState(null);
+
+  const location = useLocation();
+  const isInsideProject = location.pathname.startsWith("/projects/");
 
   const toggleSidebar = () => {
     if (window.innerWidth <= 768) return;
@@ -66,7 +65,7 @@ const Sidebar = ({ isClosed, setIsClosed, forceOpen }) => {
           <img src="/app.svg" alt="logo" />
           <div className="text">
             <span className="name">App Square</span>
-            <span className="profession">Authorized Personnel Only</span>
+            <p className="profession">Authorized Personnel Only</p>
           </div>
         </div>
 
@@ -80,15 +79,14 @@ const Sidebar = ({ isClosed, setIsClosed, forceOpen }) => {
         <ul className="menu-links">
           {SIDEBAR_ITEMS.map((item) => {
             const disabled =
-              loadingProjects ||
-              (!hasProjectAccess && PROJECT_REQUIRED.includes(item.id));
+              loadingProjects || !isInsideProject;
 
             return (
               <li
                 key={item.id}
                 className={`side-link ${disabled ? "disabled" : ""}`}
               >
-                <div className="link" onClick={(e) => handleItemClick(e, item)}>
+                <div className="link" data-tooltip={item.label} onClick={(e) => handleItemClick(e, item)}>
                   <item.icon className="icon" />
                   <span className="text">{item.label}</span>
                 </div>
@@ -99,14 +97,14 @@ const Sidebar = ({ isClosed, setIsClosed, forceOpen }) => {
 
         <div className="bottom-content">
           <li className="side-link">
-            <div className="link" onClick={() => navigate("/history")}>
+            <div className="link" data-tooltip="History" onClick={() => navigate("/history")}>
               <FaHistory className="icon" />
               <span className="text">History</span>
             </div>
           </li>
 
           <li className="side-link">
-            <div className="link" onClick={handleLogout}>
+            <div className="link" data-tooltip="Logout" onClick={handleLogout}>
               <IoLogOut className="icon" />
               <span className="text">Logout</span>
             </div>
