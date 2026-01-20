@@ -12,50 +12,108 @@ import { IoLogOut, IoSearch } from "react-icons/io5";
 import { useAuth } from "../Utility/AuthContext";
 
 const SIDEBAR_ITEMS = [
-  { id: "dashboard", label: "Dashboard", icon: MdSpaceDashboard },
-  { id: "alarm", label: "Alarm", icon: RiAlarmWarningFill },
-  { id: "trends", label: "Trends", icon: FaArrowTrendUp },
-  { id: "data-logger", label: "Data Logger", icon: BsDatabaseFillGear },
-  { id: "recipe", label: "Recipe Management", icon: FaFileCode },
-  { id: "tag", label: "Tag Management", icon: IoMdPricetags },
-  { id: "users", label: "User Management", icon: FaUserFriends },
-  { id: "audit", label: "Audit Trail", icon: SiAdobeaudition },
-  { id: "templates", label: "Templates", icon: HiTemplate },
+  { id: "dashboard",
+    label: "Dashboard",
+    icon: MdSpaceDashboard,
+    requiresProject: true,
+    actions: [
+      { id: "view-dashboard", label: "View Dashboard", action: "viewDashboard" },
+      { id: "create-dashboard", label: "Create Dashboard", action: "createDashboard" }
+    ]
+   },
+  { id: "alarm",
+    label: "Alarm",
+    icon: RiAlarmWarningFill,
+    requiresProject: true,
+    actions: [
+      { id: "view-alarm", label: "View Alarms", action: "viewAlarm" },
+      { id: "create-alarm", label: "Create Alarms", action: "createAlarm" }
+    ]
+   },
+  { id: "trends",
+    label: "Trends",
+    icon: FaArrowTrendUp,
+    requiresProject: true,
+    actions: [
+      { id: "view-trends", label: "View Trends", action: "viewTrends" },
+      { id: "compare-trends", label: "Compare Trends", action: "compareTrends" }
+    ]
+  },
+  { id: "data-logger",
+    label: "Data Logger",
+    icon: BsDatabaseFillGear,
+    requiresProject: true,
+    actions: [
+      { id: "view-logs", label: "View Logs", action: "viewLogs" },
+      { id: "log-settings", label: "Log Settings", action: "logSettings" }
+    ]
+  },
+  { id: "recipe",
+    label: "Recipe Management",
+    icon: FaFileCode,
+    requiresProject: true,
+    actions: [
+      { id: "view-recipe", label: "View Recipes", action: "viewRecipe" },
+      { id: "create-recipe", label: "Create Recipe", action: "createRecipe" }
+    ]
+  },
+  { id: "tag",
+    label: "Tag Management",
+    icon: IoMdPricetags,
+    requiresProject: true,
+    actions: [
+      { id: "add-tags", label: "Add Tags", action: "addTags" },
+      { id: "manage-tags", label: "Manage Tags", action: "manageTags" }
+    ]
+  },
+  { id: "users",
+    label: "User Management",
+    icon: FaUserFriends,
+    requiresProject: true,
+    actions: [
+      { id: "see-users", label: "See Users", action: "seeUsers" },
+      { id: "add-users", label: "Add Users", action: "addUsers" }
+    ]
+  },
+  { id: "audit",
+    label: "Audit Trail",
+    icon: SiAdobeaudition,
+    requiresProject: true,
+    actions: [
+      { id: "audit-history", label: "Audit History", action: "auditHistory" },
+      { id: "analysis", label: "Analysis", action: "analysis" }
+    ]
+  },
+  { id: "templates",
+    label: "Templates",
+    icon: HiTemplate,
+    requiresProject: true,
+    actions: [
+      { id: "add-templates", label: "Add Templates", action: "addTemplates" },
+      { id: "create-templates", label: "Create Templates", action: "createTemplates" }
+    ]
+  },
 ];
 
-const PROJECT_REQUIRED = SIDEBAR_ITEMS.map((i) => i.id);
-
-const Sidebar = ({ isClosed, setIsClosed, forceOpen }) => {
-
+const Sidebar = ({ isClosed, setIsClosed }) => {
+  const { logout, loadingProjects } = useAuth();
   const navigate = useNavigate();
-
-  const { logout, hasProjectAccess, loadingProjects } = useAuth();
-  const [contextMenu, setContextMenu] = useState(null);
-
   const location = useLocation();
+
   const isInsideProject = location.pathname.startsWith("/projects/");
+  const [expandedItem, setExpandedItem] = useState(null);
 
   const toggleSidebar = () => {
     if (window.innerWidth <= 768) return;
-    setIsClosed((prev) => !prev);
+    setIsClosed(prev => !prev);
   };
 
-  const handleItemClick = (e, item) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (loadingProjects) return;
-
-    if (!hasProjectAccess && PROJECT_REQUIRED.includes(item.id)) {
-      return;
-    }
-
-    navigate(`/${item.id}`);
+  const toggleMenu = (itemId) => {
+    setExpandedItem(prev => (prev === itemId ? null : itemId));
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  const fireAction = (eventName) => {
+    window.dispatchEvent(new CustomEvent(eventName));
   };
 
   return (
@@ -65,7 +123,7 @@ const Sidebar = ({ isClosed, setIsClosed, forceOpen }) => {
           <img src="/app.svg" alt="logo" />
           <div className="text">
             <span className="name">App Square</span>
-            <p className="profession">Authorized Personnel Only</p>
+            <span className="profession">Authorized Personnel Only</span>
           </div>
         </div>
 
@@ -77,19 +135,39 @@ const Sidebar = ({ isClosed, setIsClosed, forceOpen }) => {
 
       <div className="menu-bar">
         <ul className="menu-links">
-          {SIDEBAR_ITEMS.map((item) => {
-            const disabled =
-              loadingProjects || !isInsideProject;
+          {SIDEBAR_ITEMS.map(item => {
+            const disabled = loadingProjects || !isInsideProject;
 
             return (
               <li
                 key={item.id}
                 className={`side-link ${disabled ? "disabled" : ""}`}
               >
-                <div className="link" data-tooltip={item.label} onClick={(e) => handleItemClick(e, item)}>
+                <div
+                  className="link"
+                  data-tooltip={item.label}
+                  onClick={() => !disabled && toggleMenu(item.id)}
+                >
                   <item.icon className="icon" />
                   <span className="text">{item.label}</span>
                 </div>
+
+                {expandedItem === item.id && !disabled && (
+                  <ul className="submenu">
+                    {item.actions.map(action => (
+                      <li
+                        key={action.id}
+                        className="submenu-item"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          fireAction(action.event);
+                        }}
+                      >
+                        {action.label}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </li>
             );
           })}
@@ -97,14 +175,25 @@ const Sidebar = ({ isClosed, setIsClosed, forceOpen }) => {
 
         <div className="bottom-content">
           <li className="side-link">
-            <div className="link" data-tooltip="History" onClick={() => navigate("/history")}>
+            <div
+              className="link"
+              data-tooltip="History"
+              onClick={() => navigate("/history")}
+            >
               <FaHistory className="icon" />
               <span className="text">History</span>
             </div>
           </li>
 
           <li className="side-link">
-            <div className="link" data-tooltip="Logout" onClick={handleLogout}>
+            <div
+              className="link"
+              data-tooltip="Logout"
+              onClick={() => {
+                logout();
+                navigate("/login");
+              }}
+            >
               <IoLogOut className="icon" />
               <span className="text">Logout</span>
             </div>
