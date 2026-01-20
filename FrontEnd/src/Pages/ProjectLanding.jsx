@@ -92,7 +92,7 @@ const ProjectLanding = () => {
         <section className="project-actions-section">
           <h2 className="project-actions-title">Project Controls</h2>
           <div className="project-grid">
-            {project.role === "root" && <ProjectActionsRoot />}
+            {project.role === "root_admin" && <ProjectActionsRoot />}
             {project.role === "admin" && <ProjectActionsAdmin />}
             {project.role === "user" && <ProjectActionsUser />}
           </div>
