@@ -53,8 +53,8 @@ const SIDEBAR_ITEMS = [
     icon: FaFileCode,
     requiresProject: true,
     actions: [
-      { id: "view-recipe", label: "View Recipes", action: "viewRecipe" },
-      { id: "create-recipe", label: "Create Recipe", action: "createRecipe" }
+      { id: "view-recipe", label: "View Recipes", action: "open-view-recipe" },
+      { id: "create-recipe", label: "Create Recipe", action: "open-create-recipe" }
     ]
   },
   { id: "tag",
@@ -160,7 +160,7 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
                         className="submenu-item"
                         onClick={(e) => {
                           e.stopPropagation();
-                          fireAction(action.event);
+                          fireAction(action.action);
                         }}
                       >
                         {action.label}
