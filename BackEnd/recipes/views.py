@@ -3,14 +3,30 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.db import transaction
-from .models import (
-    Recipe,
-    Combination,
-    CombinationTag,
-    RecipeCombination,
-    Tag
+
+from .models import Recipe, Combination, RecipeCombination, Tag
+from .serializers import (
+    RecipeDetailSerializer,
+    RecipeCreateSerializer,
+    TagSerializer,
+    CombinationSerializer
 )
-from .serializers import RecipeDetailSerializer
+from .utils import get_user_role, verify_project_pin
+from projects.models import Project
+
+
+class TagListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response(TagSerializer(Tag.objects.all(), many=True).data)
+
+
+class CombinationListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response(CombinationSerializer(Combination.objects.all(), many=True).data)
 
 
 class ProjectRecipesView(APIView):
@@ -18,8 +34,7 @@ class ProjectRecipesView(APIView):
 
     def get(self, request, project_id):
         recipes = Recipe.objects.filter(project_id=project_id)
-        data = [{"id": r.id, "name": r.name} for r in recipes]
-        return Response(data)
+        return Response([{"id": r.id, "name": r.name} for r in recipes])
 
 
 class RecipeDetailView(APIView):
@@ -27,8 +42,7 @@ class RecipeDetailView(APIView):
 
     def get(self, request, recipe_id):
         recipe = Recipe.objects.get(id=recipe_id)
-        serializer = RecipeDetailSerializer(recipe)
-        return Response(serializer.data)
+        return Response(RecipeDetailSerializer(recipe).data)
 
 
 class CreateRecipeView(APIView):
@@ -36,36 +50,35 @@ class CreateRecipeView(APIView):
 
     @transaction.atomic
     def post(self, request, project_id):
+        role = get_user_role(request.user, project_id)
+
+        if role not in ("root", "admin"):
+            return Response({"detail": "Forbidden"}, status=403)
+
+        project = Project.objects.get(id=project_id)
+
+        if role == "root":
+            pin = request.data.get("pin")
+            if not pin or not verify_project_pin(project, pin):
+                return Response({"detail": "Invalid PIN"}, status=403)
+
         serializer = RecipeCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        data = serializer.validated_data
-
         recipe = Recipe.objects.create(
-            name=data["name"],
-            project_id=project_id
+            name=serializer.validated_data["name"],
+            project=project
         )
 
-        for index, combo_data in enumerate(data["combinations"]):
-            combination = Combination.objects.create(
-                name=combo_data["name"]
-            )
+        combos = Combination.objects.filter(
+            id__in=serializer.validated_data["combination_ids"]
+        )
 
-            for tag_data in combo_data["tags"]:
-                tag = Tag.objects.get(id=tag_data["tag_id"])
-                CombinationTag.objects.create(
-                    combination=combination,
-                    tag=tag,
-                    value=tag_data["value"]
-                )
-
+        for idx, combo in enumerate(combos):
             RecipeCombination.objects.create(
                 recipe=recipe,
-                combination=combination,
-                order=index
+                combination=combo,
+                order=idx
             )
 
-        return Response(
-            {"message": "Recipe created successfully"},
-            status=status.HTTP_201_CREATED
-        )
+        return Response({"message": "Recipe created"}, status=201)

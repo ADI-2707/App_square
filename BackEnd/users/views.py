@@ -9,15 +9,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import check_password
 from .serializers import ChangePasswordSerializer
 
-from .models import UserProfile, Project, ProjectMember
+from .models import UserProfile
+from projects.models import Project, ProjectMember
 from .serializers import RegisterSerializer, LoginSerializer
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-# ======================================================
-# AUTH
-# ======================================================
 
 @api_view(["POST"])
 def register(request):
@@ -44,7 +42,6 @@ def login(request):
 
     refresh = RefreshToken.for_user(user)
 
-    # Safe profile fetch
     try:
         profile = UserProfile.objects.get(user=user)
         full_name = profile.full_name
@@ -68,9 +65,6 @@ def login(request):
     )
 
 
-# ======================================================
-# PROJECTS
-# ======================================================
 
 class CreateProjectView(APIView):
     """
@@ -98,20 +92,17 @@ class CreateProjectView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Create project
         project = Project.objects.create(
             name=name.strip(),
             owner=user,
         )
 
-        # Root admin membership
         ProjectMember.objects.create(
             project=project,
             user=user,
             role="root",
         )
 
-        # Add members (email-based)
         for member in members:
             email = member.get("email")
             role = member.get("role", "user")
@@ -122,9 +113,8 @@ class CreateProjectView(APIView):
             try:
                 member_user = User.objects.get(email=email)
             except User.DoesNotExist:
-                continue  # later replace with invite flow
+                continue
 
-            # Prevent duplicate entry
             if member_user == user:
                 continue
 
@@ -223,21 +213,18 @@ class ChangePasswordView(APIView):
         current_password = serializer.validated_data["current_password"]
         new_password = serializer.validated_data["new_password"]
 
-        # Verify current password
         if not user.check_password(current_password):
             return Response(
                 {"detail": "Current password is incorrect."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Prevent reusing same password
         if current_password == new_password:
             return Response(
                 {"detail": "New password cannot be the same as the current password."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Set new password securely
         user.set_password(new_password)
         user.save()
 

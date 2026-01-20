@@ -3,10 +3,6 @@ from projects.models import Project
 
 
 class Tag(models.Model):
-    """
-    Atomic measurable unit.
-    Example: Tag1, Tag2, Tag3
-    """
     name = models.CharField(max_length=50, unique=True)
     default_value = models.FloatField(default=0)
 
@@ -15,10 +11,6 @@ class Tag(models.Model):
 
 
 class Combination(models.Model):
-    """
-    Group of tags with fixed values.
-    Example: C1, C2, C3
-    """
     name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
@@ -26,10 +18,6 @@ class Combination(models.Model):
 
 
 class CombinationTag(models.Model):
-    """
-    Junction table:
-    Combination ↔ Tag with value
-    """
     combination = models.ForeignKey(
         Combination,
         related_name="tag_values",
@@ -45,15 +33,8 @@ class CombinationTag(models.Model):
     class Meta:
         unique_together = ("combination", "tag")
 
-    def __str__(self):
-        return f"{self.combination} - {self.tag}: {self.value}"
-
 
 class Recipe(models.Model):
-    """
-    Recipe composed of combinations.
-    Example: R1, R2, R3
-    """
     name = models.CharField(max_length=50)
     project = models.ForeignKey(
         Project,
@@ -65,15 +46,8 @@ class Recipe(models.Model):
     class Meta:
         unique_together = ("name", "project")
 
-    def __str__(self):
-        return f"{self.name} ({self.project})"
-
 
 class RecipeCombination(models.Model):
-    """
-    Junction table:
-    Recipe ↔ Combination
-    """
     recipe = models.ForeignKey(
         Recipe,
         related_name="recipe_combinations",
@@ -88,6 +62,3 @@ class RecipeCombination(models.Model):
     class Meta:
         unique_together = ("recipe", "combination")
         ordering = ["order"]
-
-    def __str__(self):
-        return f"{self.recipe} → {self.combination}"

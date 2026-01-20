@@ -3,10 +3,9 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from .models import UserProfile
 from django.contrib.auth import authenticate
-from .models import Project, ProjectMember
+from projects.models import Project, ProjectMember
 
 
-# 🔐 Password rule (same as frontend)
 password_validator = RegexValidator(
     regex=r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#_])[A-Za-z\d@#_]{8,}$',
     message=(
@@ -27,7 +26,6 @@ class RegisterSerializer(serializers.Serializer):
     confirmPassword = serializers.CharField(write_only=True)
 
     def validate_email(self, value):
-        # Ensure unique email (case-insensitive)
         if User.objects.filter(email__iexact=value).exists():
             raise serializers.ValidationError("Email already registered!")
         return value
@@ -46,14 +44,12 @@ class RegisterSerializer(serializers.Serializer):
         password = validated_data["password"]
         fullname = validated_data["fullname"]
 
-        # Create Django user
         user = User.objects.create_user(
-            username=email,  # email as username
+            username=email,
             email=email,
             password=password
         )
 
-        # Create user profile
         UserProfile.objects.create(
             user=user,
             full_name=fullname
@@ -70,18 +66,14 @@ class LoginSerializer(serializers.Serializer):
         email = data.get("email")
         password = data.get("password")
 
-        # 1. Check if the user exists at all
         user_exists = User.objects.filter(username=email).exists()
         
         if not user_exists:
-            # If email is not in DB, tell them to register
             raise serializers.ValidationError({"email": "User not found. Please register first!"})
 
-        # 2. If user exists, try to authenticate with the password
         user = authenticate(username=email, password=password)
 
         if not user:
-            # If user exists but password is wrong
             raise serializers.ValidationError({"password": "Invalid credentials!"})
 
         if not user.is_active:
