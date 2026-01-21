@@ -10,21 +10,25 @@ const api = axios.create({
 });
 
 let setLoadingCallback = () => {};
+
 export const injectLoader = (callback) => {
   setLoadingCallback = callback;
 };
 
-api.interceptors.request.use((config) => {
-  setLoadingCallback(true);
-  const accessToken = localStorage.getItem("access");
-  if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`;
-  }
-  return config;
-}, (error) => {
-  setLoadingCallback(false);
-  return Promise.reject(error);
-});
+api.interceptors.request.use(
+  (config) => {
+    setLoadingCallback(true);
+    const accessToken = localStorage.getItem("accessToken");
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+    return config;
+  },
+  (error) => {
+    setLoadingCallback(false);
+    return Promise.reject(error);
+  },
+);
 
 api.interceptors.response.use(
   (response) => {
@@ -37,28 +41,31 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const refreshToken = localStorage.getItem("refresh");
+        const refreshToken = localStorage.getItem("refreshToken");
         if (!refreshToken) throw new Error("No refresh token");
 
-        const res = await axios.post(`${API_BASE_URL}/api/auth/token/refresh/`, {
-          refresh: refreshToken,
-        });
+        const res = await axios.post(
+          `${API_BASE_URL}/api/auth/token/refresh/`,
+          {
+            refresh: refreshToken,
+          },
+        );
 
-        localStorage.setItem("access", res.data.access);
+        localStorage.setItem("accessToken", res.data.access);
         originalRequest.headers.Authorization = `Bearer ${res.data.access}`;
         return api(originalRequest);
       } catch (err) {
         setLoadingCallback(false);
         localStorage.removeItem("access");
-localStorage.removeItem("refresh");
-window.location.replace("/login");
+        localStorage.removeItem("refresh");
+        window.location.replace("/login");
         return Promise.reject(err);
       }
     }
 
     setLoadingCallback(false);
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

@@ -1,15 +1,18 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { isAuthenticated, getUser } from "./auth";
 import api, { injectLoader } from "./api";
 import Loader from "../Components/Loader";
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [authenticated, setAuthenticated] = useState(isAuthenticated());
-  const [user, setUser] = useState(getUser());
-  const [globalLoading, setGlobalLoading] = useState(false);
+  const [authenticated, setAuthenticated] = useState(
+    !!localStorage.getItem("accessToken")
+  );
+  const [user, setUser] = useState(
+    JSON.parse(localStorage.getItem("user"))
+  );
 
+  const [globalLoading, setGlobalLoading] = useState(false);
   const [hasProjectAccess, setHasProjectAccess] = useState(false);
   const [loadingProjects, setLoadingProjects] = useState(false);
 
@@ -27,9 +30,8 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoadingProjects(true);
       const res = await api.get("/api/projects/my-projects/");
-      setHasProjectAccess(
-        Array.isArray(res.data?.results) && res.data.results.length > 0,
-      );
+
+      setHasProjectAccess(Array.isArray(res.data) && res.data.length > 0);
     } catch (err) {
       console.error("Project access check failed", err);
       setHasProjectAccess(false);
@@ -41,15 +43,15 @@ export const AuthProvider = ({ children }) => {
   const login = (userData) => {
     setAuthenticated(true);
     setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
   };
 
   const logout = () => {
-    localStorage.removeItem("access");
-    localStorage.removeItem("refresh");
-    localStorage.removeItem("user");
+    localStorage.clear();
     setAuthenticated(false);
     setUser(null);
     setHasProjectAccess(false);
+    window.location.replace("/login");
   };
 
   return (
