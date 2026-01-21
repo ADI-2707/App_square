@@ -44,6 +44,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
+    localStorage.removeItem("user");
     setAuthenticated(false);
     setUser(null);
     setHasProjectAccess(false);

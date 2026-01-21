@@ -9,15 +9,14 @@ const api = axios.create({
   },
 });
 
-// We will inject the setGlobalLoading function here from AuthContext
 let setLoadingCallback = () => {};
 export const injectLoader = (callback) => {
   setLoadingCallback = callback;
 };
 
 api.interceptors.request.use((config) => {
-  setLoadingCallback(true); // START LOADER
-  const accessToken = localStorage.getItem("accessToken");
+  setLoadingCallback(true);
+  const accessToken = localStorage.getItem("access");
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
@@ -29,7 +28,7 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => {
-    setLoadingCallback(false); // STOP LOADER
+    setLoadingCallback(false);
     return response;
   },
   async (error) => {
@@ -38,20 +37,21 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const refreshToken = localStorage.getItem("refreshToken");
+        const refreshToken = localStorage.getItem("refresh");
         if (!refreshToken) throw new Error("No refresh token");
 
         const res = await axios.post(`${API_BASE_URL}/api/auth/token/refresh/`, {
           refresh: refreshToken,
         });
 
-        localStorage.setItem("accessToken", res.data.access);
+        localStorage.setItem("access", res.data.access);
         originalRequest.headers.Authorization = `Bearer ${res.data.access}`;
         return api(originalRequest);
       } catch (err) {
         setLoadingCallback(false);
-        localStorage.clear();
-        window.location.href = "/login";
+        localStorage.removeItem("access");
+localStorage.removeItem("refresh");
+window.location.replace("/login");
         return Promise.reject(err);
       }
     }

@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaUserShield } from "react-icons/fa";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { toast } from "react-toastify";
-import api from "../Utility/api"; // You have api utility, let's use it for consistency
+import api from "../Utility/api";
 import { useAuth } from "../Utility/AuthContext";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -32,11 +32,9 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // Using 'api' utility is better as it handles headers automatically
       const res = await api.post("/api/auth/login/", formData);
       const data = res.data;
 
-      // ✅ Store tokens and user data
       localStorage.setItem("accessToken", data.tokens.access);
       localStorage.setItem("refreshToken", data.tokens.refresh);
       localStorage.setItem("user", JSON.stringify(data.user));
@@ -46,16 +44,10 @@ const Login = () => {
       navigate("/home", { replace: true });
       
     } catch (error) {
-      // ✅ Handle the specific error messages from LoginSerializer
-      // 1. Check if it's a validation error (400)
-      // 2. data can be an object or an array depending on how DRF sends it
       const errorData = error.response?.data;
       let msg = "Unable to login. Please try again!";
 
       if (errorData) {
-        // Check for specific field errors first (from your new Serializer logic)
-        // If 'email' error exists, it's the "Register first" message.
-        // If 'password' error exists, it's the "Invalid credentials" message.
         msg = errorData.email?.[0] || 
               errorData.password?.[0] || 
               errorData.error || 

@@ -42,12 +42,10 @@ const HomePrivate = () => {
   const loadingOwnedRef = useRef(false);
   const loadingJoinedRef = useRef(false);
 
-  /* ---------- THE ONLY INITIAL LOAD EFFECT ---------- */
   useEffect(() => {
     if (!isAuthenticated()) return;
 
     const initFetch = async () => {
-      // SET LOCKS IMMEDIATELY
       loadingOwnedRef.current = true;
       loadingJoinedRef.current = true;
       setIsInitialLoading(true);
@@ -81,8 +79,6 @@ const HomePrivate = () => {
     initFetch();
   }, []);
 
-  /* ---------- INFINITE SCROLL HANDLERS ---------- */
-  // Wrapped in useCallback to prevent ProjectSection from re-rendering/re-observing constantly
   const loadOwned = useCallback(async () => {
     if (!ownedHasMore || loadingOwnedRef.current || isInitialLoading) return;
 
@@ -94,7 +90,6 @@ const HomePrivate = () => {
 
       setOwned((prev) => {
         if (!ownedCursor) return res.data.results;
-        // Deduplicate using a Map
         const map = new Map(prev.map((p) => [p.id, p]));
         res.data.results.forEach((p) => map.set(p.id, p));
 
@@ -133,7 +128,6 @@ const HomePrivate = () => {
     }
   }, [joinedHasMore, joinedCursor, isInitialLoading]);
 
-  /* ---------- CREATE PROJECT ---------- */
   const handleCreate = async (payload) => {
     try {
       const res = await api.post("/api/projects/create/", payload);
@@ -155,7 +149,6 @@ const HomePrivate = () => {
     }
   };
 
-  /* ---------- SEARCH LOGIC ---------- */
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSearchResults([]);
@@ -209,7 +202,6 @@ const HomePrivate = () => {
         />
       )}
 
-      {/* Show sections only when they have data or are still loading the first page */}
       {(owned.length > 0 || isInitialLoading) && (
         <ProjectSection
           title="Owned Projects"

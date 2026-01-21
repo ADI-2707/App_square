@@ -75,7 +75,8 @@ body {
   color: var(--text-color);
   transition: background-color 0.3s ease, color 0.3s ease;
   margin: 0;
-  height: 100vh;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 body::before {
@@ -165,8 +166,8 @@ input:checked + .slider {
   left: 0;
   right: 0;
   top: 15px;
-  pointer-events: none;
-  opacity: 0;
+  pointer-events: auto;
+  opacity: 1;
   transform: translateY(-24px);
   transition: left 0.45s cubic-bezier(0.22, 1, 0.36, 1), 
               width 0.45s cubic-bezier(0.22, 1, 0.36, 1),
@@ -535,11 +536,11 @@ input:checked + .slider {
 
 .sidebar {
   position: fixed;
-  top: 0;
+  top: 96px;
   left: 0;
   width: 250px;
   padding: 10px 14px;
-  height: 100%;
+  height: calc(100vh - 96px);
   background-color: var(--text-color);
   color: var(--bg-color);
   border-right: 1px solid var(--accent-color);
@@ -860,6 +861,7 @@ header .image-text .header-text {
 .app-content {
   min-height: 100vh;
   padding: 10px;
+  padding-top: 96px;
   transition: margin-left 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 

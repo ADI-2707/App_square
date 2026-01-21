@@ -1,11 +1,14 @@
-import { Navigate } from "react-router-dom";
-import { isAuthenticated } from "./auth";
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "./AuthContext";
 
-const PublicRoute = ({ children }) => {
-  if (isAuthenticated()) {
+const PublicRoute = () => {
+  const { authenticated } = useAuth();
+
+  if (authenticated) {
     return <Navigate to="/home" replace />;
   }
-  return children;
+
+  return <Outlet />;
 };
 
 export default PublicRoute;

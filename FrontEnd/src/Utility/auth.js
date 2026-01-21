@@ -1,5 +1,7 @@
 export const isAuthenticated = () => {
-  return !!localStorage.getItem("accessToken");
+  const access = localStorage.getItem("access");
+  const refresh = localStorage.getItem("refresh");
+  return !!access && !!refresh;
 };
 
 export const getUser = () => {
