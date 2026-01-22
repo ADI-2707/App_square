@@ -83,7 +83,7 @@ const Navbar = ({ hasSidebar }) => {
           ) : (
             <>
               <button className="button" onClick={openCreateProject}>
-                {hasProjects ? "Add Project" : "Create Project"}
+                {hasProjects ? "Create Project" : "Add Project"}
               </button>
               <button className="user-avatar" onClick={() => navigate("/account")}>
                 {userInitial}

@@ -676,7 +676,7 @@ header .image-text .header-text {
 
 .header-text .name {
   font-weight: 600;
-  margin-top: 5px;
+  margin-top: 10px;
 }
 
 .profession {
@@ -684,7 +684,6 @@ header .image-text .header-text {
   margin-top: 1px;
   color: red;
   text-transform: uppercase;
-  margin-top: 5px;
 }
 
 .sidebar header .toggle {

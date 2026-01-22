@@ -80,7 +80,7 @@ const HomePrivate = () => {
   }, []);
 
   const loadOwned = useCallback(async () => {
-    if (!ownedHasMore || loadingOwnedRef.current || isInitialLoading) return;
+    if (!ownedHasMore || loadingOwnedRef.current) return;
 
     loadingOwnedRef.current = true;
     try {
@@ -89,13 +89,10 @@ const HomePrivate = () => {
       });
 
       setOwned((prev) => {
-        if (!ownedCursor) return res.data.results;
         const map = new Map(prev.map((p) => [p.id, p]));
         res.data.results.forEach((p) => map.set(p.id, p));
 
-        return Array.from(map.values()).sort(
-          (a, b) => new Date(b.created_at) - new Date(a.created_at),
-        );
+        return Array.from(map.values());
       });
 
       setOwnedCursor(res.data.next_cursor);

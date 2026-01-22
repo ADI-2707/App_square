@@ -23,9 +23,9 @@ export default function ProjectSection({
     if (!hasMore || !observerRef.current) return;
 
     const observer = new IntersectionObserver(handleIntersect, {
-      threshold: 1.0,
+      threshold: 0.1,
       root: null,
-      rootMargin: "0px",
+      rootMargin: "100px",
     });
 
     observer.observe(observerRef.current);
