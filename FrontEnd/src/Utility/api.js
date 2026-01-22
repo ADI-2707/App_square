@@ -56,8 +56,8 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (err) {
         setLoadingCallback(false);
-        localStorage.removeItem("access");
-        localStorage.removeItem("refresh");
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
         window.location.replace("/login");
         return Promise.reject(err);
       }

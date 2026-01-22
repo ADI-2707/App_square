@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { isAuthenticated, getUser } from "../Utility/auth";
+import { useAuth } from "../Utility/AuthContext";
 
 const Navbar = ({ hasSidebar }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -9,21 +10,12 @@ const Navbar = ({ hasSidebar }) => {
   const [hasProjects, setHasProjects] = useState(false);
 
   const navigate = useNavigate();
-  const loggedIn = isAuthenticated();
-  const user = getUser();
+  const { authenticated: loggedIn, user } = useAuth();
   const userInitial = user?.email?.charAt(0)?.toUpperCase();
 
   useEffect(() => {
-    const loadProjects = () => {
-      const projects = JSON.parse(localStorage.getItem("projects")) || [];
-      setHasProjects(projects.length > 0);
-    };
-
-    loadProjects();
-    window.addEventListener("projects-updated", loadProjects);
-    return () =>
-      window.removeEventListener("projects-updated", loadProjects);
-  }, []);
+    setHasProjects(true);
+  }, [loggedIn]);
 
   useEffect(() => {
     const animated = sessionStorage.getItem("navbar-animated");

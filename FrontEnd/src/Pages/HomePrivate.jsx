@@ -94,7 +94,7 @@ const HomePrivate = () => {
         res.data.results.forEach((p) => map.set(p.id, p));
 
         return Array.from(map.values()).sort(
-          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+          (a, b) => new Date(b.created_at) - new Date(a.created_at),
         );
       });
 
@@ -118,7 +118,9 @@ const HomePrivate = () => {
         if (!joinedCursor) return res.data.results;
         const map = new Map(prev.map((p) => [p.id, p]));
         res.data.results.forEach((p) => map.set(p.id, p));
-        return Array.from(map.values());
+        return Array.from(map.values()).sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at),
+        );
       });
 
       setJoinedCursor(res.data.next_cursor);

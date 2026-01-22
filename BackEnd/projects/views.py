@@ -5,6 +5,7 @@ from rest_framework import status
 from django.db import transaction
 from django.db.models import Q, Value, BooleanField
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.contrib.auth.models import User
 import secrets
@@ -21,7 +22,9 @@ def cursor_paginate(queryset, cursor, limit):
     Uses microsecond precision to prevent skip/repeat loops.
     """
     if cursor:
-        queryset = queryset.filter(created_at__lt=cursor)
+        queryset = queryset.filter(
+            created_at__lt=cursor
+            )
 
     items = list(queryset[: limit + 1])
     has_more = len(items) > limit
@@ -37,6 +40,9 @@ def cursor_paginate(queryset, cursor, limit):
 def owned_projects(request):
     cursor_str = request.query_params.get("cursor")
     cursor = parse_datetime(cursor_str) if cursor_str else None
+    if cursor and timezone.is_naive(cursor):
+        cursor = timezone.make_aware(cursor, timezone.get_current_timezone())
+
     limit = int(request.query_params.get("limit", DEFAULT_LIMIT))
 
     qs = (
@@ -46,7 +52,7 @@ def owned_projects(request):
             role=Value("root_admin"),
             is_owner=Value(True, output_field=BooleanField()),
         )
-        .order_by("-created_at")
+        .order_by("-created_at", "-id")
         .distinct()
     )
 
@@ -65,6 +71,9 @@ def owned_projects(request):
 def joined_projects(request):
     cursor_str = request.query_params.get("cursor")
     cursor = parse_datetime(cursor_str) if cursor_str else None
+    if cursor and timezone.is_naive(cursor):
+        cursor = timezone.make_aware(cursor, timezone.get_current_timezone())
+
     limit = int(request.query_params.get("limit", DEFAULT_LIMIT))
 
     memberships_qs = (
@@ -74,7 +83,7 @@ def joined_projects(request):
             role__in=["admin", "user"]
         )
         .select_related("project")
-        .order_by("-joined_at")
+        .order_by("-joined_at", "-id")
     )
 
     if cursor:
