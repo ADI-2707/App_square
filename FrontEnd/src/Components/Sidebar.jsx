@@ -123,7 +123,7 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
           <img src="/app.svg" alt="logo" />
           <div className="text">
             <span className="name">App Square</span>
-            <span className="profession">Authorized Personnel Only</span>
+            <p className="profession">Authorized Personnel Only</p>
           </div>
         </div>
 

@@ -11,6 +11,7 @@
 
 :root {
   font-size: 16px;
+  --text-xxs: 0.6rem;
   --text-xs: 0.75rem;   
   --text-sm: 0.8125rem;
   --text-base: 0.875rem; 
@@ -531,16 +532,16 @@ input:checked + .slider {
 
 .sidebar,
 .sidebar * {
-  transform-style: flat;
+  transform-style: preserve-3d;
 }
 
 .sidebar {
   position: fixed;
-  top: 96px;
+  top: 0;
   left: 0;
   width: 250px;
   padding: 10px 14px;
-  height: calc(100vh - 96px);
+  height: 100vh;
   background-color: var(--text-color);
   color: var(--bg-color);
   border-right: 1px solid var(--accent-color);
@@ -548,8 +549,13 @@ input:checked + .slider {
   transform: translateX(-100%);
   opacity: 0;
   pointer-events: auto;
-  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+              width 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.3s ease;
   overflow: hidden;
+  will-change: transform, width;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .sidebar.sidebar-enter {
@@ -670,12 +676,15 @@ header .image-text .header-text {
 
 .header-text .name {
   font-weight: 600;
+  margin-top: 5px;
 }
 
-.header-text .profession {
-  font-size: var(--text-sm);
+.profession {
+  font-size: var(--text-xxs);
   margin-top: 1px;
   color: red;
+  text-transform: uppercase;
+  margin-top: 5px;
 }
 
 .sidebar header .toggle {
