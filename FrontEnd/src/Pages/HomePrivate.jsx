@@ -5,7 +5,7 @@ import CreateProjectModal from "../Components/CreateProjectModal";
 import SecurityPinModal from "../Components/SecurityPinModal";
 import ProjectSection from "../Components/ProjectSection";
 import api from "../Utility/api";
-import { isAuthenticated } from "../Utility/auth";
+import { useAuth } from "../Utility/AuthContext";
 
 const LIMIT = 10;
 
@@ -24,7 +24,7 @@ const HomePrivate = () => {
   const displayName = formatUserName(user?.full_name);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [showModal, setShowModal] = useState(false);
+  const { createProjectOpen, closeCreateProject } = useAuth();
   const [showPinModal, setShowPinModal] = useState(false);
   const [securityPin, setSecurityPin] = useState(null);
 
@@ -42,8 +42,16 @@ const HomePrivate = () => {
   const loadingOwnedRef = useRef(false);
   const loadingJoinedRef = useRef(false);
 
+  const { authenticated } = useAuth();
+
   useEffect(() => {
-    if (!isAuthenticated()) return;
+    const handleOpen = () => setShowModal(true);
+    window.addEventListener("open-create-project", handleOpen);
+    return () => window.removeEventListener("open-create-project", handleOpen);
+  }, []);
+
+  useEffect(() => {
+    if (!authenticated) return;
 
     const initFetch = async () => {
       loadingOwnedRef.current = true;
@@ -77,7 +85,7 @@ const HomePrivate = () => {
     };
 
     initFetch();
-  }, []);
+  }, [authenticated]);
 
   const loadOwned = useCallback(async () => {
     if (!ownedHasMore || loadingOwnedRef.current) return;
@@ -229,9 +237,9 @@ const HomePrivate = () => {
         <p className="empty-project-text">Create new project</p>
       </div>
 
-      {showModal && (
+      {createProjectOpen && (
         <CreateProjectModal
-          onClose={() => setShowModal(false)}
+          onClose={closeCreateProject}
           onCreate={handleCreate}
         />
       )}

@@ -1,21 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { isAuthenticated, getUser } from "../Utility/auth";
 import { useAuth } from "../Utility/AuthContext";
 
 const Navbar = ({ hasSidebar }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [hasProjects, setHasProjects] = useState(false);
 
   const navigate = useNavigate();
-  const { authenticated: loggedIn, user } = useAuth();
+  const { authenticated: loggedIn, user, hasProjectAccess, openCreateProject } = useAuth();
   const userInitial = user?.email?.charAt(0)?.toUpperCase();
-
-  useEffect(() => {
-    setHasProjects(true);
-  }, [loggedIn]);
 
   useEffect(() => {
     const animated = sessionStorage.getItem("navbar-animated");
@@ -29,15 +23,8 @@ const Navbar = ({ hasSidebar }) => {
     }
   }, []);
 
-  const openCreateProject = () => {
-    navigate("/home");
-    window.dispatchEvent(new Event("open-create-project"));
-  };
-
   return (
-    <nav
-      className={`navbar ${mounted ? "navbar-enter" : ""}`}
-    >
+    <nav className={`navbar ${mounted ? "navbar-enter" : ""}`}>
       <div className="navbar-inner">
         <div className="nav-logo">
           <img src="/app.svg" className="h-9 w-9" alt="Logo" />
@@ -63,8 +50,8 @@ const Navbar = ({ hasSidebar }) => {
               </>
             ) : (
               <>
-                <button className="button" onClick={openCreateProject}>
-                  {hasProjects ? "Add Project" : "Create Project"}
+                <button className="button" onClick={() => {navigate('/home'); openCreateProject()}}>
+                  {hasProjectAccess ? "Add Project" : "Create Project"}
                 </button>
                 <button className="user-avatar" onClick={() => navigate("/account")}>
                   {userInitial}
@@ -83,7 +70,7 @@ const Navbar = ({ hasSidebar }) => {
           ) : (
             <>
               <button className="button" onClick={openCreateProject}>
-                {hasProjects ? "Create Project" : "Add Project"}
+                {hasProjectAccess ? "Add Project" : "Create Project"}
               </button>
               <button className="user-avatar" onClick={() => navigate("/account")}>
                 {userInitial}

@@ -16,28 +16,25 @@ export default function ProjectSection({
         loadMore?.();
       }
     },
-    [hasMore, loadMore, projects.length]
+    [hasMore, loadMore]
   );
 
   useEffect(() => {
     if (!hasMore || !observerRef.current) return;
-
     const observer = new IntersectionObserver(handleIntersect, {
       threshold: 0.1,
-      root: null,
       rootMargin: "100px",
     });
-
     observer.observe(observerRef.current);
     return () => observer.disconnect();
-  }, [handleIntersect, hasMore]);
+  }, [handleIntersect, hasMore, projects.length]);
 
   if (!projects.length && !hasMore) return null;
 
   return (
     <section className="project-section">
       <h2 className="project-section-title">{title}</h2>
-      <div className="project-row">
+      <div className="project-row" style={{ overflowX: 'auto' }}>
         {projects.map((p) => (
           <div
             key={`${title}-${p.id}`}

@@ -6,15 +6,17 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [authenticated, setAuthenticated] = useState(
-    !!localStorage.getItem("accessToken")
+    !!localStorage.getItem("accessToken"),
   );
-  const [user, setUser] = useState(
-    JSON.parse(localStorage.getItem("user"))
-  );
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
 
   const [globalLoading, setGlobalLoading] = useState(false);
   const [hasProjectAccess, setHasProjectAccess] = useState(false);
   const [loadingProjects, setLoadingProjects] = useState(false);
+  const [createProjectOpen, setCreateProjectOpen] = useState(false);
+
+  const openCreateProject = () => setCreateProjectOpen(true);
+  const closeCreateProject = () => setCreateProjectOpen(false);
 
   useEffect(() => {
     injectLoader(setGlobalLoading);
@@ -64,6 +66,9 @@ export const AuthProvider = ({ children }) => {
         hasProjectAccess,
         loadingProjects,
         refreshProjectAccess,
+        createProjectOpen,
+        openCreateProject,
+        closeCreateProject,
       }}
     >
       {children}
