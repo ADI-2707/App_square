@@ -50,7 +50,6 @@ export default function ProjectSection({
           </div>
         ))}
 
-        {/* This skeleton serves as the "Sentinel" for infinite scroll */}
         {hasMore && (
           <div ref={observerRef} className="project-card skeleton-card">
              <div className="card-surface skeleton-surface">

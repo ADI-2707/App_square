@@ -1,6 +1,6 @@
 export const isAuthenticated = () => {
-  const access = localStorage.getItem("access");
-  const refresh = localStorage.getItem("refresh");
+  const access = localStorage.getItem("accessToken");
+  const refresh = localStorage.getItem("refreshToken");
   return !!access && !!refresh;
 };
 

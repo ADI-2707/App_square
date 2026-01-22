@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.db import transaction
-from django.db.models import Q, Value, BooleanField
+from django.db.models import Q, Value, BooleanField, F
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -83,6 +83,12 @@ def joined_projects(request):
             role__in=["admin", "user"]
         )
         .select_related("project")
+        .annotate(
+            p_id=F("project__id"),
+            p_name=F("project__name"),
+            p_code=F("project__public_code"),
+            p_created=F("project__created_at"),
+        )
         .order_by("-joined_at", "-id")
     )
 
@@ -93,18 +99,21 @@ def joined_projects(request):
     has_more = len(memberships) > limit
     current_page_members = memberships[:limit]
 
-    projects = []
+    results = []
     for m in current_page_members:
-        p = m.project
-        p.role = m.role
-        p.is_owner = (p.root_admin == request.user)
-        projects.append(p)
+        results.append({
+            "id": str(m.project.id),
+            "name": m.project.name,
+            "public_code": m.project.public_code,
+            "created_at": m.project.created_at,
+            "role": m.role,
+            "is_owner": False,
+        })
 
-    serializer = ProjectListSerializer(projects, many=True)
     next_cursor = current_page_members[-1].joined_at.strftime('%Y-%m-%dT%H:%M:%S.%f%z') if current_page_members and has_more else None
 
     return Response({
-        "results": serializer.data,
+        "results": results,
         "has_more": has_more,
         "next_cursor": next_cursor
     })
