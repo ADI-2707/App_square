@@ -1,6 +1,6 @@
 import Mode from "./Utility/Mode";
-import Navbar from "./Components/Navbar";
 import PrivateLayout from "./Layouts/PrivateLayout";
+import PublicLayout from "./Layouts/PublicLayout";
 
 import Home from "./Pages/Home";
 import HomePrivate from "./Pages/HomePrivate";
@@ -21,18 +21,17 @@ const App = () => {
   return (
     <>
       <Mode />
-      <Navbar />
 
       <Routes>
-        {/* PUBLIC */}
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/forget-password" element={<ForgetPassword />} />
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/forget-password" element={<ForgetPassword />} />
+        </Route>
 
-        {/* PRIVATE */}
         <Route element={<PrivateLayout />}>
           <Route path="/home" element={<HomePrivate />} />
           <Route path="/dashboard" element={<Dashboard />} />
@@ -41,7 +40,11 @@ const App = () => {
         </Route>
       </Routes>
 
-      <ToastContainer position="top-right" autoClose={3000} theme="dark" />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        theme="dark"
+      />
     </>
   );
 };

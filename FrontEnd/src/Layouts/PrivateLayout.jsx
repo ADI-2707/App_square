@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../Utility/AuthContext";
 import Sidebar from "../Components/Sidebar";
+import Navbar from "../Components/Navbar";
 import { useState } from "react";
 
 const PrivateLayout = () => {
@@ -13,6 +14,7 @@ const PrivateLayout = () => {
 
   return (
     <>
+      <Navbar hasSidebar={true} />
       <Sidebar isClosed={isClosed} setIsClosed={setIsClosed} />
       <main className={`app-content ${isClosed ? "sidebar-closed" : "sidebar-open"}`}>
         <Outlet />

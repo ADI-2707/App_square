@@ -18,6 +18,12 @@ export const AuthProvider = ({ children }) => {
   const openCreateProject = () => setCreateProjectOpen(true);
   const closeCreateProject = () => setCreateProjectOpen(false);
 
+  // Sync authenticated state with localStorage
+  useEffect(() => {
+    const hasToken = !!localStorage.getItem("accessToken");
+    setAuthenticated(hasToken);
+  }, []);
+
   useEffect(() => {
     injectLoader(setGlobalLoading);
 
@@ -42,18 +48,33 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = (userData) => {
+  const login = (userData, accessToken, refreshToken) => {
     setAuthenticated(true);
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
+    if (accessToken) {
+      localStorage.setItem("accessToken", accessToken);
+    }
+    if (refreshToken) {
+      localStorage.setItem("refreshToken", refreshToken);
+    }
   };
 
-  const logout = () => {
-    localStorage.clear();
-    setAuthenticated(false);
-    setUser(null);
-    setHasProjectAccess(false);
-    window.location.replace("/login");
+  const logout = async () => {
+    try {
+      const refreshToken = localStorage.getItem("refreshToken");
+      if (refreshToken) {
+        await api.post("/api/auth/logout/", { refresh: refreshToken });
+      }
+    } catch (err) {
+      console.error("Logout API call failed:", err);
+    } finally {
+      localStorage.clear();
+      setAuthenticated(false);
+      setUser(null);
+      setHasProjectAccess(false);
+      window.location.replace("/login");
+    }
   };
 
   return (

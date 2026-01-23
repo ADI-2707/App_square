@@ -693,6 +693,12 @@ header .image-text .header-text {
   margin-top: 1px;
   color: red;
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 180px;
+  transition:
+    opacity 0.15s ease,
+    max-width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .sidebar header .toggle {
@@ -726,29 +732,6 @@ header .image-text .header-text {
   transition: all 0.5s ease;
 }
 
-.sidebar .search-box {
-  background: rgba(128, 128, 128, 0.15);
-}
-
-.search-box input {
-  height: 100%;
-  width: 100%;
-  outline: none;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--bg-color);
-}
-
-.search-box input::placeholder {
-  color: var(--bg-color);
-  opacity: 0.6;
-}
-
-.search-box:focus-within {
-  background: rgba(128, 128, 128, 0.25);
-}
-
 .sidebar li .link {
   height: 100%;
   width: 100%;
@@ -778,21 +761,9 @@ header .image-text .header-text {
   overflow-x: hidden;
 }
 
-.sidebar.close,
-.sidebar.close .menu-bar,
-.sidebar.close .menu,
-.sidebar.close .menu-links,
-.sidebar.close .side-link {
-  overflow: visible !important;
-}
-
-.sidebar.close .search-box input {
-  pointer-events: none;
+.sidebar.close .profession {
   opacity: 0;
-}
-
-.sidebar.close .search-box {
-  pointer-events: none;
+  max-width: 0;
 }
 
 .context-menu {

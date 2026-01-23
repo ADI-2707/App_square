@@ -191,7 +191,6 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
               data-tooltip="Logout"
               onClick={() => {
                 logout();
-                navigate("/login");
               }}
             >
               <IoLogOut className="icon" />

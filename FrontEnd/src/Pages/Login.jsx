@@ -39,7 +39,7 @@ const Login = () => {
       localStorage.setItem("refreshToken", data.tokens.refresh);
       localStorage.setItem("user", JSON.stringify(data.user));
       
-      login(data.user);
+      login(data.user, data.tokens.access, data.tokens.refresh);
       toast.success("Login successful!");
       navigate("/home", { replace: true });
       

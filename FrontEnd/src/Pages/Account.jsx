@@ -1,9 +1,11 @@
 import React, { useMemo, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import api from "../Utility/api";
-import { logout } from "../Utility/auth";
+import { useAuth } from "../Utility/AuthContext";
 
 const Account = () => {
+  const { logout } = useAuth();
+  
   /* ----------------------------------
      UI state for password visibility
   ---------------------------------- */
@@ -66,7 +68,6 @@ const Account = () => {
       // Security best practice
       alert("Password updated successfully. Please log in again.");
       logout();
-      window.location.href = "/login";
     } catch (err) {
       // Show backend message if available
       setError(err.response?.data?.detail || "Failed to update password.");
