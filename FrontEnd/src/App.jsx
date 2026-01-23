@@ -1,6 +1,7 @@
 import Mode from "./Utility/Mode";
 import PrivateLayout from "./Layouts/PrivateLayout";
 import PublicLayout from "./Layouts/PublicLayout";
+import PublicRoute from "./Utility/PublicRoute";
 
 import Home from "./Pages/Home";
 import HomePrivate from "./Pages/HomePrivate";
@@ -23,13 +24,15 @@ const App = () => {
       <Mode />
 
       <Routes>
-        <Route element={<PublicLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/forget-password" element={<ForgetPassword />} />
+        <Route element={<PublicRoute />}>
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/forget-password" element={<ForgetPassword />} />
+          </Route>
         </Route>
 
         <Route element={<PrivateLayout />}>
