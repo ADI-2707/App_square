@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { IoIosArrowForward, IoMdPricetags } from "react-icons/io";
 import { MdSpaceDashboard } from "react-icons/md";
@@ -8,7 +8,7 @@ import { BsDatabaseFillGear } from "react-icons/bs";
 import { SiAdobeaudition } from "react-icons/si";
 import { HiTemplate } from "react-icons/hi";
 import { FaArrowTrendUp } from "react-icons/fa6";
-import { IoLogOut, IoSearch } from "react-icons/io5";
+import { IoLogOut } from "react-icons/io5";
 import { useAuth } from "../Utility/AuthContext";
 
 const SIDEBAR_ITEMS = [
@@ -99,6 +99,7 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
   const { logout, loadingProjects } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const sidebarRef = useRef(null);
 
   const isInsideProject = location.pathname.startsWith("/projects/");
   const [expandedItem, setExpandedItem] = useState(null);
@@ -122,8 +123,21 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
     return () => window.removeEventListener("close-sidebar-dropdown", closeDropdown);
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        setExpandedItem(null);
+      }
+    };
+
+    if (expandedItem !== null) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [expandedItem]);
+
   return (
-    <nav className={`sidebar sidebar-enter ${isClosed ? "close" : ""}`}>
+    <nav className={`sidebar sidebar-enter ${isClosed ? "close" : ""} ${expandedItem !== null ? "dropdown-open" : ""}`} ref={sidebarRef}>
       <header>
         <div className="image-text">
           <img src="/app.svg" alt="logo" />
@@ -151,7 +165,7 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
               >
                 <div
                   className="link"
-                  data-tooltip={item.label}
+                  {...(expandedItem === null && { "data-tooltip": item.label })}
                   onClick={() => !disabled && toggleMenu(item.id)}
                 >
                   <item.icon className="icon" />
@@ -183,7 +197,7 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
           <li className="side-link">
             <div
               className="link"
-              data-tooltip="History"
+              {...(expandedItem === null && { "data-tooltip": "History" })}
               onClick={() => navigate("/history")}
             >
               <FaHistory className="icon" />
@@ -194,7 +208,7 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
           <li className="side-link">
             <div
               className="link"
-              data-tooltip="Logout"
+              {...(expandedItem === null && { "data-tooltip": "Logout" })}
               onClick={() => {
                 logout();
               }}

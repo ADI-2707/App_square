@@ -628,6 +628,11 @@ input:checked + .slider {
   transform: translateY(-50%) translateX(0);
 }
 
+.sidebar.dropdown-open .link::after,
+.sidebar.dropdown-open .link::before {
+  display: none !important;
+}
+
 .sidebar .text {
   white-space: nowrap;
   overflow: hidden;
@@ -765,6 +770,7 @@ header .image-text .header-text {
 .sidebar li .link:hover .icon,
 .sidebar li .link:hover .text {
   color: var(--text-color);
+  scale: 1.01;
 }
 
 .sidebar .menu-bar {
