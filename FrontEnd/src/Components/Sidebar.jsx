@@ -116,6 +116,12 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
     window.dispatchEvent(new CustomEvent(eventName));
   };
 
+  useEffect(() => {
+    const closeDropdown = () => setExpandedItem(null);
+    window.addEventListener("close-sidebar-dropdown", closeDropdown);
+    return () => window.removeEventListener("close-sidebar-dropdown", closeDropdown);
+  }, []);
+
   return (
     <nav className={`sidebar sidebar-enter ${isClosed ? "close" : ""}`}>
       <header>

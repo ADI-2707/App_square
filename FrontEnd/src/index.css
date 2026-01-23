@@ -7,6 +7,10 @@
   --sidebar-mobile-width: 72px;
   --tooltip-bg: #1a1a1a;
   --tooltip-text: #ffffff;
+  --input-bg: #ffffff;
+  --input-border: #ddd;
+  --text-secondary: #666;
+  --border-color: #ddd;
 }
 
 :root {
@@ -51,6 +55,10 @@
   --accent-color: gray;
   --tooltip-bg: #ffffff;
   --tooltip-text: #1a1a1a;
+  --input-bg: #2a2a2a;
+  --input-border: #444;
+  --text-secondary: #999;
+  --border-color: #444;
 }
 
 [dark-mode="dark"] .navbar-inner {
@@ -78,6 +86,14 @@ body {
   margin: 0;
   min-height: 100vh;
   overflow-x: hidden;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+html.modal-open {
+  overflow: hidden;
 }
 
 body::before {
@@ -1543,24 +1559,26 @@ header .image-text .header-text {
   left: 0;
   width: 100vw;
   height: 100vh;
-
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
-
-  z-index: 10000;
+  z-index: 9999;
+  overflow: hidden;
 }
 
 :root:not([dark-mode="dark"]) .modal-backdrop {
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 [dark-mode="dark"] .modal-backdrop {
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 [dark-mode="dark"] .modal-card {
@@ -1574,14 +1592,22 @@ header .image-text .header-text {
 
 .modal-card {
   position: relative;
-  width: 100%;
+  width: 90%;
   max-width: 420px;
   background: var(--bg-color);
   color: var(--text-color);
   border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 30px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  max-height: 85vh;
+  overflow-y: auto;
+  z-index: 10000;
+}
+
+.modal-card.large {
+  max-width: 600px;
+  max-height: 85vh;
 }
 
 .modal-close {
