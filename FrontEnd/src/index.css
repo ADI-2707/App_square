@@ -1447,6 +1447,7 @@ header .image-text .header-text {
   cursor: pointer;
   backdrop-filter: blur(14px);
   width: 100%;
+  height: 200px;
 }
 
 .card-surface {
@@ -2008,15 +2009,16 @@ header .image-text .header-text {
   display: flex;
   gap: 1.5rem;
   overflow-x: auto;
-  padding: 0.5rem 1rem 1rem;
-  
+  padding: 0.5rem 0 1rem 1rem;
+  margin-right: -1rem;
+  padding-right: 1rem;
   scroll-snap-type: x mandatory;
   scroll-padding-left: 1rem;
   scroll-padding-right: 1rem;
-  scroll-behavior: smooth;
-
+  scroll-behavior: auto;
   contain: layout paint;
-  border-radius: 22px;
+  align-items: flex-start;
+  height: 240px;
 }
 
 .project-row::-webkit-scrollbar {
@@ -2026,13 +2028,12 @@ header .image-text .header-text {
 
 .project-row::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, #b5b5b5, #8f8f8f);
-  border-radius: 10px;
-  border: 2px solid #f1f1f1;
+  border-radius: 5px;
 }
 
 .project-row::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
+  background: transparent;
+  border-radius: 0;
 }
 
 .project-row::-webkit-scrollbar-thumb:hover {

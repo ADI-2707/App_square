@@ -30,7 +30,6 @@ export default function ProjectSection({
     return () => observer.disconnect();
   }, [handleIntersect, hasMore, projects.length]);
 
-  // Scroll to the left to show newest items first
   useEffect(() => {
     if (scrollContainerRef.current && projects.length > 0) {
       scrollContainerRef.current.scrollLeft = 0;
