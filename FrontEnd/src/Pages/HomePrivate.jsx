@@ -44,11 +44,7 @@ const HomePrivate = () => {
 
   const { authenticated } = useAuth();
 
-  useEffect(() => {
-    const handleOpen = () => setShowModal(true);
-    window.addEventListener("open-create-project", handleOpen);
-    return () => window.removeEventListener("open-create-project", handleOpen);
-  }, []);
+  // CreateProjectModal is opened via openCreateProject from AuthContext
 
   useEffect(() => {
     if (!authenticated) return;
@@ -231,7 +227,7 @@ const HomePrivate = () => {
 
       <div
         className="empty-project-card mt-10"
-        onClick={() => setShowModal(true)}
+        onClick={() => {}}
       >
         <PlusSquare size={52} className="plus" />
         <p className="empty-project-text">Create new project</p>

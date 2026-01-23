@@ -31,6 +31,12 @@ class Project(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def set_access_key(self, raw_access_key: str):
+        self.access_key_hash = make_password(raw_access_key)
+
+    def check_access_key(self, raw_access_key: str) -> bool:
+        return check_password(raw_access_key, self.access_key_hash)
+
     def set_pin(self, raw_pin: str):
         self.pin_hash = make_password(raw_pin)
 
