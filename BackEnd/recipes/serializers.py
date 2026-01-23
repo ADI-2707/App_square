@@ -4,7 +4,8 @@ from .models import (
     Combination,
     CombinationTag,
     Recipe,
-    RecipeCombination
+    RecipeCombination,
+    RecipeCombinationTagValue
 )
 
 
@@ -30,24 +31,49 @@ class CombinationSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "tag_values"]
 
 
-class RecipeCombinationSerializer(serializers.ModelSerializer):
+class RecipeCombinationTagValueSerializer(serializers.ModelSerializer):
+    tag = TagSerializer()
+
+    class Meta:
+        model = RecipeCombinationTagValue
+        fields = ["tag", "value"]
+
+
+class RecipeCombinationDetailSerializer(serializers.ModelSerializer):
     combination = CombinationSerializer()
+    custom_tag_values = RecipeCombinationTagValueSerializer(many=True)
 
     class Meta:
         model = RecipeCombination
-        fields = ["order", "combination"]
+        fields = ["id", "order", "combination", "custom_tag_values"]
 
 
 class RecipeDetailSerializer(serializers.ModelSerializer):
-    recipe_combinations = RecipeCombinationSerializer(many=True)
+    recipe_combinations = RecipeCombinationDetailSerializer(many=True)
 
     class Meta:
         model = Recipe
-        fields = ["id", "name", "recipe_combinations"]
+        fields = ["id", "name", "version", "recipe_combinations", "created_at", "updated_at", "is_archived"]
 
 
 class RecipeCreateSerializer(serializers.Serializer):
-    name = serializers.CharField()
-    combination_ids = serializers.ListField(
-        child=serializers.IntegerField()
+    name = serializers.CharField(max_length=50)
+    combinations = serializers.ListField(
+        child=serializers.DictField(
+            child=serializers.JSONField(),
+            required=True
+        )
     )
+
+    def validate_combinations(self, value):
+        """Validate that each combination has required fields"""
+        for idx, combo in enumerate(value):
+            if not combo.get("id"):
+                raise serializers.ValidationError(
+                    f"Combination {idx}: missing 'id' field"
+                )
+            if "tag_values" not in combo:
+                raise serializers.ValidationError(
+                    f"Combination {idx}: missing 'tag_values' field"
+                )
+        return value

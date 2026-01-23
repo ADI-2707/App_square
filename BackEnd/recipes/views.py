@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.db import transaction
 
-from .models import Recipe, Combination, RecipeCombination, Tag
+from .models import Recipe, Combination, RecipeCombination, Tag, RecipeCombinationTagValue
 from .serializers import (
     RecipeDetailSerializer,
     RecipeCreateSerializer,
@@ -65,20 +65,60 @@ class CreateRecipeView(APIView):
         serializer = RecipeCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        name = serializer.validated_data["name"]
+        combinations_data = serializer.validated_data["combinations"]
+
+        # Check recipe name uniqueness
+        if Recipe.objects.filter(name=name, project=project).exists():
+            return Response(
+                {"detail": "Recipe with this name already exists in this project"},
+                status=400
+            )
+
         recipe = Recipe.objects.create(
-            name=serializer.validated_data["name"],
-            project=project
+            name=name,
+            project=project,
+            version=1
         )
 
-        combos = Combination.objects.filter(
-            id__in=serializer.validated_data["combination_ids"]
-        )
+        for idx, combo_data in enumerate(combinations_data):
+            combo_id = combo_data.get("id")
+            tag_values = combo_data.get("tag_values", [])
 
-        for idx, combo in enumerate(combos):
-            RecipeCombination.objects.create(
+            # Get the combination
+            try:
+                combination = Combination.objects.get(id=combo_id)
+            except Combination.DoesNotExist:
+                return Response(
+                    {"detail": f"Combination {combo_id} not found"},
+                    status=400
+                )
+
+            # Create recipe combination entry
+            recipe_combo = RecipeCombination.objects.create(
                 recipe=recipe,
-                combination=combo,
+                combination=combination,
                 order=idx
             )
 
-        return Response({"message": "Recipe created"}, status=201)
+            # Store custom tag values
+            for tag_value in tag_values:
+                tag_id = tag_value.get("tag_id")
+                value = tag_value.get("value")
+
+                try:
+                    tag = Tag.objects.get(id=tag_id)
+                except Tag.DoesNotExist:
+                    continue
+
+                RecipeCombinationTagValue.objects.create(
+                    recipe_combination=recipe_combo,
+                    tag=tag,
+                    value=value
+                )
+
+        return Response({
+            "id": recipe.id,
+            "name": recipe.name,
+            "message": "Recipe created successfully"
+        }, status=201)

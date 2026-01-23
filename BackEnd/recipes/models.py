@@ -42,6 +42,9 @@ class Recipe(models.Model):
         on_delete=models.CASCADE
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_archived = models.BooleanField(default=False)
+    version = models.PositiveIntegerField(default=1)
 
     class Meta:
         unique_together = ("name", "project")
@@ -62,3 +65,23 @@ class RecipeCombination(models.Model):
     class Meta:
         unique_together = ("recipe", "combination")
         ordering = ["order"]
+
+
+class RecipeCombinationTagValue(models.Model):
+    """
+    Store custom tag values for a specific combination within a recipe.
+    Allows users to override default/combination tag values when creating recipes.
+    """
+    recipe_combination = models.ForeignKey(
+        RecipeCombination,
+        related_name="custom_tag_values",
+        on_delete=models.CASCADE
+    )
+    tag = models.ForeignKey(
+        Tag,
+        on_delete=models.CASCADE
+    )
+    value = models.FloatField()
+
+    class Meta:
+        unique_together = ("recipe_combination", "tag")
