@@ -16,21 +16,40 @@ from .utils import generate_project_pin
 
 DEFAULT_LIMIT = 10
 
-def cursor_paginate(queryset, cursor, limit):
+def cursor_paginate(queryset, cursor, limit, date_field='created_at'):
     """
-    Standard cursor pagination for descending order (-created_at).
+    Standard cursor pagination for descending order.
     Uses microsecond precision to prevent skip/repeat loops.
+    date_field: field to use for cursor comparison ('created_at' or 'project__created_at')
     """
+    # Apply cursor filter first
     if cursor:
-        queryset = queryset.filter(
-            created_at__lt=cursor
-            )
+        queryset = queryset.filter(**{f'{date_field}__lt': cursor})
+    
+    # Ensure ordering is applied BEFORE distinct for proper results
+    # Django's distinct() behavior depends on database backend
+    queryset = queryset.order_by(f'-{date_field}', '-id')
 
     items = list(queryset[: limit + 1])
     has_more = len(items) > limit
     results = items[:limit]
     
-    next_cursor = results[-1].created_at.strftime('%Y-%m-%dT%H:%M:%S.%f%z') if results and has_more else None
+    # Handle getting the date value for related fields (e.g., 'project__created_at')
+    if results:
+        last_item = results[-1]
+        if '__' in date_field:
+            # For related fields like 'project__created_at'
+            parts = date_field.split('__')
+            date_value = last_item
+            for part in parts:
+                date_value = getattr(date_value, part)
+        else:
+            # For direct fields like 'created_at'
+            date_value = getattr(last_item, date_field)
+        
+        next_cursor = date_value.strftime('%Y-%m-%dT%H:%M:%S.%f%z') if has_more else None
+    else:
+        next_cursor = None
     
     return results, has_more, next_cursor
 
@@ -52,11 +71,9 @@ def owned_projects(request):
             role=Value("root_admin"),
             is_owner=Value(True, output_field=BooleanField()),
         )
-        .order_by("-created_at", "-id")
-        .distinct()
     )
 
-    projects, has_more, next_cursor = cursor_paginate(qs, cursor, limit)
+    projects, has_more, next_cursor = cursor_paginate(qs, cursor, limit, 'created_at')
     serializer = ProjectListSerializer(projects, many=True)
 
     return Response({
@@ -83,24 +100,13 @@ def joined_projects(request):
             role__in=["admin", "user"]
         )
         .select_related("project")
-        .annotate(
-            p_id=F("project__id"),
-            p_name=F("project__name"),
-            p_code=F("project__public_code"),
-            p_created=F("project__created_at"),
-        )
-        .order_by("-joined_at", "-id")
     )
-
-    if cursor:
-        memberships_qs = memberships_qs.filter(joined_at__lt=cursor)
-
-    memberships = list(memberships_qs[: limit + 1])
-    has_more = len(memberships) > limit
-    current_page_members = memberships[:limit]
+    
+    # Use cursor pagination with project created_at
+    memberships, has_more, next_cursor = cursor_paginate(memberships_qs, cursor, limit, 'project__created_at')
 
     results = []
-    for m in current_page_members:
+    for m in memberships:
         results.append({
             "id": str(m.project.id),
             "name": m.project.name,
@@ -109,8 +115,6 @@ def joined_projects(request):
             "role": m.role,
             "is_owner": False,
         })
-
-    next_cursor = current_page_members[-1].joined_at.strftime('%Y-%m-%dT%H:%M:%S.%f%z') if current_page_members and has_more else None
 
     return Response({
         "results": results,

@@ -1255,7 +1255,7 @@ header .image-text .header-text {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 6rem;
+  padding-top: 2rem;
 }
 
 .home-header {
@@ -2013,6 +2013,7 @@ header .image-text .header-text {
   scroll-snap-type: x mandatory;
   scroll-padding-left: 1rem;
   scroll-padding-right: 1rem;
+  scroll-behavior: smooth;
 
   contain: layout paint;
   border-radius: 22px;

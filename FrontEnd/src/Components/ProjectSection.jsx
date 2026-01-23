@@ -9,6 +9,7 @@ export default function ProjectSection({
   onOpenProject,
 }) {
   const observerRef = useRef(null);
+  const scrollContainerRef = useRef(null);
 
   const handleIntersect = useCallback(
     ([entry]) => {
@@ -29,12 +30,19 @@ export default function ProjectSection({
     return () => observer.disconnect();
   }, [handleIntersect, hasMore, projects.length]);
 
+  // Scroll to the left to show newest items first
+  useEffect(() => {
+    if (scrollContainerRef.current && projects.length > 0) {
+      scrollContainerRef.current.scrollLeft = 0;
+    }
+  }, [projects.length]);
+
   if (!projects.length && !hasMore) return null;
 
   return (
     <section className="project-section">
       <h2 className="project-section-title">{title}</h2>
-      <div className="project-row" style={{ overflowX: 'auto' }}>
+      <div className="project-row" ref={scrollContainerRef} style={{ overflowX: 'auto' }}>
         {projects.map((p) => (
           <div
             key={`${title}-${p.id}`}

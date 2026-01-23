@@ -64,11 +64,15 @@ const HomePrivate = () => {
           }),
         ]);
 
-        setOwned(ownedRes.data.results || []);
+        setOwned((ownedRes.data.results || []).sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        ));
         setOwnedCursor(ownedRes.data.next_cursor);
         setOwnedHasMore(ownedRes.data.has_more);
 
-        setJoined(joinedRes.data.results || []);
+        setJoined((joinedRes.data.results || []).sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        ));
         setJoinedCursor(joinedRes.data.next_cursor);
         setJoinedHasMore(joinedRes.data.has_more);
       } catch (err) {
@@ -93,10 +97,8 @@ const HomePrivate = () => {
       });
 
       setOwned((prev) => {
-        const map = new Map(prev.map((p) => [p.id, p]));
-        res.data.results.forEach((p) => map.set(p.id, p));
-
-        return Array.from(map.values());
+        // Just append new results - backend already returns them in correct order
+        return [...prev, ...res.data.results];
       });
 
       setOwnedCursor(res.data.next_cursor);
@@ -116,12 +118,8 @@ const HomePrivate = () => {
       });
 
       setJoined((prev) => {
-        if (!joinedCursor) return res.data.results;
-        const map = new Map(prev.map((p) => [p.id, p]));
-        res.data.results.forEach((p) => map.set(p.id, p));
-        return Array.from(map.values()).sort(
-          (a, b) => new Date(b.created_at) - new Date(a.created_at),
-        );
+        // Just append new results - backend already returns them in correct order
+        return [...prev, ...res.data.results];
       });
 
       setJoinedCursor(res.data.next_cursor);
