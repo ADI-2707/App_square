@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation, useParams } from "react-router-dom";
 import { useAuth } from "../Utility/AuthContext";
 
 const Navbar = ({ hasSidebar }) => {
@@ -8,8 +8,16 @@ const Navbar = ({ hasSidebar }) => {
   const [mounted, setMounted] = useState(false);
 
   const navigate = useNavigate();
-  const { authenticated: loggedIn, user, hasProjectAccess, openCreateProject } = useAuth();
+  const {
+    authenticated: loggedIn,
+    user,
+    hasProjectAccess,
+    openCreateProject,
+  } = useAuth();
   const userInitial = user?.email?.charAt(0)?.toUpperCase();
+
+  const location = useLocation();
+  const isInProject = location.pathname.startsWith("/projects/");
 
   useEffect(() => {
     const animated = sessionStorage.getItem("navbar-animated");
@@ -35,25 +43,60 @@ const Navbar = ({ hasSidebar }) => {
         </div>
 
         <ul className={`nav-links ${isOpen ? "active" : ""}`}>
-          <li><NavLink to="/" className="nav-link">Home</NavLink></li>
+          <li>
+            <NavLink to="/" className="nav-link">
+              Home
+            </NavLink>
+          </li>
           {loggedIn && (
-            <li><NavLink to="/dashboard" className="nav-link">Dashboard</NavLink></li>
+            <li>
+              <NavLink to="/dashboard" className="nav-link">
+                Dashboard
+              </NavLink>
+            </li>
           )}
-          <li><NavLink to="/about" className="nav-link">About</NavLink></li>
-          <li><NavLink to="/contact" className="nav-link">Contact</NavLink></li>
+          <li>
+            <NavLink to="/about" className="nav-link">
+              About
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/contact" className="nav-link">
+              Contact
+            </NavLink>
+          </li>
 
           <div className="nav-auth-mobile">
             {!loggedIn ? (
               <>
-                <button className="button" onClick={() => navigate("/login")}>Login</button>
-                <button className="button" onClick={() => navigate("/signup")}>Sign Up</button>
+                <button className="button" onClick={() => navigate("/login")}>
+                  Login
+                </button>
+                <button className="button" onClick={() => navigate("/signup")}>
+                  Sign Up
+                </button>
               </>
             ) : (
               <>
-                <button className="button" onClick={() => {navigate('/home'); openCreateProject()}}>
-                  {hasProjectAccess ? "Add Project" : "Create Project"}
-                </button>
-                <button className="user-avatar" onClick={() => navigate("/account")}>
+                {isInProject ? (
+                  <button
+                    className="button"
+                    onClick={() =>
+                      window.dispatchEvent(new Event("open-project-info"))
+                    }
+                  >
+                    Info
+                  </button>
+                ) : (
+                  <button className="button" onClick={openCreateProject}>
+                    {hasProjectAccess ? "Add Project" : "Create Project"}
+                  </button>
+                )}
+
+                <button
+                  className="user-avatar"
+                  onClick={() => navigate("/account")}
+                >
                   {userInitial}
                 </button>
               </>
@@ -64,15 +107,34 @@ const Navbar = ({ hasSidebar }) => {
         <div className="nav-auth-desktop">
           {!loggedIn ? (
             <>
-              <button className="button" onClick={() => navigate("/login")}>Login</button>
-              <button className="button" onClick={() => navigate("/signup")}>Sign Up</button>
+              <button className="button" onClick={() => navigate("/login")}>
+                Login
+              </button>
+              <button className="button" onClick={() => navigate("/signup")}>
+                Sign Up
+              </button>
             </>
           ) : (
             <>
-              <button className="button" onClick={openCreateProject}>
-                {hasProjectAccess ? "Add Project" : "Create Project"}
-              </button>
-              <button className="user-avatar" onClick={() => navigate("/account")}>
+              {isInProject ? (
+                <button
+                  className="button"
+                  onClick={() =>
+                    window.dispatchEvent(new Event("open-project-info"))
+                  }
+                >
+                  Info
+                </button>
+              ) : (
+                <button className="button" onClick={openCreateProject}>
+                  {hasProjectAccess ? "Add Project" : "Create Project"}
+                </button>
+              )}
+
+              <button
+                className="user-avatar"
+                onClick={() => navigate("/account")}
+              >
                 {userInitial}
               </button>
             </>

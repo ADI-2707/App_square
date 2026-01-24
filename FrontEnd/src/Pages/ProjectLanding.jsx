@@ -6,7 +6,7 @@ import ProjectHeader from "../Components/project/ProjectHeader";
 import ProjectActionsRoot from "../Components/project/ProjectActionsRoot";
 import ProjectActionsAdmin from "../Components/project/ProjectActionsAdmin";
 import ProjectActionsUser from "../Components/project/ProjectActionsUser";
-
+import ProjectInfoModal from "../Components/project/ProjectInfoModal";
 import ViewRecipeModal from "../Components/project/ViewRecipeModal";
 import CreateRecipeModal from "../Components/project/CreateRecipeModal";
 import RecipeTable from "../Components/project/RecipeTable";
@@ -21,6 +21,13 @@ const ProjectLanding = () => {
   const [showCreateRecipe, setShowCreateRecipe] = useState(false);
 
   const [recipeDetail, setRecipeDetail] = useState(null);
+  const [showProjectInfo, setShowProjectInfo] = useState(false);
+
+  useEffect(() => {
+    const openInfo = () => setShowProjectInfo(true);
+    window.addEventListener("open-project-info", openInfo);
+    return () => window.removeEventListener("open-project-info", openInfo);
+  }, []);
 
   useEffect(() => {
     fetchProject();
@@ -113,6 +120,13 @@ const ProjectLanding = () => {
           project={project}
           onClose={() => setShowCreateRecipe(false)}
           onCreated={() => setShowCreateRecipe(false)}
+        />
+      )}
+
+      {showProjectInfo && (
+        <ProjectInfoModal
+          project={project}
+          onClose={() => setShowProjectInfo(false)}
         />
       )}
     </div>
