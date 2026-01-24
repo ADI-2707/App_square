@@ -2852,5 +2852,74 @@ header .image-text .header-text {
 body.modal-open .sidebar {
   pointer-events: none;
   opacity: 0.65;
-  filter: grayscale(40%);
+  filter: grayscale(33%);
+}
+
+.modal-error {
+  background: rgba(255, 0, 0, 0.08);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  color: #ff4d4f;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.recipe-list-wrapper {
+  max-height: 280px;
+  overflow-y: auto;
+  margin-bottom: 18px;
+}
+
+.modal-muted {
+  font-size: 0.85rem;
+  opacity: 0.65;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.recipe-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.recipe-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-size: 0.95rem;
+}
+
+.recipe-item:hover {
+  background: rgba(128, 128, 128, 0.12);
+}
+
+.recipe-name {
+  font-weight: 500;
+}
+
+.recipe-chevron {
+  opacity: 0.5;
+  font-size: 1.2rem;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.recipe-item:hover .recipe-chevron {
+  transform: translateX(4px);
+  opacity: 0.85;
+}
+
+[dark-mode="dark"] .recipe-item:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
