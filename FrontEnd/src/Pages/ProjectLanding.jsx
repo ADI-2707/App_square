@@ -54,7 +54,7 @@ const ProjectLanding = () => {
 
   const handleRecipeSelect = async (recipeId) => {
     try {
-      const res = await api.get(`/api/projects/${projectId}/recipes/${recipeId}/`);
+      const res = await api.get(`/api/recipes/recipes/${recipeId}/`);
       setRecipeDetail(res.data);
       setShowViewRecipe(false);
     } catch (err) {

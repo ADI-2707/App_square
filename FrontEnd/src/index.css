@@ -2711,3 +2711,49 @@ header .image-text .header-text {
 .sidebar .menu-bar {
   overflow: visible;
 }
+
+.recipe-table-wrapper {
+  margin-top: 16px;
+  overflow-x: auto;
+}
+
+.recipe-title {
+  margin-bottom: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.recipe-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.recipe-table th,
+.recipe-table td {
+  border: 1px solid #333;
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.recipe-table thead tr:first-child th {
+  background-color: #f5c842;
+  color: #000;
+  font-weight: 700;
+  border-bottom: 2px solid #000;
+}
+
+.recipe-table thead tr:nth-child(2) th {
+  background-color: #ffe68a;
+  color: #000;
+  font-weight: 600;
+}
+
+.recipe-table tbody td {
+  background-color: #eaeaea;
+  color: #121212;
+}
+
+.recipe-table tbody tr:hover td {
+  background-color: white;
+}

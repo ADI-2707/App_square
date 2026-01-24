@@ -10,7 +10,7 @@ const ViewRecipeModal = ({ projectId, onClose, onSelect }) => {
   }, []);
 
   const fetchRecipes = async () => {
-    const res = await api.get(`/api/projects/${projectId}/recipes/`);
+    const res = await api.get(`/api/recipes/projects/${projectId}/recipes/`);
     setRecipes(res.data);
     setLoading(false);
   };

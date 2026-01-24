@@ -1,73 +1,61 @@
 import React from "react";
 
 const RecipeTable = ({ recipe }) => {
-  if (!recipe || !recipe.recipe_combinations || recipe.recipe_combinations.length === 0) {
-    return <div>No combinations in this recipe</div>;
+  if (!recipe?.recipe_combinations?.length) {
+    return <div className="overview-empty-state">No recipe data</div>;
   }
 
-  // Get all unique tags from all combinations
-  const allTags = [];
-  const tagMap = new Map();
+  const combinations = recipe.recipe_combinations;
 
-  recipe.recipe_combinations.forEach(rc => {
-    if (rc.combination && rc.combination.tag_values) {
-      rc.combination.tag_values.forEach(tv => {
-        if (tv.tag && !tagMap.has(tv.tag.id)) {
-          tagMap.set(tv.tag.id, tv.tag);
-          allTags.push(tv.tag);
-        }
-      });
-    }
-  });
+  // Find max number of rows needed
+  const maxRows = Math.max(
+    ...combinations.map(
+      c => c.custom_tag_values?.length || 0
+    )
+  );
 
   return (
-    <table className="recipe-table">
-      <thead>
-        <tr>
-          <th>Combination</th>
-          {allTags.map(tag => (
-            <th key={tag.id}>{tag.name}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {recipe.recipe_combinations.map((rc, index) => (
-          <tr key={index}>
-            <td>
-              <strong>{rc.combination.name}</strong>
-              <br />
-              <small>Step {rc.order + 1}</small>
-            </td>
-            {allTags.map(tag => {
-              // First check for custom values, then fall back to combination's tag values
-              let value = null;
+    <div className="recipe-table-wrapper">
+      <h3 className="recipe-title">{recipe.name}</h3>
 
-              // Check custom tag values
-              if (rc.custom_tag_values && rc.custom_tag_values.length > 0) {
-                const customValue = rc.custom_tag_values.find(ctv => ctv.tag.id === tag.id);
-                if (customValue) {
-                  value = customValue.value;
-                }
-              }
-
-              // If no custom value, use combination's tag value
-              if (value === null && rc.combination.tag_values) {
-                const comboValue = rc.combination.tag_values.find(tv => tv.tag.id === tag.id);
-                if (comboValue) {
-                  value = comboValue.value;
-                }
-              }
-
-              return (
-                <td key={tag.id}>
-                  {value !== null ? value : "-"}
-                </td>
-              );
-            })}
+      <table className="recipe-table">
+        <thead>
+          <tr>
+            {combinations.map(c => (
+              <th key={c.id} colSpan={2}>
+                {c.combination.name}
+              </th>
+            ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
+
+          <tr>
+            {combinations.map(c => (
+              <React.Fragment key={c.id}>
+                <th>Tag</th>
+                <th>Value</th>
+              </React.Fragment>
+            ))}
+          </tr>
+        </thead>
+
+        <tbody>
+          {Array.from({ length: maxRows }).map((_, rowIndex) => (
+            <tr key={rowIndex}>
+              {combinations.map(c => {
+                const tagObj = c.custom_tag_values[rowIndex];
+
+                return (
+                  <React.Fragment key={c.id}>
+                    <td>{tagObj ? tagObj.tag.name : "–"}</td>
+                    <td>{tagObj ? tagObj.value : "–"}</td>
+                  </React.Fragment>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 };
 
