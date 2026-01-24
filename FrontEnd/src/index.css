@@ -1453,7 +1453,7 @@ header .image-text .header-text {
   cursor: pointer;
   backdrop-filter: blur(14px);
   width: 100%;
-  height: 200px;
+  height: 100px;
 }
 
 .card-surface {
@@ -2431,11 +2431,11 @@ header .image-text .header-text {
 }
 
 :root {
-  --loader-color: #7488a8; 
+  --loader-color: #FF0000; 
 }
 
 [dark-mode="dark"] {
-  --loader-color: #7488a8; 
+  --loader-color: #FF0000; 
 }
 
 .yt-loader-container {
@@ -2451,7 +2451,6 @@ header .image-text .header-text {
 .yt-loader-bar {
   height: 100%;
   background: var(--loader-color);
-  box-shadow: 0 0 15px var(--loader-color), 0 0 5px var(--loader-color);
   transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   border-radius: 0 2px 2px 0;
 }
