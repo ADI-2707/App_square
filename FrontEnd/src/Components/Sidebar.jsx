@@ -12,86 +12,115 @@ import { IoLogOut } from "react-icons/io5";
 import { useAuth } from "../Utility/AuthContext";
 
 const SIDEBAR_ITEMS = [
-  { id: "dashboard",
+  {
+    id: "dashboard",
     label: "Dashboard",
     icon: MdSpaceDashboard,
     requiresProject: true,
     actions: [
-      { id: "view-dashboard", label: "View Dashboard", action: "viewDashboard" },
-      { id: "create-dashboard", label: "Create Dashboard", action: "createDashboard" }
-    ]
-   },
-  { id: "alarm",
+      {
+        id: "view-dashboard",
+        label: "View Dashboard",
+        action: "viewDashboard",
+      },
+      {
+        id: "create-dashboard",
+        label: "Create Dashboard",
+        action: "createDashboard",
+      },
+    ],
+  },
+  {
+    id: "alarm",
     label: "Alarm",
     icon: RiAlarmWarningFill,
     requiresProject: true,
     actions: [
       { id: "view-alarm", label: "View Alarms", action: "viewAlarm" },
-      { id: "create-alarm", label: "Create Alarms", action: "createAlarm" }
-    ]
-   },
-  { id: "trends",
+      { id: "create-alarm", label: "Create Alarms", action: "createAlarm" },
+    ],
+  },
+  {
+    id: "trends",
     label: "Trends",
     icon: FaArrowTrendUp,
     requiresProject: true,
     actions: [
       { id: "view-trends", label: "View Trends", action: "viewTrends" },
-      { id: "compare-trends", label: "Compare Trends", action: "compareTrends" }
-    ]
+      {
+        id: "compare-trends",
+        label: "Compare Trends",
+        action: "compareTrends",
+      },
+    ],
   },
-  { id: "data-logger",
+  {
+    id: "data-logger",
     label: "Data Logger",
     icon: BsDatabaseFillGear,
     requiresProject: true,
     actions: [
       { id: "view-logs", label: "View Logs", action: "viewLogs" },
-      { id: "log-settings", label: "Log Settings", action: "logSettings" }
-    ]
+      { id: "log-settings", label: "Log Settings", action: "logSettings" },
+    ],
   },
-  { id: "recipe",
+  {
+    id: "recipe",
     label: "Recipe Management",
     icon: FaFileCode,
     requiresProject: true,
     actions: [
       { id: "view-recipe", label: "View Recipes", action: "open-view-recipe" },
-      { id: "create-recipe", label: "Create Recipe", action: "open-create-recipe" }
-    ]
+      {
+        id: "create-recipe",
+        label: "Create Recipe",
+        action: "open-create-recipe",
+      },
+    ],
   },
-  { id: "tag",
+  {
+    id: "tag",
     label: "Tag Management",
     icon: IoMdPricetags,
     requiresProject: true,
     actions: [
       { id: "add-tags", label: "Add Tags", action: "addTags" },
-      { id: "manage-tags", label: "Manage Tags", action: "manageTags" }
-    ]
+      { id: "manage-tags", label: "Manage Tags", action: "manageTags" },
+    ],
   },
-  { id: "users",
+  {
+    id: "users",
     label: "User Management",
     icon: FaUserFriends,
     requiresProject: true,
     actions: [
       { id: "see-users", label: "See Users", action: "seeUsers" },
-      { id: "add-users", label: "Add Users", action: "addUsers" }
-    ]
+      { id: "add-users", label: "Add Users", action: "addUsers" },
+    ],
   },
-  { id: "audit",
+  {
+    id: "audit",
     label: "Audit Trail",
     icon: SiAdobeaudition,
     requiresProject: true,
     actions: [
       { id: "audit-history", label: "Audit History", action: "auditHistory" },
-      { id: "analysis", label: "Analysis", action: "analysis" }
-    ]
+      { id: "analysis", label: "Analysis", action: "analysis" },
+    ],
   },
-  { id: "templates",
+  {
+    id: "templates",
     label: "Templates",
     icon: HiTemplate,
     requiresProject: true,
     actions: [
       { id: "add-templates", label: "Add Templates", action: "addTemplates" },
-      { id: "create-templates", label: "Create Templates", action: "createTemplates" }
-    ]
+      {
+        id: "create-templates",
+        label: "Create Templates",
+        action: "createTemplates",
+      },
+    ],
   },
 ];
 
@@ -106,11 +135,11 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
 
   const toggleSidebar = () => {
     if (window.innerWidth <= 768) return;
-    setIsClosed(prev => !prev);
+    setIsClosed((prev) => !prev);
   };
 
   const toggleMenu = (itemId) => {
-    setExpandedItem(prev => (prev === itemId ? null : itemId));
+    setExpandedItem((prev) => (prev === itemId ? null : itemId));
   };
 
   const fireAction = (eventName) => {
@@ -120,7 +149,8 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
   useEffect(() => {
     const closeDropdown = () => setExpandedItem(null);
     window.addEventListener("close-sidebar-dropdown", closeDropdown);
-    return () => window.removeEventListener("close-sidebar-dropdown", closeDropdown);
+    return () =>
+      window.removeEventListener("close-sidebar-dropdown", closeDropdown);
   }, []);
 
   useEffect(() => {
@@ -132,12 +162,23 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
 
     if (expandedItem !== null) {
       document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [expandedItem]);
 
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      "--sidebar-width",
+      isClosed ? "88px" : "250px",
+    );
+  }, [isClosed]);
+
   return (
-    <nav className={`sidebar sidebar-enter ${isClosed ? "close" : ""} ${expandedItem !== null ? "dropdown-open" : ""}`} ref={sidebarRef}>
+    <nav
+      className={`sidebar sidebar-enter ${isClosed ? "close" : ""} ${expandedItem !== null ? "dropdown-open" : ""}`}
+      ref={sidebarRef}
+    >
       <header>
         <div className="image-text">
           <img src="/app.svg" alt="logo" />
@@ -155,7 +196,7 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
 
       <div className="menu-bar">
         <ul className="menu-links">
-          {SIDEBAR_ITEMS.map(item => {
+          {SIDEBAR_ITEMS.map((item) => {
             const disabled = loadingProjects || !isInsideProject;
 
             return (
@@ -174,7 +215,7 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
 
                 {expandedItem === item.id && !disabled && (
                   <ul className="submenu">
-                    {item.actions.map(action => (
+                    {item.actions.map((action) => (
                       <li
                         key={action.id}
                         className="submenu-item"

@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import { ShieldAlert, Copy } from "lucide-react";
+import ModalPortal from "./common/ModalPortal";
 
 const SecurityPinModal = ({ pin, onConfirm }) => {
-  // Prevent accidental refresh
   useEffect(() => {
     const handler = (e) => {
       e.preventDefault();
@@ -17,6 +17,7 @@ const SecurityPinModal = ({ pin, onConfirm }) => {
   };
 
   return (
+    <ModalPortal>
     <div className="modal-backdrop pin-backdrop">
       <div className="modal-card pin-modal animate-pin">
         <div className="pin-icon">
@@ -52,6 +53,7 @@ const SecurityPinModal = ({ pin, onConfirm }) => {
         </button>
       </div>
     </div>
+    </ModalPortal>
   );
 };
 

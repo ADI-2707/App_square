@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../../Utility/api";
 import { toast } from "react-toastify";
+import ModalPortal from "../common/ModalPortal";
 
 const CreateRecipeModal = ({ projectId, project, onClose, onCreated }) => {
   const [name, setName] = useState("");
@@ -148,6 +149,7 @@ const createRecipe = async () => {
 };
 
   return (
+    <ModalPortal>
     <div className="modal-backdrop">
       <div className="modal-card large">
         <h3>Create Recipe</h3>
@@ -318,6 +320,7 @@ const createRecipe = async () => {
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 };
 

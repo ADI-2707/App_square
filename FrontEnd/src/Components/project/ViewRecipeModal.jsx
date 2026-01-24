@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../../Utility/api";
+import ModalPortal from "../common/ModalPortal";
 
 const ViewRecipeModal = ({ projectId, onClose, onSelect }) => {
   const [recipes, setRecipes] = useState([]);
@@ -16,6 +17,7 @@ const ViewRecipeModal = ({ projectId, onClose, onSelect }) => {
   };
 
   return (
+    <ModalPortal>
     <div className="modal-backdrop">
       <div className="modal-card">
         <h3>Available Recipes</h3>
@@ -41,6 +43,7 @@ const ViewRecipeModal = ({ projectId, onClose, onSelect }) => {
         </button>
       </div>
     </div>
+    </ModalPortal>
   );
 };
 
