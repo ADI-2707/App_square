@@ -8,7 +8,7 @@ const Loader = ({ isLoading }) => {
     let interval;
     if (isLoading) {
       setShow(true);
-      setProgress(15); // Instant jump to show it started
+      setProgress(15);
       interval = setInterval(() => {
         setProgress((prev) => {
           if (prev < 90) return prev + Math.random() * 5;
@@ -16,12 +16,11 @@ const Loader = ({ isLoading }) => {
         });
       }, 300);
     } else {
-      // Complete the bar
       setProgress(100);
       const timeout = setTimeout(() => {
         setShow(false);
         setProgress(0);
-      }, 400); // Small delay to let user see it hit the end
+      }, 400);
       return () => clearTimeout(timeout);
     }
     return () => clearInterval(interval);

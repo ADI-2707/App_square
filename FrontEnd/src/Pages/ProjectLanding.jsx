@@ -110,6 +110,7 @@ const ProjectLanding = () => {
       {showCreateRecipe && (
         <CreateRecipeModal
           projectId={projectId}
+          project={project}
           onClose={() => setShowCreateRecipe(false)}
           onCreated={() => setShowCreateRecipe(false)}
         />

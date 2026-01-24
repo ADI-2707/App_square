@@ -1,16 +1,19 @@
-from projects.models import ProjectMember
-
+from projects.models import Project, ProjectMember
 
 def get_user_role(user, project_id):
     try:
-        membership = ProjectMember.objects.get(
-            user=user,
-            project_id=project_id
-        )
-        return membership.role
-    except ProjectMember.DoesNotExist:
+        project = Project.objects.get(id=project_id)
+    except Project.DoesNotExist:
         return None
 
+    if project.root_admin_id == user.id:
+        return "root"
 
-def verify_project_pin(project, raw_pin):
-    return project.check_pin(raw_pin)
+    try:
+        member = ProjectMember.objects.get(
+            user=user,
+            project=project
+        )
+        return member.role
+    except ProjectMember.DoesNotExist:
+        return None

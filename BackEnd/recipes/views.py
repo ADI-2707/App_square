@@ -11,7 +11,7 @@ from .serializers import (
     TagSerializer,
     CombinationSerializer
 )
-from .utils import get_user_role, verify_project_pin
+from .utils import get_user_role
 from projects.models import Project
 
 
@@ -57,18 +57,61 @@ class CreateRecipeView(APIView):
 
         project = Project.objects.get(id=project_id)
 
-        if role == "root":
-            pin = request.data.get("pin")
-            if not pin or not verify_project_pin(project, pin):
-                return Response({"detail": "Invalid PIN"}, status=403)
-
         serializer = RecipeCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         name = serializer.validated_data["name"]
         combinations_data = serializer.validated_data["combinations"]
 
-        # Check recipe name uniqueness
+        if Recipe.objects.filter(name=name, project=project).exists():
+            return Response(
+                {"detail": "Recipe with this name already exists"},
+                status=400
+            )
+
+        recipe = Recipe.objects.create(
+            name=name,
+            project=project,
+            version=1
+        )
+
+        for idx, combo_data in enumerate(combinations_data):
+            combination = Combination.objects.get(id=combo_data["id"])
+
+            recipe_combo = RecipeCombination.objects.create(
+                recipe=recipe,
+                combination=combination,
+                order=idx
+            )
+
+            for tag_value in combo_data.get("tag_values", []):
+                RecipeCombinationTagValue.objects.create(
+                    recipe_combination=recipe_combo,
+                    tag_id=tag_value["tag_id"],
+                    value=tag_value["value"]
+                )
+
+        return Response(
+            {"id": recipe.id, "name": recipe.name},
+            status=201
+        )
+
+    permission_classes = [IsAuthenticated]
+
+    @transaction.atomic
+    def post(self, request, project_id):
+        role = get_user_role(request.user, project_id)
+
+        if role not in ("root", "admin"):
+            return Response({"detail": "Forbidden"}, status=403)
+
+        project = Project.objects.get(id=project_id)
+        serializer = RecipeCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        name = serializer.validated_data["name"]
+        combinations_data = serializer.validated_data["combinations"]
+
         if Recipe.objects.filter(name=name, project=project).exists():
             return Response(
                 {"detail": "Recipe with this name already exists in this project"},
@@ -85,7 +128,6 @@ class CreateRecipeView(APIView):
             combo_id = combo_data.get("id")
             tag_values = combo_data.get("tag_values", [])
 
-            # Get the combination
             try:
                 combination = Combination.objects.get(id=combo_id)
             except Combination.DoesNotExist:
@@ -94,14 +136,12 @@ class CreateRecipeView(APIView):
                     status=400
                 )
 
-            # Create recipe combination entry
             recipe_combo = RecipeCombination.objects.create(
                 recipe=recipe,
                 combination=combination,
                 order=idx
             )
 
-            # Store custom tag values
             for tag_value in tag_values:
                 tag_id = tag_value.get("tag_id")
                 value = tag_value.get("value")

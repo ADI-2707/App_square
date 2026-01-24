@@ -18,7 +18,6 @@ export const AuthProvider = ({ children }) => {
   const openCreateProject = () => setCreateProjectOpen(true);
   const closeCreateProject = () => setCreateProjectOpen(false);
 
-  // Sync authenticated state with localStorage
   useEffect(() => {
     const hasToken = !!localStorage.getItem("accessToken");
     setAuthenticated(hasToken);

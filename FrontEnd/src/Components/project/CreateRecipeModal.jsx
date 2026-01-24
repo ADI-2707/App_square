@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import api from "../../Utility/api";
 import { toast } from "react-toastify";
 
-const CreateRecipeModal = ({ projectId, onClose, onCreated }) => {
+const CreateRecipeModal = ({ projectId, project, onClose, onCreated }) => {
   const [name, setName] = useState("");
   const [tags, setTags] = useState([]);
   const [combinations, setCombinations] = useState([]);
@@ -32,7 +32,6 @@ const CreateRecipeModal = ({ projectId, onClose, onCreated }) => {
       ]);
       setTags(tagsRes.data);
       setAllCombinations(combosRes.data);
-      console.log("Combinations loaded:", combosRes.data);
     } catch (err) {
       toast.error("Failed to fetch tags and combinations");
       console.error(err);
@@ -108,39 +107,45 @@ const CreateRecipeModal = ({ projectId, onClose, onCreated }) => {
     });
   };
 
-  const submit = async () => {
-    if (!name.trim()) {
-      toast.error("Recipe name is required");
-      return;
-    }
+const submit = async () => {
+  if (!name.trim()) {
+    toast.error("Recipe name is required");
+    return;
+  }
 
-    if (combinations.length === 0) {
-      toast.error("Add at least one combination");
-      return;
-    }
+  if (combinations.length === 0) {
+    toast.error("Add at least one combination");
+    return;
+  }
 
-    if (combinations.some(c => !c.id)) {
-      toast.error("All combinations must be selected");
-      return;
-    }
+  if (combinations.some(c => !c.id)) {
+    toast.error("All combinations must be selected");
+    return;
+  }
 
-    try {
-      setLoading(true);
-      await api.post(`/api/projects/${projectId}/recipes/create/`, {
-        name,
-        combinations
-      });
-      toast.success("Recipe created successfully!");
-      onCreated();
-      onClose();
-    } catch (err) {
-      const errorMsg = err.response?.data?.detail || "Failed to create recipe";
-      toast.error(errorMsg);
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  await createRecipe();
+};
+
+const createRecipe = async () => {
+  try {
+    setLoading(true);
+
+    await api.post(
+      `/api/recipes/projects/${projectId}/recipes/create/`,
+      { name, combinations }
+    );
+
+    toast.success("Recipe created successfully!");
+    onCreated();
+    onClose();
+  } catch (err) {
+    const errorMsg =
+      err.response?.data?.detail || "Failed to create recipe";
+    toast.error(errorMsg);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="modal-backdrop">
