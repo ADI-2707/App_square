@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../../Utility/api";
 import { toast } from "react-toastify";
-import ModalPortal from "../common/ModalPortal";
+import ModalPortal from "../../Utility/ModalPortal";
 
 const CreateRecipeModal = ({ projectId, project, onClose, onCreated }) => {
   const [name, setName] = useState("");

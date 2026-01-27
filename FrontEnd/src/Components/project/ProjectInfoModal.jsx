@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import ModalPortal from "../common/ModalPortal";
+import ModalPortal from "../../Utility/ModalPortal";
 
 const ProjectInfoModal = ({ project, onClose }) => {
   return (

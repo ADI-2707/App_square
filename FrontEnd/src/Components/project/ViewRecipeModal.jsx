@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../../Utility/api";
-import ModalPortal from "../common/ModalPortal";
+import ModalPortal from "../../Utility/ModalPortal";
 
 const ViewRecipeModal = ({ projectId, onClose, onSelect }) => {
   const [recipes, setRecipes] = useState([]);

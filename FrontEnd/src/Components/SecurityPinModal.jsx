@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { ShieldAlert, Copy } from "lucide-react";
-import ModalPortal from "./common/ModalPortal";
+import ModalPortal from "../Utility/ModalPortal";
 
 const SecurityPinModal = ({ pin, onConfirm }) => {
   useEffect(() => {
