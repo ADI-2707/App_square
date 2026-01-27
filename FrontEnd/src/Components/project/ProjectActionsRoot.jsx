@@ -1,7 +1,7 @@
 import React from "react";
 import { Users, Shield, Trash2 } from "lucide-react";
 
-const ProjectActionsRoot = () => {
+const ProjectActionsRoot = ({ onDeleteClick }) => {
   return (
     <>
       <div className="project-card card-surface">
@@ -20,13 +20,17 @@ const ProjectActionsRoot = () => {
         </div>
       </div>
 
-      <div className="project-card card-surface">
+      <button
+        className="project-card card-surface delete-card"
+        onClick={onDeleteClick}
+        style={{ border: "none", cursor: "pointer" }}
+      >
         <div className="project-card-icon"><Trash2 /></div>
         <div className="project-card-title">Delete Project</div>
         <div className="project-card-meta">
           Permanently remove project
         </div>
-      </div>
+      </button>
     </>
   );
 };

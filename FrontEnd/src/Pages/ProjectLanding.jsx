@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import api from "../Utility/api";
 
 import ProjectHeader from "../Components/project/ProjectHeader";
@@ -9,16 +9,19 @@ import ProjectActionsUser from "../Components/project/ProjectActionsUser";
 import ProjectInfoModal from "../Components/project/ProjectInfoModal";
 import ViewRecipeModal from "../Components/project/ViewRecipeModal";
 import CreateRecipeModal from "../Components/project/CreateRecipeModal";
+import DeleteProjectModal from "../Components/project/DeleteProjectModal";
 import RecipeTable from "../Components/project/RecipeTable";
 
 const ProjectLanding = () => {
   const { projectId } = useParams();
+  const navigate = useNavigate();
 
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const [showViewRecipe, setShowViewRecipe] = useState(false);
   const [showCreateRecipe, setShowCreateRecipe] = useState(false);
+  const [showDeleteProject, setShowDeleteProject] = useState(false);
 
   const [recipeDetail, setRecipeDetail] = useState(null);
   const [showProjectInfo, setShowProjectInfo] = useState(false);
@@ -69,6 +72,14 @@ const ProjectLanding = () => {
     }
   };
 
+  const handleDeleteProject = () => {;
+    setShowDeleteProject(true);
+  };
+
+  const handleProjectDeleted = () => {
+    navigate("/");
+  };
+
   if (loading) return <div className="project-hero-skeleton pulse" />;
   if (!project) return <div>Project not found</div>;
 
@@ -99,7 +110,9 @@ const ProjectLanding = () => {
         <section className="project-actions-section">
           <h2 className="project-actions-title">Project Controls</h2>
           <div className="project-grid">
-            {project.role === "root_admin" && <ProjectActionsRoot />}
+            {project.role === "root_admin" && (
+              <ProjectActionsRoot onDeleteClick={handleDeleteProject} />
+            )}
             {project.role === "admin" && <ProjectActionsAdmin />}
             {project.role === "user" && <ProjectActionsUser />}
           </div>
@@ -127,6 +140,14 @@ const ProjectLanding = () => {
         <ProjectInfoModal
           project={project}
           onClose={() => setShowProjectInfo(false)}
+        />
+      )}
+
+      {showDeleteProject && project.role === "root_admin" && (
+        <DeleteProjectModal
+          project={project}
+          onClose={() => setShowDeleteProject(false)}
+          onDeleted={handleProjectDeleted}
         />
       )}
     </div>

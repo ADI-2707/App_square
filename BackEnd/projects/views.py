@@ -286,3 +286,49 @@ def user_projects(request):
             for p in qs
         ]
     })
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_project(request, project_id):
+    """
+    Delete a project with PIN verification.
+    Only the root_admin can delete a project.
+    
+    Expected request data:
+    {
+        "pin": "the_project_pin"
+    }
+    """
+    project = get_object_or_404(Project, id=project_id)
+    
+    # Check if user is root_admin
+    if project.root_admin != request.user:
+        return Response(
+            {"detail": "Only the project owner can delete this project"},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    # Verify PIN
+    pin = request.data.get("pin", "").strip()
+    
+    if not pin:
+        return Response(
+            {"detail": "PIN is required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    if not project.check_pin(pin):
+        return Response(
+            {"detail": "Invalid PIN"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Delete the project
+    project_name = project.name
+    project.delete()
+    
+    return Response(
+        {"detail": f"Project '{project_name}' has been deleted successfully"},
+        status=status.HTTP_200_OK
+    )
