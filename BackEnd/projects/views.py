@@ -332,3 +332,341 @@ def delete_project(request, project_id):
         {"detail": f"Project '{project_name}' has been deleted successfully"},
         status=status.HTTP_200_OK
     )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def search_users_for_invitation(request, project_id):
+    """
+    Search for registered users by email to invite them to a project.
+    Only root_admin can invite users.
+    Returns users that are not already members of the project.
+    """
+    project = get_object_or_404(Project, id=project_id)
+    
+    # Verify user is root_admin
+    if project.root_admin != request.user:
+        return Response(
+            {"detail": "Only the project owner can invite members"},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    email = request.query_params.get("email", "").strip()
+    
+    if len(email) < 3:
+        return Response({"results": []})
+    
+    # Find users matching the email (excluding already invited/joined users)
+    existing_members = ProjectMember.objects.filter(project=project).values_list('user_id', flat=True)
+    
+    users = User.objects.filter(
+        email__icontains=email
+    ).exclude(
+        id__in=existing_members
+    ).exclude(
+        id=request.user.id  # Don't show self
+    ).values('id', 'email', 'first_name', 'last_name')[:10]
+    
+    return Response({
+        "results": list(users)
+    })
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def send_project_invitation(request, project_id):
+    """
+    Send an invitation to a registered user to join the project.
+    Only root_admin can send invitations.
+    Invited user starts with 'pending' status.
+    """
+    project = get_object_or_404(Project, id=project_id)
+    
+    # Verify user is root_admin
+    if project.root_admin != request.user:
+        return Response(
+            {"detail": "Only the project owner can invite members"},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    user_id = request.data.get("user_id")
+    
+    if not user_id:
+        return Response(
+            {"detail": "user_id is required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        invited_user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response(
+            {"detail": "User not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    # Check if already a member
+    existing = ProjectMember.objects.filter(
+        project=project,
+        user=invited_user
+    ).first()
+    
+    if existing:
+        return Response(
+            {"detail": "User is already a member of this project"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Create invitation (pending status)
+    member, created = ProjectMember.objects.get_or_create(
+        project=project,
+        user=invited_user,
+        defaults={
+            'role': 'user',
+            'status': 'pending',
+            'invited_by': request.user
+        }
+    )
+    
+    if not created and member.status == 'pending':
+        return Response(
+            {"detail": "Invitation already sent to this user"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    return Response({
+        "detail": f"Invitation sent to {invited_user.email}",
+        "member": {
+            "id": member.id,
+            "user_email": invited_user.email,
+            "status": member.status
+        }
+    }, status=status.HTTP_201_CREATED)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_pending_invitations(request):
+    """
+    Get all pending invitations for the logged-in user.
+    """
+    pending = ProjectMember.objects.filter(
+        user=request.user,
+        status='pending'
+    ).select_related('project')
+    
+    invitations = []
+    for member in pending:
+        # Use invited_by if available, otherwise fallback to project root_admin
+        inviter = member.invited_by or member.project.root_admin
+        
+        # Get full_name from inviter's profile or use email as fallback
+        if inviter:
+            try:
+                inviter_name = inviter.profile.full_name
+            except:
+                inviter_name = inviter.email
+        else:
+            inviter_name = "Unknown"
+        
+        invitations.append({
+            "id": member.id,
+            "project_id": str(member.project.id),
+            "project_name": member.project.name,
+            "public_code": member.project.public_code,
+            "invited_at": member.invited_at,
+            "invited_by_name": inviter_name,
+            "invited_by_email": inviter.email if inviter else "unknown@example.com",
+            "role": member.role
+        })
+    
+    return Response({
+        "count": len(invitations),
+        "results": invitations
+    })
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def respond_to_invitation(request, member_id):
+    """
+    Accept or reject a project invitation.
+    Action should be 'accept' or 'reject'.
+    """
+    member = get_object_or_404(ProjectMember, id=member_id)
+    
+    # Verify it's the invited user
+    if member.user != request.user:
+        return Response(
+            {"detail": "You can only respond to your own invitations"},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    # Verify it's pending
+    if member.status != 'pending':
+        return Response(
+            {"detail": f"Invitation is already {member.status}"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    action = request.data.get("action", "").lower()
+    
+    if action == "accept":
+        member.status = "accepted"
+        member.save()
+        return Response({
+            "detail": f"Invitation to '{member.project.name}' accepted",
+            "project": {
+                "id": str(member.project.id),
+                "name": member.project.name
+            }
+        })
+    elif action == "reject":
+        member.delete()
+        return Response({
+            "detail": "Invitation rejected"
+        })
+    else:
+        return Response(
+            {"detail": "action must be 'accept' or 'reject'"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_project_members(request, project_id):
+    """
+    Get all members of a project (root_admin + accepted members).
+    Only root_admin can view this.
+    Supports pagination with limit and offset.
+    """
+    project = get_object_or_404(Project, id=project_id)
+    
+    # Verify user is root_admin
+    if project.root_admin != request.user:
+        return Response(
+            {"detail": "Only project owner can view members"},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    # Get pagination parameters
+    limit = int(request.query_params.get("limit", 10))
+    offset = int(request.query_params.get("offset", 0))
+    
+    members_list = []
+    
+    # Add root_admin first
+    try:
+        root_admin_name = project.root_admin.profile.full_name
+    except:
+        root_admin_name = project.root_admin.email
+    
+    members_list.append({
+        "id": 0,  # Placeholder ID for root_admin
+        "user_id": str(project.root_admin.id),
+        "email": project.root_admin.email,
+        "name": root_admin_name,
+        "role": "root_admin"
+    })
+    
+    # Get all accepted members (invited members who accepted)
+    accepted_members = ProjectMember.objects.filter(
+        project=project,
+        status='accepted'
+    ).select_related('user').order_by('joined_at')
+    
+    for member in accepted_members:
+        try:
+            member_name = member.user.profile.full_name
+        except:
+            member_name = member.user.email
+        
+        members_list.append({
+            "id": member.id,
+            "user_id": str(member.user.id),
+            "email": member.user.email,
+            "name": member_name,
+            "role": member.role
+        })
+    
+    # Apply pagination
+    total_count = len(members_list)
+    paginated_members = members_list[offset:offset + limit]
+    
+    return Response({
+        "count": total_count,
+        "limit": limit,
+        "offset": offset,
+        "results": paginated_members
+    })
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def revoke_member_access(request, project_id, member_id):
+    """
+    Revoke a member's access to the project.
+    Only root_admin can revoke access.
+    """
+    project = get_object_or_404(Project, id=project_id)
+    member = get_object_or_404(ProjectMember, id=member_id, project=project)
+    
+    # Verify user is root_admin
+    if project.root_admin != request.user:
+        return Response(
+            {"detail": "Only project owner can revoke access"},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    # Cannot remove root_admin
+    if member.user == project.root_admin:
+        return Response(
+            {"detail": "Cannot remove project owner"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    member_email = member.user.email
+    member.delete()
+    
+    return Response({
+        "detail": f"Access revoked for {member_email}"
+    })
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def change_project_pin(request, project_id):
+    """
+    Change project password (access key).
+    Only root_admin can change it.
+    """
+    project = get_object_or_404(Project, id=project_id)
+    
+    # Verify user is root_admin
+    if project.root_admin != request.user:
+        return Response(
+            {"detail": "Only project owner can change password"},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    new_password = request.data.get("new_password", "").strip()
+    
+    if not new_password:
+        return Response(
+            {"detail": "new_password is required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    if len(new_password) < 6:
+        return Response(
+            {"detail": "Password must be at least 6 characters"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    project.set_access_key(new_password)
+    project.save()
+    
+    return Response({
+        "detail": "Project password updated successfully"
+    })

@@ -10,6 +10,8 @@ import ProjectInfoModal from "../Components/project/ProjectInfoModal";
 import ViewRecipeModal from "../Components/project/ViewRecipeModal";
 import CreateRecipeModal from "../Components/project/CreateRecipeModal";
 import DeleteProjectModal from "../Components/project/DeleteProjectModal";
+import InviteMembersModal from "../Components/project/InviteMembersModal";
+import SecuritySettingsModal from "../Components/SecuritySettingsModal";
 import RecipeTable from "../Components/project/RecipeTable";
 
 const ProjectLanding = () => {
@@ -22,6 +24,8 @@ const ProjectLanding = () => {
   const [showViewRecipe, setShowViewRecipe] = useState(false);
   const [showCreateRecipe, setShowCreateRecipe] = useState(false);
   const [showDeleteProject, setShowDeleteProject] = useState(false);
+  const [showInviteMembers, setShowInviteMembers] = useState(false);
+  const [showSecuritySettings, setShowSecuritySettings] = useState(false);
 
   const [recipeDetail, setRecipeDetail] = useState(null);
   const [showProjectInfo, setShowProjectInfo] = useState(false);
@@ -72,12 +76,22 @@ const ProjectLanding = () => {
     }
   };
 
-  const handleDeleteProject = () => {;
+  const handleDeleteProject = () => {
+    console.log("Delete button clicked");
     setShowDeleteProject(true);
   };
 
   const handleProjectDeleted = () => {
+    // Redirect to home page after successful deletion
     navigate("/");
+  };
+
+  const handleInviteMembers = () => {
+    setShowInviteMembers(true);
+  };
+
+  const handleInvitationSent = () => {
+    // Could refresh member list or show success toast here
   };
 
   if (loading) return <div className="project-hero-skeleton pulse" />;
@@ -111,7 +125,11 @@ const ProjectLanding = () => {
           <h2 className="project-actions-title">Project Controls</h2>
           <div className="project-grid">
             {project.role === "root_admin" && (
-              <ProjectActionsRoot onDeleteClick={handleDeleteProject} />
+              <ProjectActionsRoot 
+                onDeleteClick={handleDeleteProject}
+                onInviteClick={handleInviteMembers}
+                onSecurityClick={() => setShowSecuritySettings(true)}
+              />
             )}
             {project.role === "admin" && <ProjectActionsAdmin />}
             {project.role === "user" && <ProjectActionsUser />}
@@ -148,6 +166,22 @@ const ProjectLanding = () => {
           project={project}
           onClose={() => setShowDeleteProject(false)}
           onDeleted={handleProjectDeleted}
+        />
+      )}
+
+      {showInviteMembers && project.role === "root_admin" && (
+        <InviteMembersModal
+          project={project}
+          onClose={() => setShowInviteMembers(false)}
+          onInvited={handleInvitationSent}
+        />
+      )}
+
+      {showSecuritySettings && project.role === "root_admin" && (
+        <SecuritySettingsModal
+          isOpen={showSecuritySettings}
+          onClose={() => setShowSecuritySettings(false)}
+          project={project}
         />
       )}
     </div>

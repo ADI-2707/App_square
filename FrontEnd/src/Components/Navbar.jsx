@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { NavLink, useNavigate, useLocation, useParams } from "react-router-dom";
 import { useAuth } from "../Utility/AuthContext";
+import api from "../Utility/api";
 
 const Navbar = ({ hasSidebar }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [pendingInvitations, setPendingInvitations] = useState(0);
 
   const navigate = useNavigate();
   const {
@@ -18,6 +20,25 @@ const Navbar = ({ hasSidebar }) => {
 
   const location = useLocation();
   const isInProject = location.pathname.startsWith("/projects/");
+
+  // Fetch pending invitations count
+  useEffect(() => {
+    if (!loggedIn) return;
+
+    const fetchPendingInvitations = async () => {
+      try {
+        const response = await api.get("/api/projects/invitations/pending/");
+        setPendingInvitations(response.data.count || 0);
+      } catch (err) {
+        console.error("Failed to fetch pending invitations:", err);
+      }
+    };
+
+    fetchPendingInvitations();
+    // Poll every 10 seconds
+    const interval = setInterval(fetchPendingInvitations, 10000);
+    return () => clearInterval(interval);
+  }, [loggedIn]);
 
   useEffect(() => {
     const animated = sessionStorage.getItem("navbar-animated");
@@ -98,6 +119,9 @@ const Navbar = ({ hasSidebar }) => {
                   onClick={() => navigate("/account")}
                 >
                   {userInitial}
+                  {pendingInvitations > 0 && (
+                    <span className="notification-badge"></span>
+                  )}
                 </button>
               </>
             )}
@@ -136,6 +160,9 @@ const Navbar = ({ hasSidebar }) => {
                 onClick={() => navigate("/account")}
               >
                 {userInitial}
+                {pendingInvitations > 0 && (
+                  <span className="notification-badge"></span>
+                )}
               </button>
             </>
           )}

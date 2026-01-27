@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import React, { useMemo, useState, useEffect } from "react";
+import { Eye, EyeOff, Check, X } from "lucide-react";
 import api from "../Utility/api";
 import { useAuth } from "../Utility/AuthContext";
+import InvitationDetailModal from "../Components/InvitationDetailModal";
 
 const Account = () => {
   const { logout } = useAuth();
@@ -27,6 +28,15 @@ const Account = () => {
   const [error, setError] = useState("");
 
   /* ----------------------------------
+     Invitations state
+  ---------------------------------- */
+  const [invitations, setInvitations] = useState([]);
+  const [loadingInvitations, setLoadingInvitations] = useState(true);
+  const [respondingTo, setRespondingTo] = useState(null);
+  const [selectedInvitation, setSelectedInvitation] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+
+  /* ----------------------------------
      Load user from localStorage safely
   ---------------------------------- */
   const user = useMemo(() => {
@@ -36,6 +46,41 @@ const Account = () => {
       return null;
     }
   }, []);
+
+  /* ----------------------------------
+     Fetch pending invitations
+  ---------------------------------- */
+  useEffect(() => {
+    fetchInvitations();
+  }, []);
+
+  const fetchInvitations = async () => {
+    try {
+      setLoadingInvitations(true);
+      const response = await api.get("/api/projects/invitations/pending/");
+      setInvitations(response.data.results || []);
+    } catch (err) {
+      console.error("Failed to fetch invitations:", err);
+    } finally {
+      setLoadingInvitations(false);
+    }
+  };
+
+  const handleInvitationResponse = async (memberId, action) => {
+    setRespondingTo(memberId);
+    try {
+      await api.post(
+        `/api/projects/members/${memberId}/respond/`,
+        { action }
+      );
+      setInvitations(invitations.filter((inv) => inv.id !== memberId));
+      setShowDetailModal(false);
+    } catch (err) {
+      console.error(`Failed to ${action} invitation:`, err);
+    } finally {
+      setRespondingTo(null);
+    }
+  };
 
   /* ----------------------------------
      Form submit handler
@@ -197,6 +242,82 @@ const Account = () => {
           {loading ? "Updating..." : "Update Password"}
         </button>
       </form>
+
+      {/* ===== Invitations Section ===== */}
+      {invitations.length > 0 && (
+        <div className="account-card card-surface invitations-card">
+          <h2 className="account-title">Project Invitations</h2>
+          <p className="invitations-subtitle">
+            You have {invitations.length} pending invitation{invitations.length !== 1 ? "s" : ""}
+          </p>
+
+          <div className="invitations-list">
+            {invitations.map((invitation) => (
+              <div
+                key={invitation.id}
+                className="invitation-item"
+                onClick={() => {
+                  setSelectedInvitation(invitation);
+                  setShowDetailModal(true);
+                }}
+                role="button"
+                tabIndex={0}
+              >
+                <div className="invitation-info">
+                  <div className="invitation-project-name">
+                    {invitation.project_name}
+                  </div>
+                  <div className="invitation-details">
+                    <span className="invitation-code">{invitation.public_code}</span>
+                    <span className="invitation-date">
+                      {new Date(invitation.invited_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="invitation-actions">
+                  <button
+                    className="btn-accept"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleInvitationResponse(invitation.id, "accept");
+                    }}
+                    disabled={respondingTo === invitation.id}
+                    title="Accept invitation"
+                  >
+                    <Check size={18} />
+                  </button>
+                  <button
+                    className="btn-reject"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleInvitationResponse(invitation.id, "reject");
+                    }}
+                    disabled={respondingTo === invitation.id}
+                    title="Reject invitation"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ===== Invitation Detail Modal ===== */}
+      <InvitationDetailModal
+        isOpen={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        invitation={selectedInvitation}
+        onAccept={() =>
+          handleInvitationResponse(selectedInvitation.id, "accept")
+        }
+        onReject={() =>
+          handleInvitationResponse(selectedInvitation.id, "reject")
+        }
+        isLoading={respondingTo === selectedInvitation?.id}
+      />
     </div>
   );
 };

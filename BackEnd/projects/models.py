@@ -53,15 +53,24 @@ class ProjectMember(models.Model):
         ("admin", "Admin"),
         ("user", "User"),
     )
+    
+    STATUS_CHOICES = (
+        ("pending", "Pending"),
+        ("accepted", "Accepted"),
+        ("rejected", "Rejected"),
+    )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
+    invited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="invitations_sent")
 
     joined_at = models.DateTimeField(auto_now_add=True)
+    invited_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ("user", "project")
 
     def __str__(self):
-        return f"{self.user.email} → {self.project.name} ({self.role})"
+        return f"{self.user.email} → {self.project.name} ({self.role}) - {self.status}"
