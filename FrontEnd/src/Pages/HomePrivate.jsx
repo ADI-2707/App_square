@@ -27,6 +27,7 @@ const HomePrivate = () => {
   const { createProjectOpen, closeCreateProject } = useAuth();
   const [showPinModal, setShowPinModal] = useState(false);
   const [securityPin, setSecurityPin] = useState(null);
+  const [accessKey, setAccessKey] = useState(null);
 
   const [owned, setOwned] = useState([]);
   const [joined, setJoined] = useState([]);
@@ -133,6 +134,7 @@ const HomePrivate = () => {
     try {
       const res = await api.post("/api/projects/create/", payload);
       setSecurityPin(res.data.pin);
+      setAccessKey(res.data.access_key);
       setShowPinModal(true);
 
       loadingOwnedRef.current = true;
@@ -145,6 +147,7 @@ const HomePrivate = () => {
       setOwnedHasMore(refreshRes.data.has_more);
     } catch (err) {
       console.error("Creation failed", err);
+      throw err;
     } finally {
       loadingOwnedRef.current = false;
     }
@@ -243,6 +246,7 @@ const HomePrivate = () => {
           onConfirm={() => {
             setShowPinModal(false);
             setSecurityPin(null);
+            setAccessKey(null);
           }}
         />
       )}

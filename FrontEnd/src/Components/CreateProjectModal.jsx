@@ -104,7 +104,27 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
       await refreshProjectAccess();
       onClose();
     } catch (err) {
-      setError(err.response?.data?.error || "Project creation failed");
+      console.error("Create project error:", err);
+      console.error("Error response:", err.response?.data);
+      
+      let errorMessage = "Project creation failed";
+      
+      if (err.response?.data) {
+        // Try to extract error message from various possible formats
+        if (typeof err.response.data === "string") {
+          errorMessage = err.response.data;
+        } else if (err.response.data.detail) {
+          errorMessage = err.response.data.detail;
+        } else if (err.response.data.error) {
+          errorMessage = err.response.data.error;
+        } else if (err.response.data.message) {
+          errorMessage = err.response.data.message;
+        }
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setSubmitting(false);
     }

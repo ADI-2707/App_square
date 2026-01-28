@@ -160,42 +160,71 @@ def project_overview(request, project_id):
 @permission_classes([IsAuthenticated])
 def create_project(request):
     name = request.data.get("name", "").strip()
+    access_key = request.data.get("access_key", "").strip()
     members_list = request.data.get("members", []) 
 
     if not name:
-        return Response({"error": "Project name is required"}, status=400)
+        return Response({"detail": "Project name is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not access_key:
+        return Response({"detail": "Project access key is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    if len(access_key) < 6:
+        return Response({"detail": "Project access key must be at least 6 characters"}, status=status.HTTP_400_BAD_REQUEST)
 
     if Project.objects.filter(name__iexact=name).exists():
         return Response(
-            {"error": "A project with this name already exists. Please choose a different name."}, 
+            {"detail": "A project with this name already exists. Please choose a different name."}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Validate all members exist before creating project
+    valid_members = []
+    admin_count = 0
+    
+    for m_data in members_list:
+        email = m_data.get("email", "").strip()
+        role = m_data.get("role", "user").lower()
+
+        if email:
+            # Skip if trying to add self
+            if email.lower() == request.user.email.lower():
+                continue
+            
+            # Check if user exists
+            target_user = User.objects.filter(email__iexact=email).first()
+            if not target_user:
+                return Response(
+                    {"detail": f"User with email '{email}' is not registered. Please invite only registered users."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            valid_members.append((target_user, role))
+            if role == "admin":
+                admin_count += 1
+
+    # Check if at least one admin is present
+    if admin_count < 1:
+        return Response(
+            {"detail": "At least one member must be marked as Admin"},
             status=status.HTTP_400_BAD_REQUEST
         )
 
     raw_pin = generate_project_pin()
-    raw_access_key = secrets.token_urlsafe(16)
 
     with transaction.atomic():
         project = Project(name=name, root_admin=request.user)
-        project.set_access_key(raw_access_key)
+        project.set_access_key(access_key)
         project.set_pin(raw_pin)
         project.save()
 
-        for m_data in members_list:
-            email = m_data.get("email", "").strip()
-            role = m_data.get("role", "user").lower()
-
-            if email:
-                
-                if email.lower() == request.user.email.lower():
-                    continue 
-
-                target_user = User.objects.filter(email__iexact=email).first()
-                if target_user:
-                    ProjectMember.objects.get_or_create(
-                        project=project,
-                        user=target_user,
-                        defaults={'role': role}
-                    )
+        # Add validated members
+        for target_user, role in valid_members:
+            ProjectMember.objects.get_or_create(
+                project=project,
+                user=target_user,
+                defaults={'role': role, 'invited_by': request.user}
+            )
 
     return Response({
         "id": str(project.id),
@@ -599,6 +628,49 @@ def get_project_members(request, project_id):
         "limit": limit,
         "offset": offset,
         "results": paginated_members
+    })
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def verify_project_password(request, project_id):
+    """
+    Verify the project password.
+    User must be a member or admin of the project.
+    """
+    project = get_object_or_404(Project, id=project_id)
+    
+    # Check if user is a member of the project (accepted) or root_admin
+    is_member = ProjectMember.objects.filter(
+        project=project,
+        user=request.user,
+        status='accepted'
+    ).exists()
+    is_root_admin = project.root_admin.id == request.user.id
+    
+    if not (is_member or is_root_admin):
+        return Response(
+            {"detail": "You are not a member of this project"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    password = request.data.get("password", "").strip()
+    
+    if not password:
+        return Response(
+            {"detail": "Password is required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Check if password matches
+    if not project.check_access_key(password):
+        return Response(
+            {"detail": "Invalid password"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    return Response({
+        "detail": "Password verified successfully"
     })
 
 

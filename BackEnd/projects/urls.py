@@ -8,6 +8,7 @@ urlpatterns = [
     path("create/", views.create_project, name="create-project"),
     path("<uuid:project_id>/overview/", views.project_overview),
     path("<uuid:project_id>/delete/", views.delete_project, name="delete-project"),
+    path("<uuid:project_id>/verify-password/", views.verify_project_password, name="verify-password"),
     path("<uuid:project_id>/search-users/", views.search_users_for_invitation, name="search-users"),
     path("<uuid:project_id>/invite/", views.send_project_invitation, name="send-invitation"),
     path("<uuid:project_id>/members/", views.get_project_members, name="project-members"),
