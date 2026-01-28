@@ -4,7 +4,7 @@ import ModalPortal from "../../Utility/ModalPortal";
 import api from "../../Utility/api";
 
 const DeleteProjectModal = ({ project, onClose, onDeleted }) => {
-  const [step, setStep] = useState("confirm"); // "confirm" | "pin"
+  const [step, setStep] = useState("confirm");
   const [pin, setPin] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -35,7 +35,6 @@ const DeleteProjectModal = ({ project, onClose, onDeleted }) => {
       
       console.log("Delete successful:", response);
 
-      // Show success message briefly before closing
       setTimeout(() => {
         onDeleted();
         onClose();

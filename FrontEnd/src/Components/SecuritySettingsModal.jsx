@@ -4,12 +4,12 @@ import { Trash2, Lock, Eye, EyeOff, ChevronLeft, ChevronRight } from "lucide-rea
 import api from "../Utility/api";
 
 const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
+
   const [members, setMembers] = useState([]);
   const [loadingMembers, setLoadingMembers] = useState(true);
   const [totalMembers, setTotalMembers] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(5);
-  
   const [newPassword, setNewPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loadingPassword, setLoadingPassword] = useState(false);
@@ -108,7 +108,7 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
           className="modal-content security-modal"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header */}
+
           <div className="security-header">
             <h2>Security Settings</h2>
             <button className="modal-close-btn" onClick={onClose}>
@@ -116,16 +116,14 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
             </button>
           </div>
 
-          {/* Message */}
           {message && (
             <div className={`security-message ${messageType}`}>
               {message}
             </div>
           )}
 
-          {/* Content */}
           <div className="security-content">
-            {/* Members Section */}
+
             <div className="security-section">
               <h3 className="section-title">Project Members</h3>
               <p className="section-subtitle">
@@ -173,7 +171,6 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
                     ))}
                   </div>
 
-                  {/* Pagination */}
                   {totalPages > 1 && (
                     <div className="pagination-controls">
                       <button
@@ -201,7 +198,6 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
               )}
             </div>
 
-            {/* Password Section */}
             <div className="security-section">
               <h3 className="section-title">
                 <Lock size={18} />

@@ -9,11 +9,9 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
 
   const [name, setName] = useState("");
   const [members, setMembers] = useState([{ email: "", role: "ADMIN" }]);
-
   const [projectId, setProjectId] = useState("");
   const [copied, setCopied] = useState(false);
   const [accessKey, setAccessKey] = useState("");
-
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -110,7 +108,6 @@ const CreateProjectModal = ({ onClose, onCreate }) => {
       let errorMessage = "Project creation failed";
       
       if (err.response?.data) {
-        // Try to extract error message from various possible formats
         if (typeof err.response.data === "string") {
           errorMessage = err.response.data;
         } else if (err.response.data.detail) {

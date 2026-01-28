@@ -7,7 +7,6 @@ const RecipeTable = ({ recipe }) => {
 
   const combinations = recipe.recipe_combinations;
 
-  // Find max number of rows needed
   const maxRows = Math.max(
     ...combinations.map(
       c => c.custom_tag_values?.length || 0

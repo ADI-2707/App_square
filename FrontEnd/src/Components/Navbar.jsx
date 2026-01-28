@@ -21,7 +21,6 @@ const Navbar = ({ hasSidebar }) => {
   const location = useLocation();
   const isInProject = location.pathname.startsWith("/projects/");
 
-  // Fetch pending invitations count
   useEffect(() => {
     if (!loggedIn) return;
 
@@ -35,7 +34,6 @@ const Navbar = ({ hasSidebar }) => {
     };
 
     fetchPendingInvitations();
-    // Poll every 10 seconds
     const interval = setInterval(fetchPendingInvitations, 10000);
     return () => clearInterval(interval);
   }, [loggedIn]);

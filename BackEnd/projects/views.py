@@ -22,29 +22,24 @@ def cursor_paginate(queryset, cursor, limit, date_field='created_at'):
     Uses microsecond precision to prevent skip/repeat loops.
     date_field: field to use for cursor comparison ('created_at' or 'project__created_at')
     """
-    # Apply cursor filter first
+
     if cursor:
         queryset = queryset.filter(**{f'{date_field}__lt': cursor})
     
-    # Ensure ordering is applied BEFORE distinct for proper results
-    # Django's distinct() behavior depends on database backend
     queryset = queryset.order_by(f'-{date_field}', '-id')
 
     items = list(queryset[: limit + 1])
     has_more = len(items) > limit
     results = items[:limit]
-    
-    # Handle getting the date value for related fields (e.g., 'project__created_at')
+
     if results:
         last_item = results[-1]
         if '__' in date_field:
-            # For related fields like 'project__created_at'
             parts = date_field.split('__')
             date_value = last_item
             for part in parts:
                 date_value = getattr(date_value, part)
         else:
-            # For direct fields like 'created_at'
             date_value = getattr(last_item, date_field)
         
         next_cursor = date_value.strftime('%Y-%m-%dT%H:%M:%S.%f%z') if has_more else None
@@ -101,8 +96,7 @@ def joined_projects(request):
         )
         .select_related("project")
     )
-    
-    # Use cursor pagination with project created_at
+
     memberships, has_more, next_cursor = cursor_paginate(memberships_qs, cursor, limit, 'project__created_at')
 
     results = []
@@ -178,7 +172,6 @@ def create_project(request):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # Validate all members exist before creating project
     valid_members = []
     admin_count = 0
     
@@ -187,11 +180,9 @@ def create_project(request):
         role = m_data.get("role", "user").lower()
 
         if email:
-            # Skip if trying to add self
             if email.lower() == request.user.email.lower():
                 continue
-            
-            # Check if user exists
+
             target_user = User.objects.filter(email__iexact=email).first()
             if not target_user:
                 return Response(
@@ -203,7 +194,6 @@ def create_project(request):
             if role == "admin":
                 admin_count += 1
 
-    # Check if at least one admin is present
     if admin_count < 1:
         return Response(
             {"detail": "At least one member must be marked as Admin"},
@@ -218,7 +208,6 @@ def create_project(request):
         project.set_pin(raw_pin)
         project.save()
 
-        # Add validated members
         for target_user, role in valid_members:
             ProjectMember.objects.get_or_create(
                 project=project,
@@ -330,15 +319,13 @@ def delete_project(request, project_id):
     }
     """
     project = get_object_or_404(Project, id=project_id)
-    
-    # Check if user is root_admin
+
     if project.root_admin != request.user:
         return Response(
             {"detail": "Only the project owner can delete this project"},
             status=status.HTTP_403_FORBIDDEN
         )
-    
-    # Verify PIN
+
     pin = request.data.get("pin", "").strip()
     
     if not pin:
@@ -352,8 +339,7 @@ def delete_project(request, project_id):
             {"detail": "Invalid PIN"},
             status=status.HTTP_400_BAD_REQUEST
         )
-    
-    # Delete the project
+
     project_name = project.name
     project.delete()
     
@@ -372,8 +358,7 @@ def search_users_for_invitation(request, project_id):
     Returns users that are not already members of the project.
     """
     project = get_object_or_404(Project, id=project_id)
-    
-    # Verify user is root_admin
+
     if project.root_admin != request.user:
         return Response(
             {"detail": "Only the project owner can invite members"},
@@ -384,8 +369,7 @@ def search_users_for_invitation(request, project_id):
     
     if len(email) < 3:
         return Response({"results": []})
-    
-    # Find users matching the email (excluding already invited/joined users)
+
     existing_members = ProjectMember.objects.filter(project=project).values_list('user_id', flat=True)
     
     users = User.objects.filter(
@@ -393,7 +377,7 @@ def search_users_for_invitation(request, project_id):
     ).exclude(
         id__in=existing_members
     ).exclude(
-        id=request.user.id  # Don't show self
+        id=request.user.id
     ).values('id', 'email', 'first_name', 'last_name')[:10]
     
     return Response({
@@ -410,8 +394,7 @@ def send_project_invitation(request, project_id):
     Invited user starts with 'pending' status.
     """
     project = get_object_or_404(Project, id=project_id)
-    
-    # Verify user is root_admin
+
     if project.root_admin != request.user:
         return Response(
             {"detail": "Only the project owner can invite members"},
@@ -433,8 +416,7 @@ def send_project_invitation(request, project_id):
             {"detail": "User not found"},
             status=status.HTTP_404_NOT_FOUND
         )
-    
-    # Check if already a member
+
     existing = ProjectMember.objects.filter(
         project=project,
         user=invited_user
@@ -445,8 +427,7 @@ def send_project_invitation(request, project_id):
             {"detail": "User is already a member of this project"},
             status=status.HTTP_400_BAD_REQUEST
         )
-    
-    # Create invitation (pending status)
+
     member, created = ProjectMember.objects.get_or_create(
         project=project,
         user=invited_user,
@@ -486,10 +467,8 @@ def get_pending_invitations(request):
     
     invitations = []
     for member in pending:
-        # Use invited_by if available, otherwise fallback to project root_admin
         inviter = member.invited_by or member.project.root_admin
-        
-        # Get full_name from inviter's profile or use email as fallback
+
         if inviter:
             try:
                 inviter_name = inviter.profile.full_name
@@ -523,15 +502,13 @@ def respond_to_invitation(request, member_id):
     Action should be 'accept' or 'reject'.
     """
     member = get_object_or_404(ProjectMember, id=member_id)
-    
-    # Verify it's the invited user
+
     if member.user != request.user:
         return Response(
             {"detail": "You can only respond to your own invitations"},
             status=status.HTTP_403_FORBIDDEN
         )
-    
-    # Verify it's pending
+
     if member.status != 'pending':
         return Response(
             {"detail": f"Invitation is already {member.status}"},
@@ -571,35 +548,31 @@ def get_project_members(request, project_id):
     Supports pagination with limit and offset.
     """
     project = get_object_or_404(Project, id=project_id)
-    
-    # Verify user is root_admin
+
     if project.root_admin != request.user:
         return Response(
             {"detail": "Only project owner can view members"},
             status=status.HTTP_403_FORBIDDEN
         )
-    
-    # Get pagination parameters
+
     limit = int(request.query_params.get("limit", 10))
     offset = int(request.query_params.get("offset", 0))
     
     members_list = []
-    
-    # Add root_admin first
+
     try:
         root_admin_name = project.root_admin.profile.full_name
     except:
         root_admin_name = project.root_admin.email
     
     members_list.append({
-        "id": 0,  # Placeholder ID for root_admin
+        "id": 0,
         "user_id": str(project.root_admin.id),
         "email": project.root_admin.email,
         "name": root_admin_name,
         "role": "root_admin"
     })
-    
-    # Get all accepted members (invited members who accepted)
+
     accepted_members = ProjectMember.objects.filter(
         project=project,
         status='accepted'
@@ -618,8 +591,7 @@ def get_project_members(request, project_id):
             "name": member_name,
             "role": member.role
         })
-    
-    # Apply pagination
+
     total_count = len(members_list)
     paginated_members = members_list[offset:offset + limit]
     
@@ -639,8 +611,7 @@ def verify_project_password(request, project_id):
     User must be a member or admin of the project.
     """
     project = get_object_or_404(Project, id=project_id)
-    
-    # Check if user is a member of the project (accepted) or root_admin
+
     is_member = ProjectMember.objects.filter(
         project=project,
         user=request.user,
@@ -661,8 +632,7 @@ def verify_project_password(request, project_id):
             {"detail": "Password is required"},
             status=status.HTTP_400_BAD_REQUEST
         )
-    
-    # Check if password matches
+
     if not project.check_access_key(password):
         return Response(
             {"detail": "Invalid password"},
@@ -683,15 +653,13 @@ def revoke_member_access(request, project_id, member_id):
     """
     project = get_object_or_404(Project, id=project_id)
     member = get_object_or_404(ProjectMember, id=member_id, project=project)
-    
-    # Verify user is root_admin
+
     if project.root_admin != request.user:
         return Response(
             {"detail": "Only project owner can revoke access"},
             status=status.HTTP_403_FORBIDDEN
         )
-    
-    # Cannot remove root_admin
+
     if member.user == project.root_admin:
         return Response(
             {"detail": "Cannot remove project owner"},
@@ -714,8 +682,7 @@ def change_project_pin(request, project_id):
     Only root_admin can change it.
     """
     project = get_object_or_404(Project, id=project_id)
-    
-    # Verify user is root_admin
+
     if project.root_admin != request.user:
         return Response(
             {"detail": "Only project owner can change password"},

@@ -54,7 +54,6 @@ const GridItem = ({
             <source src={videoSrc} type="video/mp4" />
           </video>
         </div>
-        {/* Stats Row */}
         <div className="flex justify-around w-full mt-6 ">
           <div className="flex flex-col items-center">
             <span className="text-[10px] uppercase opacity-40 tracking-widest">
@@ -74,7 +73,6 @@ const GridItem = ({
           </div>
         </div>
 
-        {/* Compliance Bar */}
         <div className="px-4 w-full mt-3">
           <div className="flex justify-between text-[9px] mb-2 opacity-50 uppercase tracking-tighter"></div>
           <div className="h-0.75 w-full bg-white/10 rounded-full overflow-hidden">
@@ -97,7 +95,7 @@ const HeroSection = () => {
   return (
     <div className="flex items-center justify-center">
       <div className="grid-containers">
-        {/* Item 1 */}
+
         <GridItem
           gridArea="item-1"
           title="Recipe Management"
@@ -115,7 +113,6 @@ const HeroSection = () => {
           }}
         />
 
-        {/* Item 2 */}
         <GridItem
           gridArea="item-2"
           title="Dashboard Visualization"
@@ -133,7 +130,6 @@ const HeroSection = () => {
           }}
         />
 
-        {/* Item-3 */}
         <GridItem
           gridArea="item-3"
           title="Trends"
@@ -151,7 +147,6 @@ const HeroSection = () => {
           }}
         />
 
-        {/* Item-4 */}
         <GridItem
           gridArea="item-4"
           title="User Management"
@@ -169,7 +164,6 @@ const HeroSection = () => {
           }}
         />
 
-        {/* Item-5 */}
         <GridItem
           gridArea="item-5"
           title="History"

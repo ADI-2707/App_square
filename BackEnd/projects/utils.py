@@ -1,7 +1,6 @@
 import secrets
 import string
 
-# Allowed special characters for project PIN
 SPECIAL_CHARS = "!@#$%&*"
 
 

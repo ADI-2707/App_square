@@ -23,13 +23,11 @@ const ProjectLanding = () => {
   const [loading, setLoading] = useState(true);
   const [passwordVerified, setPasswordVerified] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-
   const [showViewRecipe, setShowViewRecipe] = useState(false);
   const [showCreateRecipe, setShowCreateRecipe] = useState(false);
   const [showDeleteProject, setShowDeleteProject] = useState(false);
   const [showInviteMembers, setShowInviteMembers] = useState(false);
   const [showSecuritySettings, setShowSecuritySettings] = useState(false);
-
   const [recipeDetail, setRecipeDetail] = useState(null);
   const [showProjectInfo, setShowProjectInfo] = useState(false);
 
@@ -44,7 +42,6 @@ const ProjectLanding = () => {
   }, [projectId]);
 
   useEffect(() => {
-    // Check if password was already verified in this session
     if (project) {
       const verified = sessionStorage.getItem(
         `project_${project.id}_verified`
@@ -99,7 +96,6 @@ const ProjectLanding = () => {
   };
 
   const handleProjectDeleted = () => {
-    // Redirect to home page after successful deletion
     navigate("/");
   };
 
@@ -108,13 +104,11 @@ const ProjectLanding = () => {
   };
 
   const handleInvitationSent = () => {
-    // Could refresh member list or show success toast here
   };
 
   if (loading) return <div className="project-hero-skeleton pulse" />;
   if (!project) return <div>Project not found</div>;
 
-  // Don't show content until password is verified
   if (!passwordVerified) {
     return (
       <>

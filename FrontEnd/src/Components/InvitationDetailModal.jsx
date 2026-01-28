@@ -21,7 +21,7 @@ const InvitationDetailModal = ({
     <ModalPortal>
       <div className="modal-overlay" onClick={onClose}>
         <div className="modal-content invitation-modal-compact" onClick={(e) => e.stopPropagation()}>
-          {/* Header */}
+
           <div className="invitation-compact-header">
             <h2>Project Invitation</h2>
             <button className="modal-close-btn" onClick={onClose}>
@@ -29,14 +29,11 @@ const InvitationDetailModal = ({
             </button>
           </div>
 
-          {/* Main Content */}
           <div className="invitation-compact-body">
-            {/* Project Name - Prominent */}
             <div className="invitation-project-main">
               {invitation.project_name}
             </div>
 
-            {/* Inviter - Horizontal Layout */}
             <div className="invitation-compact-inviter">
               <div className="inviter-avatar-small">
                 {invitation.invited_by_name?.charAt(0).toUpperCase()}
@@ -47,7 +44,6 @@ const InvitationDetailModal = ({
               </div>
             </div>
 
-            {/* Info Row */}
             <div className="invitation-compact-info">
               <div className="info-item">
                 <span className="info-label">Date</span>
@@ -63,7 +59,6 @@ const InvitationDetailModal = ({
             </div>
           </div>
 
-          {/* Footer - Action Buttons */}
           <div className="invitation-compact-footer">
             <button
               className="btn-decline-compact"

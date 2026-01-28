@@ -13,27 +13,22 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
   const [success, setSuccess] = useState("");
   const debounceTimer = useRef(null);
 
-  // Debounced search function
   useEffect(() => {
-    // Clear previous timer
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
     }
 
-    // Reset results if email is empty
     if (email.trim().length === 0) {
       setSearchResults([]);
       setSelectedUser(null);
       return;
     }
 
-    // Only search if at least 3 characters
     if (email.trim().length < 3) {
       setSearchResults([]);
       return;
     }
 
-    // Set new debounce timer (300ms)
     setLoading(true);
     debounceTimer.current = setTimeout(async () => {
       try {

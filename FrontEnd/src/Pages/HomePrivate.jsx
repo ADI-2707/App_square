@@ -28,14 +28,12 @@ const HomePrivate = () => {
   const [showPinModal, setShowPinModal] = useState(false);
   const [securityPin, setSecurityPin] = useState(null);
   const [accessKey, setAccessKey] = useState(null);
-
   const [owned, setOwned] = useState([]);
   const [joined, setJoined] = useState([]);
   const [ownedCursor, setOwnedCursor] = useState(null);
   const [joinedCursor, setJoinedCursor] = useState(null);
   const [ownedHasMore, setOwnedHasMore] = useState(true);
   const [joinedHasMore, setJoinedHasMore] = useState(true);
-
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -44,8 +42,6 @@ const HomePrivate = () => {
   const loadingJoinedRef = useRef(false);
 
   const { authenticated } = useAuth();
-
-  // CreateProjectModal is opened via openCreateProject from AuthContext
 
   useEffect(() => {
     if (!authenticated) return;
@@ -98,7 +94,6 @@ const HomePrivate = () => {
       });
 
       setOwned((prev) => {
-        // Just append new results - backend already returns them in correct order
         return [...prev, ...res.data.results];
       });
 
@@ -119,7 +114,6 @@ const HomePrivate = () => {
       });
 
       setJoined((prev) => {
-        // Just append new results - backend already returns them in correct order
         return [...prev, ...res.data.results];
       });
 

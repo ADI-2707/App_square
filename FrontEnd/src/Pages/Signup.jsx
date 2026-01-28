@@ -36,10 +36,9 @@ const getPasswordStrength = (password) => {
     if (rule.test(password)) score++;
   });
 
-  return score; // 0–5
+  return score;
 };
 
-// 🔹 Password validation rule (top of file, outside component)
 const PASSWORD_REGEX =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#_])[A-Za-z\d@#_]{8,}$/;
 
@@ -84,7 +83,6 @@ const Signup = () => {
     e.preventDefault();
     if (loading) return;
 
-    // Logic: Check if passwords match
     if (formData.password !== formData.confirmPassword) {
       triggerShake();
       toast.error("Passwords do not match");
@@ -199,12 +197,8 @@ const Signup = () => {
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </span>
               </div>
-              {/* <small className="password-hint">
-                Must include at least 1 uppercase & 1 lowercase letter, 1
-                number, and a special character (@ / # / _) and at least 8
-                characters long
-              </small> */}
             </div>
+
             <div className="password-checklist">
               {Object.entries(PASSWORD_RULES).map(([key, rule]) => {
                 const passed = rule.test(formData.password);
