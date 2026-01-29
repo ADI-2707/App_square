@@ -1531,14 +1531,12 @@ header .image-text .header-text {
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-
   background: radial-gradient(
     140% 140% at 18% 18%,
     rgba(255, 255, 255, 0.14),
     rgba(255, 255, 255, 0.06) 35%,
     transparent 60%
   );
-
   opacity: 0.55;
 }
 
@@ -1584,6 +1582,13 @@ header .image-text .header-text {
 
 .delete-card {
   transition: all 0.3s ease;
+  background: inherit;
+  border: none;
+  cursor: pointer;
+}
+
+[dark-mode="dark"] .delete-card:hover {
+  border: 1px solid red;
 }
 
 :root:not([dark-mode="dark"]) .delete-card:hover .project-card-icon {
@@ -2350,17 +2355,13 @@ header .image-text .header-text {
   width: 72px;
   height: 72px;
   border-radius: 18px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   font-size: 1.75rem;
   font-weight: 600;
   color: var(--text-color);
-
   background: rgba(255, 255, 255, 0.15);
-
   box-shadow:
     inset 2px 2px 4px rgba(255, 255, 255, 0.25),
     inset -2px -2px 4px rgba(0, 0, 0, 0.35);
@@ -3248,7 +3249,6 @@ body.modal-open .sidebar {
   gap: 8px;
 }
 
-/* Invite Members Modal Styles */
 .invite-modal {
   max-width: 500px;
 }
@@ -3517,7 +3517,6 @@ body.modal-open .sidebar {
   cursor: not-allowed;
 }
 
-/* Invitations Card Styles */
 .invitations-card {
   margin-top: 20px;
 }
@@ -3634,7 +3633,6 @@ body.modal-open .sidebar {
   cursor: not-allowed;
 }
 
-/* Invitation Item Clickable */
 .invitation-item {
   cursor: pointer;
   transition: all 0.2s ease;
@@ -3655,14 +3653,12 @@ body.modal-open .sidebar {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* Invitation Detail Modal */
 .invitation-detail-modal {
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
-/* Compact Modal Styles */
 .invitation-modal-compact {
   width: 90%;
   max-width: 380px;
@@ -3934,7 +3930,6 @@ body.modal-open .sidebar {
   }
 }
 
-/* Security Settings Modal */
 .security-modal {
   width: 90%;
   max-width: 600px;
