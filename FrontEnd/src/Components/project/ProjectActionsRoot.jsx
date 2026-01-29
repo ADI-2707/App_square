@@ -31,7 +31,7 @@ const ProjectActionsRoot = ({ onDeleteClick, onInviteClick, onSecurityClick }) =
       <button
         className="project-card card-surface delete-card"
         onClick={onDeleteClick}
-        style={{ border: "none", cursor: "pointer" }}
+        style={{ border: "none", cursor: "pointer", background: "inherit" }}
       >
         <div className="project-card-icon"><Trash2 /></div>
         <div className="project-card-title">Delete Project</div>
