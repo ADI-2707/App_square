@@ -146,26 +146,26 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
     window.dispatchEvent(new CustomEvent(eventName));
   };
 
-  useEffect(() => {
-    const closeDropdown = () => setExpandedItem(null);
-    window.addEventListener("close-sidebar-dropdown", closeDropdown);
-    return () =>
-      window.removeEventListener("close-sidebar-dropdown", closeDropdown);
-  }, []);
+  // useEffect(() => {
+  //   const closeDropdown = () => setExpandedItem(null);
+  //   window.addEventListener("close-sidebar-dropdown", closeDropdown);
+  //   return () =>
+  //     window.removeEventListener("close-sidebar-dropdown", closeDropdown);
+  // }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
-        setExpandedItem(null);
-      }
-    };
+  // useEffect(() => {
+  //   const handleClickOutside = (event) => {
+  //     if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+  //       setExpandedItem(null);
+  //     }
+  //   };
 
-    if (expandedItem !== null) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () =>
-        document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [expandedItem]);
+  //   if (expandedItem !== null) {
+  //     document.addEventListener("mousedown", handleClickOutside);
+  //     return () =>
+  //       document.removeEventListener("mousedown", handleClickOutside);
+  //   }
+  // }, [expandedItem]);
 
   useEffect(() => {
     document.documentElement.style.setProperty(
@@ -176,8 +176,8 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
 
   return (
     <nav
-      className={`sidebar sidebar-enter ${isClosed ? "close" : ""} ${expandedItem !== null ? "dropdown-open" : ""}`}
       ref={sidebarRef}
+      className={`sidebar sidebar-enter ${isClosed ? "close" : ""}`}
     >
       <header>
         <div className="image-text">
@@ -198,37 +198,41 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
         <ul className="menu-links">
           {SIDEBAR_ITEMS.map((item) => {
             const disabled = loadingProjects || !isInsideProject;
+            const isExpanded = expandedItem === item.id;
 
             return (
               <li
                 key={item.id}
-                className={`side-link ${disabled ? "disabled" : ""}`}
+                className={`side-link ${disabled ? "disabled" : ""} ${
+                  isExpanded ? "expanded" : ""
+                }`}
               >
                 <div
                   className="link"
-                  {...(expandedItem === null && { "data-tooltip": item.label })}
+                  {...(!isExpanded && expandedItem === null && {
+                    "data-tooltip": item.label,
+                  })}
                   onClick={() => !disabled && toggleMenu(item.id)}
                 >
                   <item.icon className="icon" />
                   <span className="text">{item.label}</span>
                 </div>
 
-                {expandedItem === item.id && !disabled && (
-                  <ul className="submenu">
-                    {item.actions.map((action) => (
-                      <li
-                        key={action.id}
-                        className="submenu-item"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          fireAction(action.action);
-                        }}
-                      >
-                        {action.label}
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                {/* INLINE EXPANDABLE SUBMENU */}
+                <ul className={`submenu-inline ${isExpanded ? "open" : ""}`}>
+                  {item.actions.map((action) => (
+                    <li
+                      key={action.id}
+                      className="submenu-item"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        fireAction(action.action);
+                      }}
+                    >
+                      {action.label}
+                    </li>
+                  ))}
+                </ul>
               </li>
             );
           })}
@@ -238,7 +242,9 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
           <li className="side-link">
             <div
               className="link"
-              {...(expandedItem === null && { "data-tooltip": "History" })}
+              {...(expandedItem === null && {
+                "data-tooltip": "History",
+              })}
               onClick={() => navigate("/history")}
             >
               <FaHistory className="icon" />
@@ -249,10 +255,10 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
           <li className="side-link">
             <div
               className="link"
-              {...(expandedItem === null && { "data-tooltip": "Logout" })}
-              onClick={() => {
-                logout();
-              }}
+              {...(expandedItem === null && {
+                "data-tooltip": "Logout",
+              })}
+              onClick={logout}
             >
               <IoLogOut className="icon" />
               <span className="text">Logout</span>
