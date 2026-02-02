@@ -752,17 +752,12 @@ header .image-text .header-text {
 }
 
 .sidebar li .link {
-  /* height: 100%;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  border-radius: 6px;
-  transition: all 0.2s ease; */
   height: 50px;
   width: 100%;
   display: flex;
   align-items: center;
+  border-radius: 10px;
+  cursor: pointer;
 }
 
 .sidebar li .link:hover {
@@ -776,6 +771,7 @@ header .image-text .header-text {
 }
 
 .sidebar .menu-bar {
+  margin-top: 10px;
   height: calc(100% - 50px);
   display: flex;
   flex: 1;
