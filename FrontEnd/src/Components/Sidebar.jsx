@@ -153,32 +153,18 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
     window.dispatchEvent(new CustomEvent(eventName));
   };
 
+  const setTooltipY = (e) => {
+  document.documentElement.style.setProperty(
+    "--tooltip-y",
+    `${e.currentTarget.getBoundingClientRect().top + 25}px`
+  );
+};
+
   useEffect(() => {
   if (isClosed) {
     setExpandedItem(null);
   }
 }, [isClosed]);
-
-  // useEffect(() => {
-  //   const closeDropdown = () => setExpandedItem(null);
-  //   window.addEventListener("close-sidebar-dropdown", closeDropdown);
-  //   return () =>
-  //     window.removeEventListener("close-sidebar-dropdown", closeDropdown);
-  // }, []);
-
-  // useEffect(() => {
-  //   const handleClickOutside = (event) => {
-  //     if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
-  //       setExpandedItem(null);
-  //     }
-  //   };
-
-  //   if (expandedItem !== null) {
-  //     document.addEventListener("mousedown", handleClickOutside);
-  //     return () =>
-  //       document.removeEventListener("mousedown", handleClickOutside);
-  //   }
-  // }, [expandedItem]);
 
   useEffect(() => {
     document.documentElement.style.setProperty(
@@ -188,6 +174,7 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
   }, [isClosed]);
 
   return (
+    <div className="sidebar-wrapper">
     <nav
       ref={sidebarRef}
       className={`sidebar sidebar-enter ${isClosed ? "close" : ""}`}
@@ -216,15 +203,14 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
             return (
               <li
                 key={item.id}
+                data-label={item.label}
+                onMouseEnter={setTooltipY}
                 className={`side-link ${disabled ? "disabled" : ""} ${
                   isExpanded ? "expanded" : ""
                 }`}
               >
                 <div
                   className="link"
-                  {...(!isExpanded && expandedItem === null && {
-                    "data-tooltip": item.label,
-                  })}
                   onClick={() => !disabled && toggleMenu(item.id)}
                 >
                   <item.icon className="icon" />
@@ -254,9 +240,7 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
           <li className="side-link">
             <div
               className="link"
-              {...(expandedItem === null && {
-                "data-tooltip": "History",
-              })}
+              data-label="History"
               onClick={() => navigate("/history")}
             >
               <FaHistory className="icon" />
@@ -267,9 +251,7 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
           <li className="side-link">
             <div
               className="link"
-              {...(expandedItem === null && {
-                "data-tooltip": "Logout",
-              })}
+              data-label="Logout"
               onClick={logout}
             >
               <IoLogOut className="icon" />
@@ -279,6 +261,7 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
         </div>
       </div>
     </nav>
+    </div>
   );
 };
 

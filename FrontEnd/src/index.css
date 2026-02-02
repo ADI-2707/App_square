@@ -544,11 +544,25 @@ input:checked + .slider {
 
 .input-error {
   border-color: #ff4d4d !important;
-}
 
+}
+/* 
 .sidebar,
 .sidebar * {
   transform-style: preserve-3d;
+} */
+
+.sidebar-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  transform: translateX(-100%);
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sidebar-wrapper.enter {
+  transform: translateX(0);
 }
 
 .sidebar {
@@ -561,17 +575,17 @@ input:checked + .slider {
   background-color: var(--text-color);
   color: var(--bg-color);
   border-right: 1px solid var(--accent-color);
-  z-index: 1000;
+  z-index: 1200;
   transform: translateX(-100%);
   opacity: 0;
   pointer-events: auto;
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
               width 0.45s cubic-bezier(0.22, 1, 0.36, 1),
               opacity 0.3s ease;
-  overflow: hidden;
+  overflow: visible;
   will-change: transform, width;
   backface-visibility: hidden;
-  transform: translateZ(0);
+  transform: none;
 }
 
 .sidebar.sidebar-enter {
@@ -587,50 +601,36 @@ input:checked + .slider {
   position: relative;
 }
 
-.sidebar.close .link::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  left: calc(100% + 20px);
-  top: 50%;
-  transform: translateY(-50%) translateX(-5px);
-  background: var(--tooltip-bg) !important;
-  color: var(--tooltip-text) !important;
+.sidebar.close .link {
+  position: relative;
+}
+
+.sidebar.close .side-link:hover::after {
+  content: attr(data-label);
+  position: fixed;
+  left: calc(var(--sidebar-width) + 16px);
+  top: var(--tooltip-y);
+  transform: translateY(-50%);
   padding: 6px 10px;
   border-radius: 6px;
-  white-space: nowrap;
+  background: red;
+  color: white;
   font-size: 13px;
-  font-weight: 500;
-  opacity: 0;
+  white-space: nowrap;
+  z-index: 100000;
   pointer-events: none;
-  transition: all 0.2s ease;
-  z-index: 10001;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
-  display: block !important;
 }
 
-.sidebar.close .link::before {
+.sidebar.close .link:hover::before {
   content: "";
   position: absolute;
-  left: calc(100% + 12px);
+  left: calc(100% + 8px);
   top: 50%;
   transform: translateY(-50%);
-  border: 4px solid transparent;
+  border: 5px solid transparent;
   border-right-color: var(--tooltip-bg);
-  opacity: 0;
-  z-index: 10001;
   pointer-events: none;
-  transition: all 0.2s ease;
-}
-
-.sidebar.close .link:hover::after,
-.sidebar.close .link:hover::before {
-  opacity: 1;
-  transform: translateY(-50%) translateX(0);
-}
-
-.sidebar.dropdown-open .link::after,
-.sidebar.dropdown-open .link::before {
-  display: none !important;
+  z-index: 99999;
 }
 
 .sidebar .text {
@@ -643,6 +643,10 @@ input:checked + .slider {
     opacity 0.15s ease,
     transform 0.25s ease,
     max-width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sidebar.close li {
+  overflow: visible;
 }
 
 .sidebar.close .text {
@@ -664,12 +668,10 @@ input:checked + .slider {
 
 .sidebar li {
   min-height: 50px;
-  /* margin-top: 10px;
-  list-style: none; */
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  /* border-radius: 10px; */
+  border-radius: 10px;
 }
 
 .sidebar li .icon {
@@ -763,6 +765,7 @@ header .image-text .header-text {
   border-radius: 6px;
   transition: all 0.2s ease; */
   height: 50px;
+  width: 100%;
   display: flex;
   align-items: center;
 }
@@ -784,7 +787,7 @@ header .image-text .header-text {
   flex-direction: column;
   justify-content: space-between;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: visible;
 }
 
 .sidebar.close .profession {
@@ -2791,16 +2794,6 @@ header .image-text .header-text {
   cursor: pointer;
   opacity: 0.85;
 }
-
-/* .submenu-item:hover {
-  background: var(--bg-color);
-  color: var(--text-color);
-} */
-
-/* .sidebar,
-.sidebar .menu-bar {
-  overflow: visible;
-} */
 
 .recipe-table-wrapper {
   margin-top: 16px;
