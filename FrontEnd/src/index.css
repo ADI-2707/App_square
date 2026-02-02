@@ -546,11 +546,6 @@ input:checked + .slider {
   border-color: #ff4d4d !important;
 
 }
-/* 
-.sidebar,
-.sidebar * {
-  transform-style: preserve-3d;
-} */
 
 .sidebar-wrapper {
   position: fixed;
@@ -675,6 +670,7 @@ input:checked + .slider {
   justify-content: center;
   min-width: 60px;
   font-size: 20px;
+  height: 25px;
 }
 
 .sidebar li .icon,

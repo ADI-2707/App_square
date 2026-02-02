@@ -49,7 +49,7 @@ const SIDEBAR_ITEMS = [
     { id: "create-templates", label: "Create Templates", action: "createTemplates" },
   ]},
 ];
-
+ 
 const Sidebar = ({ isClosed, setIsClosed }) => {
   const { logout, loadingProjects } = useAuth();
   const navigate = useNavigate();
