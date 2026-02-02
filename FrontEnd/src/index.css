@@ -175,7 +175,7 @@ input:checked + .slider {
 
 .navbar {
   position: fixed;
-  z-index: 900;
+  z-index: 800;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -183,7 +183,7 @@ input:checked + .slider {
   left: 0;
   right: 0;
   top: 15px;
-  pointer-events: auto;
+  pointer-events: none;
   opacity: 1;
   transform: translateY(-24px);
   transition: left 0.45s cubic-bezier(0.22, 1, 0.36, 1), 
@@ -200,7 +200,7 @@ input:checked + .slider {
   opacity: 1;
   transform: translateY(0);
   transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-  pointer-events: auto;
+  pointer-events: none;
 }
 
 .navbar-inner {
@@ -557,12 +557,8 @@ input:checked + .slider {
   top: 0;
   left: 0;
   height: 100vh;
-  transform: translateX(-100%);
-  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.sidebar-wrapper.enter {
-  transform: translateX(0);
+  width: 88px;
+  pointer-events: auto;
 }
 
 .sidebar {
@@ -575,8 +571,7 @@ input:checked + .slider {
   background-color: var(--text-color);
   color: var(--bg-color);
   border-right: 1px solid var(--accent-color);
-  z-index: 1200;
-  transform: translateX(-100%);
+  z-index: 2000;
   opacity: 0;
   pointer-events: auto;
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
@@ -585,7 +580,7 @@ input:checked + .slider {
   overflow: visible;
   will-change: transform, width;
   backface-visibility: hidden;
-  transform: none;
+  transform: translateX(-100%);
 }
 
 .sidebar.sidebar-enter {

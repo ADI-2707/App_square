@@ -140,12 +140,12 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
 
   const toggleMenu = (itemId) => {
     if (isClosed) {
-    setIsClosed(false);
-    requestAnimationFrame(() => {
-      setExpandedItem(itemId);
-    });
-    return;
-  }
+      setIsClosed(false);
+      requestAnimationFrame(() => {
+        setExpandedItem(itemId);
+      });
+      return;
+    }
     setExpandedItem((prev) => (prev === itemId ? null : itemId));
   };
 
@@ -154,17 +154,17 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
   };
 
   const setTooltipY = (e) => {
-  document.documentElement.style.setProperty(
-    "--tooltip-y",
-    `${e.currentTarget.getBoundingClientRect().top + 25}px`
-  );
-};
+    document.documentElement.style.setProperty(
+      "--tooltip-y",
+      `${e.currentTarget.getBoundingClientRect().top + 25}px`,
+    );
+  };
 
   useEffect(() => {
-  if (isClosed) {
-    setExpandedItem(null);
-  }
-}, [isClosed]);
+    if (isClosed) {
+      setExpandedItem(null);
+    }
+  }, [isClosed]);
 
   useEffect(() => {
     document.documentElement.style.setProperty(
@@ -175,92 +175,91 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
 
   return (
     <div className="sidebar-wrapper">
-    <nav
-      ref={sidebarRef}
-      className={`sidebar sidebar-enter ${isClosed ? "close" : ""}`}
-    >
-      <header>
-        <div className="image-text">
-          <img src="/app.svg" alt="logo" />
-          <div className="text">
-            <span className="name">App Square</span>
-            <p className="profession">Authorized Personnel Only</p>
+      <nav
+        ref={sidebarRef}
+        className={`sidebar sidebar-enter ${isClosed ? "close" : ""}`}
+      >
+        <header>
+          <div className="image-text">
+            <img src="/app.svg" alt="logo" />
+            <div className="text">
+              <span className="name">App Square</span>
+              <p className="profession">Authorized Personnel Only</p>
+            </div>
+          </div>
+
+          <IoIosArrowForward
+            className={`toggle ${isClosed ? "collapsed" : "expanded"}`}
+            onClick={() => {
+              console.log("arrow clicked", isClosed);
+              toggleSidebar();
+            }}
+          />
+        </header>
+
+        <div className="menu-bar">
+          <ul className="menu-links">
+            {SIDEBAR_ITEMS.map((item) => {
+              const disabled = loadingProjects || !isInsideProject;
+              const isExpanded = expandedItem === item.id;
+
+              return (
+                <li
+                  key={item.id}
+                  data-label={item.label}
+                  onMouseEnter={setTooltipY}
+                  className={`side-link ${disabled ? "disabled" : ""} ${
+                    isExpanded ? "expanded" : ""
+                  }`}
+                >
+                  <div
+                    className="link"
+                    onClick={() => !disabled && toggleMenu(item.id)}
+                  >
+                    <item.icon className="icon" />
+                    <span className="text">{item.label}</span>
+                  </div>
+
+                  <ul className={`submenu-inline ${isExpanded ? "open" : ""}`}>
+                    {item.actions.map((action) => (
+                      <li
+                        key={action.id}
+                        className="submenu-item"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          fireAction(action.action);
+                        }}
+                      >
+                        {action.label}
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="bottom-content">
+            <li className="side-link">
+              <div
+                className="link"
+                data-label="History"
+                onClick={() => navigate("/history")}
+              >
+                <FaHistory className="icon" />
+                <span className="text">History</span>
+              </div>
+            </li>
+
+            <li className="side-link">
+              <div className="link" data-label="Logout" onClick={logout}>
+                <IoLogOut className="icon" />
+                <span className="text">Logout</span>
+              </div>
+            </li>
           </div>
         </div>
-
-        <IoIosArrowForward
-          className={`toggle ${isClosed ? "collapsed" : "expanded"}`}
-          onClick={toggleSidebar}
-        />
-      </header>
-
-      <div className="menu-bar">
-        <ul className="menu-links">
-          {SIDEBAR_ITEMS.map((item) => {
-            const disabled = loadingProjects || !isInsideProject;
-            const isExpanded = expandedItem === item.id;
-
-            return (
-              <li
-                key={item.id}
-                data-label={item.label}
-                onMouseEnter={setTooltipY}
-                className={`side-link ${disabled ? "disabled" : ""} ${
-                  isExpanded ? "expanded" : ""
-                }`}
-              >
-                <div
-                  className="link"
-                  onClick={() => !disabled && toggleMenu(item.id)}
-                >
-                  <item.icon className="icon" />
-                  <span className="text">{item.label}</span>
-                </div>
-
-                <ul className={`submenu-inline ${isExpanded ? "open" : ""}`}>
-                  {item.actions.map((action) => (
-                    <li
-                      key={action.id}
-                      className="submenu-item"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        fireAction(action.action);
-                      }}
-                    >
-                      {action.label}
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            );
-          })}
-        </ul>
-
-        <div className="bottom-content">
-          <li className="side-link">
-            <div
-              className="link"
-              data-label="History"
-              onClick={() => navigate("/history")}
-            >
-              <FaHistory className="icon" />
-              <span className="text">History</span>
-            </div>
-          </li>
-
-          <li className="side-link">
-            <div
-              className="link"
-              data-label="Logout"
-              onClick={logout}
-            >
-              <IoLogOut className="icon" />
-              <span className="text">Logout</span>
-            </div>
-          </li>
-        </div>
-      </div>
-    </nav>
+      </nav>
     </div>
   );
 };
