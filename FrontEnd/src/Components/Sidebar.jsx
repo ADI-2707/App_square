@@ -154,10 +154,13 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
   };
 
   const setTooltipY = (e) => {
-    document.documentElement.style.setProperty(
-      "--tooltip-y",
-      `${e.currentTarget.getBoundingClientRect().top + 25}px`,
-    );
+    const icon = e.currentTarget.querySelector(".icon");
+    if (!icon) return;
+
+    const rect = icon.getBoundingClientRect();
+    const centerY = rect.top + rect.height / 2;
+
+    e.currentTarget.style.setProperty("--tooltip-y", `${centerY}px`);
   };
 
   useEffect(() => {
@@ -240,18 +243,22 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
           </ul>
 
           <div className="bottom-content">
-            <li className="side-link">
-              <div
-                className="link"
-                data-label="History"
-                onClick={() => navigate("/history")}
-              >
+            <li
+              className="side-link"
+              data-label="History"
+              onMouseEnter={setTooltipY}
+            >
+              <div className="link" onClick={() => navigate("/history")}>
                 <FaHistory className="icon" />
                 <span className="text">History</span>
               </div>
             </li>
 
-            <li className="side-link">
+            <li
+              className="side-link"
+              data-label="Logout"
+              onMouseEnter={setTooltipY}
+            >
               <div className="link" data-label="Logout" onClick={logout}>
                 <IoLogOut className="icon" />
                 <span className="text">Logout</span>

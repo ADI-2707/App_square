@@ -603,7 +603,7 @@ input:checked + .slider {
 .sidebar.close .side-link:hover::after {
   content: attr(data-label);
   position: fixed;
-  left: calc(var(--sidebar-width) + 16px);
+  left: calc(var(--sidebar-width) + 6px);
   top: var(--tooltip-y);
   transform: translateY(-50%);
   padding: 6px 10px;
