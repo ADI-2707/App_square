@@ -139,12 +139,25 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
   };
 
   const toggleMenu = (itemId) => {
+    if (isClosed) {
+    setIsClosed(false);
+    requestAnimationFrame(() => {
+      setExpandedItem(itemId);
+    });
+    return;
+  }
     setExpandedItem((prev) => (prev === itemId ? null : itemId));
   };
 
   const fireAction = (eventName) => {
     window.dispatchEvent(new CustomEvent(eventName));
   };
+
+  useEffect(() => {
+  if (isClosed) {
+    setExpandedItem(null);
+  }
+}, [isClosed]);
 
   // useEffect(() => {
   //   const closeDropdown = () => setExpandedItem(null);
@@ -218,7 +231,6 @@ const Sidebar = ({ isClosed, setIsClosed }) => {
                   <span className="text">{item.label}</span>
                 </div>
 
-                {/* INLINE EXPANDABLE SUBMENU */}
                 <ul className={`submenu-inline ${isExpanded ? "open" : ""}`}>
                   {item.actions.map((action) => (
                     <li
