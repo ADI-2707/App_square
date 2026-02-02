@@ -1,9 +1,9 @@
-venv activation = .\venv\Scripts\Activate.ps1
+venv activation =  .\venv\Scripts\Activate.ps1
 
-BackEnd = python manage.py runserver
+BackEnd =  python manage.py runserver
 
-Migration = python manage.py makemigrations
+Migration =  python manage.py makemigrations
 
-            python manage.py migrate
+             python manage.py migrate
 
-FrontEnd = npm run dev
+FrontEnd =  npm run dev
