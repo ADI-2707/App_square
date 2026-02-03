@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../Utility/AuthContext";
 import Sidebar from "@/Components/Sidebar/Sidebar";
-import Navbar from "../Components/Navbar";
+import Navbar from "@/Components/Navbar/Navbar";
 import { useState } from "react";
 
 const PrivateLayout = () => {
