@@ -30,9 +30,11 @@ const GridItem = ({
       <h2 className={`uppercase ${titleClass}`}>{title}</h2>
 
       <div className="flex flex-col text-center justify-center items-center mt-6 px-5">
-        <p className={`${textClass} text-sm ${isActivated ? "activated" : ""}`}>
+        <p className={`item-description ${textClass} text-sm ${isActivated ? "activated" : ""}`}>
           {description}
         </p>
+
+        <div className="item-spacer" />
 
         <div className={`video-reveal-container ${isActivated ? "active" : ""}`}>
           <video
