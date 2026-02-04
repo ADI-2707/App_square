@@ -6,6 +6,7 @@ import {
   userVideo,
   historyVideo,
 } from "./heroAssets";
+import "./HeroSection.css";
 
 const HeroSection = () => {
   return (
@@ -65,7 +66,7 @@ const HeroSection = () => {
           titleClass="item-head"
           textClass="item-p5 text-blue-400"
           videoSrc={historyVideo}
-          description="Maintain a complete operational timeline with searchable logs, changes, and system activity records."
+          description="Maintain a complete operational timeline with searchable logs, changes, and system activity records. Access historical data and insights to optimize operations and make informed decisions."
         />
 
       </div>
