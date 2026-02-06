@@ -91,7 +91,7 @@ const Signup = () => {
 
     if (formData.password.length < 8) {
       triggerShake();
-    toast.error("Password must be at least 8 characters.");
+      toast.error("Password must be at least 8 characters.");
       return;
     }
 
@@ -121,17 +121,19 @@ const Signup = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        const msg =
+        const firstError =
           data?.email?.[0] ||
+          data?.password?.[0] ||
+          data?.confirmPassword?.[0] ||
           data?.non_field_errors?.[0] ||
           "Registration failed";
-        toast.error(msg);
+
+        toast.error(firstError);
         return;
       }
 
       toast.success("Account created successfully!");
       navigate("/login");
-      
     } catch (error) {
       toast.error("Server not reachable. Please try again later.");
     } finally {
@@ -145,139 +147,139 @@ const Signup = () => {
         Start managing your recipes here!
       </h1>
       <div className="auth-page">
-      <div className="login-page">
-        <div className={`mt-20 login-card ${shake ? "error" : ""}`}>
-          <div className="icon-header">
-            <FaUserPlus size={32} color="var(--accent-color)" />
-          </div>
-          <h2>Create Account</h2>
-
-          <form onSubmit={handleSignup}>
-            <div className="input-group">
-              <label htmlFor="fullname">Full Name</label>
-              <input
-                type="text"
-                id="fullname"
-                value={formData.fullname}
-                onChange={handleChange}
-                placeholder="John Doe"
-                required
-              />
+        <div className="login-page">
+          <div className={`mt-20 login-card ${shake ? "error" : ""}`}>
+            <div className="icon-header">
+              <FaUserPlus size={32} color="var(--accent-color)" />
             </div>
+            <h2>Create Account</h2>
 
-            <div className="input-group">
-              <label htmlFor="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="name@company.com"
-                required
-              />
-            </div>
-
-            <div className="input-group password-group">
-              <label htmlFor="password">Password</label>
-              <div className="password-wrapper">
+            <form onSubmit={handleSignup}>
+              <div className="input-group">
+                <label htmlFor="fullname">Full Name</label>
                 <input
-                  type={showPassword ? "text" : "password"}
-                  id="password"
-                  value={formData.password}
+                  type="text"
+                  id="fullname"
+                  value={formData.fullname}
                   onChange={handleChange}
-                  placeholder="••••••••"
+                  placeholder="John Doe"
                   required
                 />
-                <span
-                  className="password-toggle"
-                  onClick={() => setShowPassword(!showPassword)}
-                  role="button"
-                  aria-label="Toggle password visibility"
-                >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </span>
               </div>
-            </div>
 
-            <div className="password-checklist">
-              {Object.entries(PASSWORD_RULES).map(([key, rule]) => {
-                const passed = rule.test(formData.password);
+              <div className="input-group">
+                <label htmlFor="email">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="name@company.com"
+                  required
+                />
+              </div>
 
-                return (
-                  <div
-                    key={key}
-                    className={`password-rule ${passed ? "valid" : "invalid"}`}
+              <div className="input-group password-group">
+                <label htmlFor="password">Password</label>
+                <div className="password-wrapper">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="••••••••"
+                    required
+                  />
+                  <span
+                    className="password-toggle"
+                    onClick={() => setShowPassword(!showPassword)}
+                    role="button"
+                    aria-label="Toggle password visibility"
                   >
-                    {passed ? "✔" : "✖"} {rule.label}
-                  </div>
-                );
-              })}
-            </div>
-            <div className="password-strength">
-              <div
-                className={`strength-bar strength-${getPasswordStrength(
-                  formData.password
-                )}`}
-              />
-              <span className="strength-label">
-                {
-                  [
-                    "Very Weak",
-                    "Weak",
-                    "Okay",
-                    "Good",
-                    "Strong",
-                    "Very Strong",
-                  ][getPasswordStrength(formData.password)]
-                }
-              </span>
-            </div>
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </span>
+                </div>
+              </div>
 
-            <div className="input-group password-group">
-              <label htmlFor="confirmPassword">Confirm Password</label>
-              <div className="password-wrapper">
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  id="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className={passwordsMismatch ? "input-error" : ""}
-                  placeholder="••••••••"
-                  required
+              <div className="password-checklist">
+                {Object.entries(PASSWORD_RULES).map(([key, rule]) => {
+                  const passed = rule.test(formData.password);
+
+                  return (
+                    <div
+                      key={key}
+                      className={`password-rule ${passed ? "valid" : "invalid"}`}
+                    >
+                      {passed ? "✔" : "✖"} {rule.label}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="password-strength">
+                <div
+                  className={`strength-bar strength-${getPasswordStrength(
+                    formData.password,
+                  )}`}
                 />
-                <span
-                  className="password-toggle"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  role="button"
-                  aria-label="Toggle confirm password visibility"
-                >
-                  {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                <span className="strength-label">
+                  {
+                    [
+                      "Very Weak",
+                      "Weak",
+                      "Okay",
+                      "Good",
+                      "Strong",
+                      "Very Strong",
+                    ][getPasswordStrength(formData.password)]
+                  }
                 </span>
               </div>
-            </div>
-            {passwordsMismatch && (
-              <small className="password-mismatch">
-                Passwords do not match
-              </small>
-            )}
 
-            <button
-              type="submit"
-              className="button login-btn mt-7"
-              disabled={loading}
-            >
-              {loading ? "Registering..." : "Register"}
-            </button>
-          </form>
+              <div className="input-group password-group">
+                <label htmlFor="confirmPassword">Confirm Password</label>
+                <div className="password-wrapper">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    id="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className={passwordsMismatch ? "input-error" : ""}
+                    placeholder="••••••••"
+                    required
+                  />
+                  <span
+                    className="password-toggle"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    role="button"
+                    aria-label="Toggle confirm password visibility"
+                  >
+                    {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                  </span>
+                </div>
+              </div>
+              {passwordsMismatch && (
+                <small className="password-mismatch">
+                  Passwords do not match
+                </small>
+              )}
 
-          <p className="signup-redirect">
-            Already have an account?{" "}
-            <span className="link-text" onClick={() => navigate("/login")}>
-              Login
-            </span>
-          </p>
+              <button
+                type="submit"
+                className="button login-btn mt-7"
+                disabled={loading}
+              >
+                {loading ? "Registering..." : "Register"}
+              </button>
+            </form>
+
+            <p className="signup-redirect">
+              Already have an account?{" "}
+              <span className="link-text" onClick={() => navigate("/login")}>
+                Login
+              </span>
+            </p>
+          </div>
         </div>
-      </div>
       </div>
     </>
   );
