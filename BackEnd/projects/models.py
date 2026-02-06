@@ -49,7 +49,6 @@ class Project(models.Model):
 
 class ProjectMember(models.Model):
     ROLE_CHOICES = (
-        ("root", "Root Admin"),
         ("admin", "Admin"),
         ("user", "User"),
     )

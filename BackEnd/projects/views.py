@@ -92,7 +92,8 @@ def joined_projects(request):
         ProjectMember.objects
         .filter(
             user=request.user,
-            role__in=["admin", "user"]
+            role__in=["admin", "user"],
+            status="accepted"
         )
         .select_related("project")
     )
@@ -212,7 +213,10 @@ def create_project(request):
             ProjectMember.objects.get_or_create(
                 project=project,
                 user=target_user,
-                defaults={'role': role, 'invited_by': request.user}
+                role=role,
+                status="accepted",
+                joined_at=timezone.now(),
+                invited_by=request.user
             )
 
     return Response({
@@ -287,23 +291,23 @@ def my_projects(request):
     ])
 
 
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def user_projects(request):
-    owned = Project.objects.filter(root_admin=request.user)
-    joined = Project.objects.filter(projectmember__user=request.user)
+# @api_view(["GET"])
+# @permission_classes([IsAuthenticated])
+# def user_projects(request):
+#     owned = Project.objects.filter(root_admin=request.user)
+#     joined = Project.objects.filter(projectmember__user=request.user)
 
-    qs = (owned | joined).distinct().order_by("-created_at")
+#     qs = (owned | joined).distinct().order_by("-created_at")
 
-    return Response({
-        "results": [
-            {
-                "id": str(p.id),
-                "name": p.name,
-            }
-            for p in qs
-        ]
-    })
+#     return Response({
+#         "results": [
+#             {
+#                 "id": str(p.id),
+#                 "name": p.name,
+#             }
+#             for p in qs
+#         ]
+#     })
 
 
 @api_view(["DELETE"])
@@ -463,7 +467,8 @@ def get_pending_invitations(request):
     pending = ProjectMember.objects.filter(
         user=request.user,
         status='pending'
-    ).select_related('project')
+    ).exclude(invited_by__isnull=True)
+    
     
     invitations = []
     for member in pending:
@@ -519,6 +524,7 @@ def respond_to_invitation(request, member_id):
     
     if action == "accept":
         member.status = "accepted"
+        member.joined_at = timezone.now()
         member.save()
         return Response({
             "detail": f"Invitation to '{member.project.name}' accepted",
@@ -528,7 +534,8 @@ def respond_to_invitation(request, member_id):
             }
         })
     elif action == "reject":
-        member.delete()
+        member.status = "rejected"
+        member.save()
         return Response({
             "detail": "Invitation rejected"
         })

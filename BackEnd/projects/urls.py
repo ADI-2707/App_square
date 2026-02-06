@@ -16,5 +16,5 @@ urlpatterns = [
     path("<uuid:project_id>/change-pin/", views.change_project_pin, name="change-pin"),
     path("invitations/pending/", views.get_pending_invitations, name="pending-invitations"),
     path("members/<int:member_id>/respond/", views.respond_to_invitation, name="respond-invitation"),
-    path("my-projects/", views.user_projects),
+    # path("my-projects/", views.user_projects),
 ]
