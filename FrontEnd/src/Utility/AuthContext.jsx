@@ -6,57 +6,22 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [authenticated, setAuthenticated] = useState(
-    !!localStorage.getItem("accessToken"),
+    !!localStorage.getItem("accessToken")
   );
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
-
   const [globalLoading, setGlobalLoading] = useState(false);
-  const [hasProjectAccess, setHasProjectAccess] = useState(false);
-  const [loadingProjects, setLoadingProjects] = useState(false);
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
-
-  const openCreateProject = () => setCreateProjectOpen(true);
-  const closeCreateProject = () => setCreateProjectOpen(false);
-
-  useEffect(() => {
-    const hasToken = !!localStorage.getItem("accessToken");
-    setAuthenticated(hasToken);
-  }, []);
 
   useEffect(() => {
     injectLoader(setGlobalLoading);
-
-    if (authenticated) {
-      refreshProjectAccess();
-    } else {
-      setHasProjectAccess(false);
-    }
-  }, [authenticated]);
-
-  const refreshProjectAccess = async () => {
-    try {
-      setLoadingProjects(true);
-      const res = await api.get("/api/projects/my-projects/");
-
-      setHasProjectAccess(Array.isArray(res.data) && res.data.length > 0);
-    } catch (err) {
-      console.error("Project access check failed", err);
-      setHasProjectAccess(false);
-    } finally {
-      setLoadingProjects(false);
-    }
-  };
+  }, []);
 
   const login = (userData, accessToken, refreshToken) => {
     setAuthenticated(true);
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
-    if (accessToken) {
-      localStorage.setItem("accessToken", accessToken);
-    }
-    if (refreshToken) {
-      localStorage.setItem("refreshToken", refreshToken);
-    }
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
   };
 
   const logout = async () => {
@@ -65,13 +30,10 @@ export const AuthProvider = ({ children }) => {
       if (refreshToken) {
         await api.post("/api/auth/logout/", { refresh: refreshToken });
       }
-    } catch (err) {
-      console.error("Logout API call failed:", err);
     } finally {
       localStorage.clear();
       setAuthenticated(false);
       setUser(null);
-      setHasProjectAccess(false);
       window.location.replace("/login");
     }
   };
@@ -83,12 +45,9 @@ export const AuthProvider = ({ children }) => {
         user,
         login,
         logout,
-        hasProjectAccess,
-        loadingProjects,
-        refreshProjectAccess,
         createProjectOpen,
-        openCreateProject,
-        closeCreateProject,
+        openCreateProject: () => setCreateProjectOpen(true),
+        closeCreateProject: () => setCreateProjectOpen(false),
       }}
     >
       {children}
