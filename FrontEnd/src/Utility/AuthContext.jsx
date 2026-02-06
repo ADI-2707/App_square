@@ -9,12 +9,35 @@ export const AuthProvider = ({ children }) => {
     !!localStorage.getItem("accessToken")
   );
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
+
   const [globalLoading, setGlobalLoading] = useState(false);
+  const [hasProjectAccess, setHasProjectAccess] = useState(false);
+  const [loadingProjects, setLoadingProjects] = useState(false);
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
 
   useEffect(() => {
     injectLoader(setGlobalLoading);
   }, []);
+
+  useEffect(() => {
+    if (authenticated) {
+      refreshProjectAccess();
+    } else {
+      setHasProjectAccess(false);
+    }
+  }, [authenticated]);
+
+  const refreshProjectAccess = async () => {
+    try {
+      setLoadingProjects(true);
+      const res = await api.get("/api/projects/my-projects/");
+      setHasProjectAccess(Array.isArray(res.data) && res.data.length > 0);
+    } catch {
+      setHasProjectAccess(false);
+    } finally {
+      setLoadingProjects(false);
+    }
+  };
 
   const login = (userData, accessToken, refreshToken) => {
     setAuthenticated(true);
@@ -34,6 +57,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.clear();
       setAuthenticated(false);
       setUser(null);
+      setHasProjectAccess(false);
       window.location.replace("/login");
     }
   };
@@ -45,6 +69,9 @@ export const AuthProvider = ({ children }) => {
         user,
         login,
         logout,
+        hasProjectAccess,
+        loadingProjects,
+        refreshProjectAccess,
         createProjectOpen,
         openCreateProject: () => setCreateProjectOpen(true),
         closeCreateProject: () => setCreateProjectOpen(false),

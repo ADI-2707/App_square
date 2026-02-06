@@ -291,24 +291,6 @@ def my_projects(request):
     ])
 
 
-# @api_view(["GET"])
-# @permission_classes([IsAuthenticated])
-# def user_projects(request):
-#     owned = Project.objects.filter(root_admin=request.user)
-#     joined = Project.objects.filter(projectmember__user=request.user)
-
-#     qs = (owned | joined).distinct().order_by("-created_at")
-
-#     return Response({
-#         "results": [
-#             {
-#                 "id": str(p.id),
-#                 "name": p.name,
-#             }
-#             for p in qs
-#         ]
-#     })
-
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
@@ -374,7 +356,10 @@ def search_users_for_invitation(request, project_id):
     if len(email) < 3:
         return Response({"results": []})
 
-    existing_members = ProjectMember.objects.filter(project=project).values_list('user_id', flat=True)
+    existing_members = ProjectMember.objects.filter(
+        project=project,
+        status="accepted"
+    ).values_list('user_id', flat=True)
     
     users = User.objects.filter(
         email__icontains=email
@@ -392,158 +377,131 @@ def search_users_for_invitation(request, project_id):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def send_project_invitation(request, project_id):
-    """
-    Send an invitation to a registered user to join the project.
-    Only root_admin can send invitations.
-    Invited user starts with 'pending' status.
-    """
     project = get_object_or_404(Project, id=project_id)
 
     if project.root_admin != request.user:
         return Response(
-            {"detail": "Only the project owner can invite members"},
+            {"detail": "Only root admin can invite users"},
             status=status.HTTP_403_FORBIDDEN
         )
-    
-    user_id = request.data.get("user_id")
-    
-    if not user_id:
-        return Response(
-            {"detail": "user_id is required"},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    try:
-        invited_user = User.objects.get(id=user_id)
-    except User.DoesNotExist:
-        return Response(
-            {"detail": "User not found"},
-            status=status.HTTP_404_NOT_FOUND
-        )
 
-    existing = ProjectMember.objects.filter(
+    user_id = request.data.get("user_id")
+    if not user_id:
+        return Response({"detail": "user_id is required"}, status=400)
+
+    invited_user = get_object_or_404(User, id=user_id)
+
+    member = ProjectMember.objects.filter(
         project=project,
         user=invited_user
     ).first()
-    
-    if existing:
+
+    if member and member.status == "accepted":
         return Response(
-            {"detail": "User is already a member of this project"},
-            status=status.HTTP_400_BAD_REQUEST
+            {"detail": "User is already a member"},
+            status=400
         )
 
-    member, created = ProjectMember.objects.get_or_create(
-        project=project,
-        user=invited_user,
-        defaults={
-            'role': 'user',
-            'status': 'pending',
-            'invited_by': request.user
-        }
-    )
-    
-    if not created and member.status == 'pending':
+    if member and member.status == "pending":
         return Response(
-            {"detail": "Invitation already sent to this user"},
-            status=status.HTTP_400_BAD_REQUEST
+            {"detail": "Invitation already pending"},
+            status=400
         )
-    
-    return Response({
-        "detail": f"Invitation sent to {invited_user.email}",
-        "member": {
-            "id": member.id,
-            "user_email": invited_user.email,
-            "status": member.status
-        }
-    }, status=status.HTTP_201_CREATED)
+
+    if member and member.status == "rejected":
+        member.status = "pending"
+        member.invited_by = request.user
+        member.invited_at = timezone.now()
+        member.save()
+    else:
+        ProjectMember.objects.create(
+            project=project,
+            user=invited_user,
+            role="user",
+            status="pending",
+            invited_by=request.user
+        )
+
+    return Response(
+        {"detail": f"Invitation sent to {invited_user.email}"},
+        status=201
+    )
 
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_pending_invitations(request):
-    """
-    Get all pending invitations for the logged-in user.
-    """
     pending = ProjectMember.objects.filter(
         user=request.user,
-        status='pending'
-    ).exclude(invited_by__isnull=True)
-    
-    
-    invitations = []
-    for member in pending:
-        inviter = member.invited_by or member.project.root_admin
+        status="pending"
+    ).select_related("project", "invited_by")
 
-        if inviter:
-            try:
-                inviter_name = inviter.profile.full_name
-            except:
-                inviter_name = inviter.email
-        else:
-            inviter_name = "Unknown"
-        
-        invitations.append({
-            "id": member.id,
-            "project_id": str(member.project.id),
-            "project_name": member.project.name,
-            "public_code": member.project.public_code,
-            "invited_at": member.invited_at,
-            "invited_by_name": inviter_name,
-            "invited_by_email": inviter.email if inviter else "unknown@example.com",
-            "role": member.role
-        })
-    
     return Response({
-        "count": len(invitations),
-        "results": invitations
+        "results": [
+            {
+                "id": m.id,
+                "project_id": str(m.project.id),
+                "project_name": m.project.name,
+                "public_code": m.project.public_code,
+                "invited_by": m.invited_by.email if m.invited_by else "unknown",
+                "invited_at": m.invited_at,
+                "role": m.role,
+            }
+            for m in pending
+        ]
     })
 
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def respond_to_invitation(request, member_id):
-    """
-    Accept or reject a project invitation.
-    Action should be 'accept' or 'reject'.
-    """
-    member = get_object_or_404(ProjectMember, id=member_id)
+def accept_invitation_with_password(request, member_id):
+    member = get_object_or_404(
+        ProjectMember,
+        id=member_id,
+        user=request.user,
+        status="pending"
+    )
 
-    if member.user != request.user:
+    password = request.data.get("password", "").strip()
+    if not password:
         return Response(
-            {"detail": "You can only respond to your own invitations"},
-            status=status.HTTP_403_FORBIDDEN
+            {"detail": "Project password is required"},
+            status=400
         )
 
-    if member.status != 'pending':
+    if not member.project.check_access_key(password):
         return Response(
-            {"detail": f"Invitation is already {member.status}"},
-            status=status.HTTP_400_BAD_REQUEST
+            {"detail": "Invalid project password"},
+            status=401
         )
-    
-    action = request.data.get("action", "").lower()
-    
-    if action == "accept":
-        member.status = "accepted"
-        member.joined_at = timezone.now()
-        member.save()
-        return Response({
-            "detail": f"Invitation to '{member.project.name}' accepted",
-            "project": {
-                "id": str(member.project.id),
-                "name": member.project.name
-            }
-        })
-    elif action == "reject":
-        member.status = "rejected"
-        member.save()
-        return Response({
-            "detail": "Invitation rejected"
-        })
-    else:
-        return Response(
-            {"detail": "action must be 'accept' or 'reject'"},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+
+    member.status = "accepted"
+    member.joined_at = timezone.now()
+    member.save()
+
+    return Response({
+        "detail": "Invitation accepted",
+        "project": {
+            "id": str(member.project.id),
+            "name": member.project.name
+        }
+    })
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def reject_invitation(request, member_id):
+    member = get_object_or_404(
+        ProjectMember,
+        id=member_id,
+        user=request.user,
+        status="pending"
+    )
+
+    member.status = "rejected"
+    member.save()
+
+    return Response({"detail": "Invitation rejected"})
+
 
 
 @api_view(["GET"])
@@ -607,47 +565,6 @@ def get_project_members(request, project_id):
         "limit": limit,
         "offset": offset,
         "results": paginated_members
-    })
-
-
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def verify_project_password(request, project_id):
-    """
-    Verify the project password.
-    User must be a member or admin of the project.
-    """
-    project = get_object_or_404(Project, id=project_id)
-
-    is_member = ProjectMember.objects.filter(
-        project=project,
-        user=request.user,
-        status='accepted'
-    ).exists()
-    is_root_admin = project.root_admin.id == request.user.id
-    
-    if not (is_member or is_root_admin):
-        return Response(
-            {"detail": "You are not a member of this project"},
-            status=status.HTTP_401_UNAUTHORIZED
-        )
-    
-    password = request.data.get("password", "").strip()
-    
-    if not password:
-        return Response(
-            {"detail": "Password is required"},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    if not project.check_access_key(password):
-        return Response(
-            {"detail": "Invalid password"},
-            status=status.HTTP_401_UNAUTHORIZED
-        )
-    
-    return Response({
-        "detail": "Password verified successfully"
     })
 
 

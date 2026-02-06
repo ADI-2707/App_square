@@ -3,6 +3,7 @@ import secrets
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password, check_password
+from django.utils import timezone
 
 
 def generate_public_code():
@@ -52,7 +53,7 @@ class ProjectMember(models.Model):
         ("admin", "Admin"),
         ("user", "User"),
     )
-    
+
     STATUS_CHOICES = (
         ("pending", "Pending"),
         ("accepted", "Accepted"),
@@ -62,14 +63,26 @@ class ProjectMember(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
-    invited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="invitations_sent")
 
-    joined_at = models.DateTimeField(auto_now_add=True)
-    invited_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
+
+    invited_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sent_invitations"
+    )
+
+    invited_at = models.DateTimeField(default=timezone.now)
+    joined_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         unique_together = ("user", "project")
 
     def __str__(self):
-        return f"{self.user.email} → {self.project.name} ({self.role}) - {self.status}"
+        return f"{self.user.email} → {self.project.name} ({self.status})"
