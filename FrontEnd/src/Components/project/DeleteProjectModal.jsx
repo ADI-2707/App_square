@@ -24,23 +24,16 @@ const DeleteProjectModal = ({ project, onClose, onDeleted }) => {
     setError("");
 
     try {
-      console.log("Attempting to delete project with ID:", project.id);
-      console.log("API endpoint: /api/projects/" + project.id + "/delete/");
-      
       const response = await api({
         method: "delete",
         url: `/api/projects/${project.id}/delete/`,
         data: { pin }
       });
-      
-      console.log("Delete successful:", response);
-
       setTimeout(() => {
         onDeleted();
         onClose();
       }, 500);
     } catch (err) {
-      console.error("Delete error:", err);
       const errorMsg =
         err.response?.data?.detail || "Failed to delete project";
       setError(errorMsg);
