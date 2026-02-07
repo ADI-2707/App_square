@@ -24,7 +24,7 @@ const HomePrivate = () => {
   const displayName = formatUserName(user?.full_name);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const { createProjectOpen, closeCreateProject } = useAuth();
+  const { createProjectOpen, closeCreateProject, openCreateProject } = useAuth();
   const [showPinModal, setShowPinModal] = useState(false);
   const [securityPin, setSecurityPin] = useState(null);
   const [accessKey, setAccessKey] = useState(null);
@@ -42,6 +42,14 @@ const HomePrivate = () => {
   const loadingJoinedRef = useRef(false);
 
   const { authenticated } = useAuth();
+
+  const hasAnyProjects = owned.length > 0 || joined.length > 0;
+
+  const showEmptyState =
+    !isInitialLoading &&
+    !isSearching &&
+    searchResults.length === 0 &&
+    !hasAnyProjects;
 
   useEffect(() => {
     if (!authenticated) return;
@@ -61,15 +69,19 @@ const HomePrivate = () => {
           }),
         ]);
 
-        setOwned((ownedRes.data.results || []).sort(
-          (a, b) => new Date(b.created_at) - new Date(a.created_at)
-        ));
+        setOwned(
+          (ownedRes.data.results || []).sort(
+            (a, b) => new Date(b.created_at) - new Date(a.created_at),
+          ),
+        );
         setOwnedCursor(ownedRes.data.next_cursor);
         setOwnedHasMore(ownedRes.data.has_more);
 
-        setJoined((joinedRes.data.results || []).sort(
-          (a, b) => new Date(b.created_at) - new Date(a.created_at)
-        ));
+        setJoined(
+          (joinedRes.data.results || []).sort(
+            (a, b) => new Date(b.created_at) - new Date(a.created_at),
+          ),
+        );
         setJoinedCursor(joinedRes.data.next_cursor);
         setJoinedHasMore(joinedRes.data.has_more);
       } catch (err) {
@@ -200,7 +212,7 @@ const HomePrivate = () => {
         />
       )}
 
-      {(owned.length > 0 || isInitialLoading) && (
+      {owned.length > 0 && (
         <ProjectSection
           title="Owned Projects"
           projects={owned}
@@ -210,7 +222,7 @@ const HomePrivate = () => {
         />
       )}
 
-      {(joined.length > 0 || isInitialLoading) && (
+      {joined.length > 0 && (
         <ProjectSection
           title="Joined Projects"
           projects={joined}
@@ -220,13 +232,15 @@ const HomePrivate = () => {
         />
       )}
 
-      <div
-        className="empty-project-card mt-10"
-        onClick={() => {}}
-      >
-        <PlusSquare size={52} className="plus" />
-        <p className="empty-project-text">Create new project</p>
-      </div>
+      {showEmptyState && (
+        <div
+          className="empty-project-card mt-10 fade-in"
+          onClick={openCreateProject}
+        >
+          <PlusSquare size={52} className="plus" />
+          <p className="empty-project-text">Create new project</p>
+        </div>
+      )}
 
       {createProjectOpen && (
         <CreateProjectModal

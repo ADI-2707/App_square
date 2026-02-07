@@ -17,18 +17,22 @@ export default function ProjectSection({
         loadMore?.();
       }
     },
-    [hasMore, loadMore]
+    [hasMore, loadMore, projects.length]
   );
 
   useEffect(() => {
     if (!hasMore || !observerRef.current) return;
+
     const observer = new IntersectionObserver(handleIntersect, {
       threshold: 0.1,
       rootMargin: "100px",
     });
+
+
     observer.observe(observerRef.current);
     return () => observer.disconnect();
-  }, [handleIntersect, hasMore, projects.length]);
+
+  }, [handleIntersect, hasMore]);
 
   useEffect(() => {
     if (scrollContainerRef.current && projects.length > 0) {
