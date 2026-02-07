@@ -615,4 +615,3 @@ def verify_project_password(request, project_id):
         "detail": "Access granted",
         "expires_in_hours": 24
     }, status=status.HTTP_200_OK)
-

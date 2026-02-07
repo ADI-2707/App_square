@@ -68,10 +68,6 @@ class RecipeCombination(models.Model):
 
 
 class RecipeCombinationTagValue(models.Model):
-    """
-    Store custom tag values for a specific combination within a recipe.
-    Allows users to override default/combination tag values when creating recipes.
-    """
     recipe_combination = models.ForeignKey(
         RecipeCombination,
         related_name="custom_tag_values",

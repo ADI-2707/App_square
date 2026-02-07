@@ -66,7 +66,6 @@ class RecipeCreateSerializer(serializers.Serializer):
     )
 
     def validate_combinations(self, value):
-        """Validate that each combination has required fields"""
         for idx, combo in enumerate(value):
             if not combo.get("id"):
                 raise serializers.ValidationError(

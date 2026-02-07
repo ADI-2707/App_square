@@ -68,10 +68,6 @@ def login(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def logout(request):
-    """
-    Logout endpoint to invalidate tokens.
-    Blacklists the refresh token (if using token blacklist).
-    """
     try:
         refresh_token = request.data.get("refresh")
         if refresh_token:
