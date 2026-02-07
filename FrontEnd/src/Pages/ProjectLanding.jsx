@@ -13,6 +13,7 @@ import DeleteProjectModal from "../Components/project/DeleteProjectModal";
 import InviteMembersModal from "../Components/project/InviteMembersModal";
 import SecuritySettingsModal from "../Components/SecuritySettingsModal";
 import RecipeTable from "../Components/project/RecipeTable";
+import ViewMembersModal from "../Components/project/ViewMembersModal";
 
 const ProjectLanding = () => {
   const { projectId } = useParams();
@@ -28,6 +29,7 @@ const ProjectLanding = () => {
   const [showSecuritySettings, setShowSecuritySettings] = useState(false);
   const [recipeDetail, setRecipeDetail] = useState(null);
   const [showProjectInfo, setShowProjectInfo] = useState(false);
+  const [showViewMembers, setShowViewMembers] = useState(false);
 
   useEffect(() => {
     const openInfo = () => setShowProjectInfo(true);
@@ -128,11 +130,18 @@ const ProjectLanding = () => {
                 onSecurityClick={() => setShowSecuritySettings(true)}
               />
             )}
-            {project.role === "admin" && <ProjectActionsAdmin />}
+            {project.role === "admin" && (<ProjectActionsAdmin onManageMembers={() => setShowViewMembers(true)} />)}
             {project.role === "user" && <ProjectActionsUser />}
           </div>
         </section>
       </div>
+
+      {showViewMembers && (
+        <ViewMembersModal
+          project={project}
+          onClose={() => setShowViewMembers(false)}
+        />
+      )}
 
       {showViewRecipe && (
         <ViewRecipeModal

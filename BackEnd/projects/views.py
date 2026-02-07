@@ -484,8 +484,16 @@ def get_project_members(request, project_id):
     project = get_object_or_404(Project, id=project_id)
 
     if project.root_admin != request.user:
+        is_admin = ProjectMember.objects.filter(
+            project=project,
+            user=request.user,
+            role="admin",
+            status="accepted"
+        ).exists()
+
+    if not is_admin:
         return Response(
-            {"detail": "Only project owner can view members"},
+            {"detail": "Access denied"},
             status=status.HTTP_403_FORBIDDEN
         )
 
