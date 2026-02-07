@@ -86,3 +86,22 @@ class ProjectMember(models.Model):
 
     def __str__(self):
         return f"{self.user.email} → {self.project.name} ({self.status})"
+
+
+from datetime import timedelta
+
+class ProjectAccessSession(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        unique_together = ("user", "project")
+
+    def is_active(self):
+        return self.expires_at > timezone.now()
+
+    def extend(self, hours=24):
+        self.expires_at = timezone.now() + timedelta(hours=hours)
+        self.save()
+

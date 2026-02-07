@@ -464,6 +464,34 @@ def accept_invitation_with_password(request, member_id):
 
     password = request.data.get("password", "").strip()
     if not password:
+        return Response({"detail": "Password required"}, status=400)
+
+    if not member.project.check_access_key(password):
+        return Response({"detail": "Invalid project password"}, status=401)
+
+    member.status = "accepted"
+    member.joined_at = timezone.now()
+    member.save()
+
+    ensure_project_access(request.user, member.project)
+
+    return Response({
+        "detail": "Invitation accepted",
+        "project": {
+            "id": str(member.project.id),
+            "name": member.project.name
+        }
+    })
+
+    member = get_object_or_404(
+        ProjectMember,
+        id=member_id,
+        user=request.user,
+        status="pending"
+    )
+
+    password = request.data.get("password", "").strip()
+    if not password:
         return Response(
             {"detail": "Project password is required"},
             status=400
@@ -643,18 +671,15 @@ def verify_project_password(request, project_id):
 
     password = request.data.get("password", "").strip()
     if not password:
-        return Response(
-            {"detail": "Project password is required"},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        return Response({"detail": "Password required"}, status=400)
 
     if not project.check_access_key(password):
-        return Response(
-            {"detail": "Invalid project password"},
-            status=status.HTTP_401_UNAUTHORIZED
-        )
+        return Response({"detail": "Invalid password"}, status=401)
 
-    return Response(
-        {"detail": "Password verified"},
-        status=status.HTTP_200_OK
-    )
+    ensure_project_access(request.user, project)
+
+    return Response({
+        "detail": "Access granted",
+        "expires_in_hours": 24
+    })
+
