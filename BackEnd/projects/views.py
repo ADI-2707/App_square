@@ -633,3 +633,28 @@ def change_project_pin(request, project_id):
     return Response({
         "detail": "Project password updated successfully"
     })
+
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def verify_project_password(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+
+    password = request.data.get("password", "").strip()
+    if not password:
+        return Response(
+            {"detail": "Project password is required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if not project.check_access_key(password):
+        return Response(
+            {"detail": "Invalid project password"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    return Response(
+        {"detail": "Password verified"},
+        status=status.HTTP_200_OK
+    )
