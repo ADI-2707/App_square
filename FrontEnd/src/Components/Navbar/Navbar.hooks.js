@@ -23,7 +23,7 @@ export function useNavbarEffects(loggedIn) {
     const fetchPendingInvitations = async () => {
       try {
         const res = await api.get("/api/projects/invitations/pending/");
-        setPendingInvitations(res.data.count || 0);
+        setPendingInvitations(res.data.results.length || 0);
       } catch (e) {
         console.error("Failed to fetch invitations", e);
       }

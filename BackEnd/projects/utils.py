@@ -73,5 +73,6 @@ def require_project_access(user, project):
     if not session:
         return False
 
-    session.extend()
+    session.expires_at = timezone.now() + timedelta(hours=ACCESS_TTL_HOURS)
+    session.save()
     return True

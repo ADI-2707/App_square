@@ -36,9 +36,32 @@ api.interceptors.response.use(
     return response;
   },
   async (error) => {
-    const originalRequest = error.config;
+    setLoadingCallback(false);
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const originalRequest = error.config;
+    const status = error.response?.status;
+    const detail = error.response?.data?.detail;
+
+    if (
+      status === 403 &&
+      detail === "Project password required" &&
+      !originalRequest._passwordRetry
+    ) {
+      originalRequest._passwordRetry = true;
+
+      window.dispatchEvent(
+        new CustomEvent("PROJECT_PASSWORD_REQUIRED", {
+          detail: {
+            projectId: extractProjectId(originalRequest.url),
+            retryRequest: originalRequest,
+          },
+        })
+      );
+
+      return Promise.reject(error);
+    }
+
+    if (status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
         const refreshToken = localStorage.getItem("refreshToken");
@@ -46,16 +69,13 @@ api.interceptors.response.use(
 
         const res = await axios.post(
           `${API_BASE_URL}/api/auth/token/refresh/`,
-          {
-            refresh: refreshToken,
-          },
+          { refresh: refreshToken }
         );
 
         localStorage.setItem("accessToken", res.data.access);
         originalRequest.headers.Authorization = `Bearer ${res.data.access}`;
         return api(originalRequest);
       } catch (err) {
-        setLoadingCallback(false);
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
         window.location.replace("/login");
@@ -63,9 +83,13 @@ api.interceptors.response.use(
       }
     }
 
-    setLoadingCallback(false);
     return Promise.reject(error);
-  },
+  }
 );
+
+function extractProjectId(url = "") {
+  const match = url.match(/projects\/([0-9a-f-]{36})/i);
+  return match ? match[1] : null;
+}
 
 export default api;

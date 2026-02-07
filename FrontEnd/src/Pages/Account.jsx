@@ -3,6 +3,7 @@ import { Eye, EyeOff, Check, X } from "lucide-react";
 import api from "../Utility/api";
 import { useAuth } from "../Utility/AuthContext";
 import InvitationDetailModal from "../Components/InvitationDetailModal";
+import ProjectPasswordModal from "../Components/ProjectPasswordModal";
 
 const Account = () => {
   const { logout } = useAuth();
@@ -15,11 +16,15 @@ const Account = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
   const [invitations, setInvitations] = useState([]);
   const [loadingInvitations, setLoadingInvitations] = useState(true);
   const [respondingTo, setRespondingTo] = useState(null);
   const [selectedInvitation, setSelectedInvitation] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [acceptingInvitation, setAcceptingInvitation] = useState(null);
 
   const user = useMemo(() => {
     try {
@@ -36,8 +41,8 @@ const Account = () => {
   const fetchInvitations = async () => {
     try {
       setLoadingInvitations(true);
-      const response = await api.get("/api/projects/invitations/pending/");
-      setInvitations(response.data.results || []);
+      const res = await api.get("/api/projects/invitations/pending/");
+      setInvitations(res.data.results || []);
     } catch (err) {
       console.error("Failed to fetch invitations:", err);
     } finally {
@@ -45,17 +50,47 @@ const Account = () => {
     }
   };
 
-  const handleInvitationResponse = async (memberId, action) => {
-    setRespondingTo(memberId);
+  const handleAcceptWithPassword = async (password) => {
+    if (!acceptingInvitation) return;
+
+    setRespondingTo(acceptingInvitation.id);
     try {
       await api.post(
-        `/api/projects/members/${memberId}/respond/`,
-        { action }
+        `/api/projects/invitations/${acceptingInvitation.id}/accept/`,
+        { password }
       );
-      setInvitations(invitations.filter((inv) => inv.id !== memberId));
+
+      setInvitations((prev) =>
+        prev.filter((inv) => inv.id !== acceptingInvitation.id)
+      );
+
+      setPasswordModalOpen(false);
       setShowDetailModal(false);
+      setAcceptingInvitation(null);
+
+      window.dispatchEvent(new CustomEvent("INVITES_UPDATED"));
     } catch (err) {
-      console.error(`Failed to ${action} invitation:`, err);
+      throw err;
+    } finally {
+      setRespondingTo(null);
+    }
+  };
+
+  const handleReject = async (invitationId) => {
+    setRespondingTo(invitationId);
+    try {
+      await api.post(
+        `/api/projects/invitations/${invitationId}/reject/`
+      );
+
+      setInvitations((prev) =>
+        prev.filter((inv) => inv.id !== invitationId)
+      );
+
+      setShowDetailModal(false);
+      window.dispatchEvent(new CustomEvent("INVITES_UPDATED"));
+    } catch (err) {
+      console.error("Failed to reject invitation:", err);
     } finally {
       setRespondingTo(null);
     }
@@ -65,7 +100,6 @@ const Account = () => {
     e.preventDefault();
     setError("");
 
-    // Basic validation
     if (!currentPassword || !newPassword || !confirmPassword) {
       setError("Please fill all fields.");
       return;
@@ -104,7 +138,6 @@ const Account = () => {
 
   return (
     <div className="account-page">
-
       <div className="account-intro-wrapper">
         <div className="account-intro-card">
           <div className="intro-avatar">
@@ -115,89 +148,38 @@ const Account = () => {
         </div>
       </div>
 
-      <form
-        className="account-card card-surface"
-        onSubmit={handleSubmit}
-      >
+      <form className="account-card card-surface" onSubmit={handleSubmit}>
         <h2 className="account-title">Security</h2>
 
         <div className="password-grid">
-          <div className="account-field">
-            <label>Current Password</label>
-            <div className="password-wrapper">
-              <input
-                type={showCurrent ? "text" : "password"}
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                autoComplete="current-password"
-              />
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={() => setShowCurrent((v) => !v)}
-                aria-label="Toggle current password visibility"
-              >
-                {showCurrent ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
+          {[
+            ["Current Password", currentPassword, setCurrentPassword, showCurrent, setShowCurrent],
+            ["New Password", newPassword, setNewPassword, showNew, setShowNew],
+            ["Confirm Password", confirmPassword, setConfirmPassword, showConfirm, setShowConfirm],
+          ].map(([label, value, setter, show, toggle], idx) => (
+            <div className="account-field" key={idx}>
+              <label>{label}</label>
+              <div className="password-wrapper">
+                <input
+                  type={show ? "text" : "password"}
+                  value={value}
+                  onChange={(e) => setter(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => toggle((v) => !v)}
+                >
+                  {show ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
-          </div>
-
-          <div className="account-field">
-            <label>New Password</label>
-            <div className="password-wrapper">
-              <input
-                type={showNew ? "text" : "password"}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                autoComplete="new-password"
-              />
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={() => setShowNew((v) => !v)}
-                aria-label="Toggle new password visibility"
-              >
-                {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-
-          <div className="account-field">
-            <label>Confirm Password</label>
-            <div className="password-wrapper">
-              <input
-                type={showConfirm ? "text" : "password"}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                autoComplete="new-password"
-              />
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={() => setShowConfirm((v) => !v)}
-                aria-label="Toggle confirm password visibility"
-              >
-                {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
+          ))}
         </div>
 
-        <p className="password-hint">
-          Password must be at least 8 characters long.
-        </p>
+        {error && <p className="error-text">{error}</p>}
 
-        {error && (
-          <p style={{ color: "#ef4444", fontSize: "13px", marginTop: "6px" }}>
-            {error}
-          </p>
-        )}
-
-        <button
-          type="submit"
-          className="primary-btn"
-          disabled={loading}
-        >
+        <button className="primary-btn" disabled={loading}>
           {loading ? "Updating..." : "Update Password"}
         </button>
       </form>
@@ -205,32 +187,20 @@ const Account = () => {
       {invitations.length > 0 && (
         <div className="account-card card-surface invitations-card">
           <h2 className="account-title">Project Invitations</h2>
-          <p className="invitations-subtitle">
-            You have {invitations.length} pending invitation{invitations.length !== 1 ? "s" : ""}
-          </p>
 
           <div className="invitations-list">
-            {invitations.map((invitation) => (
+            {invitations.map((inv) => (
               <div
-                key={invitation.id}
+                key={inv.id}
                 className="invitation-item"
                 onClick={() => {
-                  setSelectedInvitation(invitation);
+                  setSelectedInvitation(inv);
                   setShowDetailModal(true);
                 }}
-                role="button"
-                tabIndex={0}
               >
-                <div className="invitation-info">
-                  <div className="invitation-project-name">
-                    {invitation.project_name}
-                  </div>
-                  <div className="invitation-details">
-                    <span className="invitation-code">{invitation.public_code}</span>
-                    <span className="invitation-date">
-                      {new Date(invitation.invited_at).toLocaleDateString()}
-                    </span>
-                  </div>
+                <div>
+                  <strong>{inv.project_name}</strong>
+                  <div className="muted">{inv.public_code}</div>
                 </div>
 
                 <div className="invitation-actions">
@@ -238,10 +208,9 @@ const Account = () => {
                     className="btn-accept"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleInvitationResponse(invitation.id, "accept");
+                      setAcceptingInvitation(inv);
+                      setPasswordModalOpen(true);
                     }}
-                    disabled={respondingTo === invitation.id}
-                    title="Accept invitation"
                   >
                     <Check size={18} />
                   </button>
@@ -249,10 +218,8 @@ const Account = () => {
                     className="btn-reject"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleInvitationResponse(invitation.id, "reject");
+                      handleReject(inv.id);
                     }}
-                    disabled={respondingTo === invitation.id}
-                    title="Reject invitation"
                   >
                     <X size={18} />
                   </button>
@@ -265,15 +232,24 @@ const Account = () => {
 
       <InvitationDetailModal
         isOpen={showDetailModal}
-        onClose={() => setShowDetailModal(false)}
         invitation={selectedInvitation}
-        onAccept={() =>
-          handleInvitationResponse(selectedInvitation.id, "accept")
-        }
-        onReject={() =>
-          handleInvitationResponse(selectedInvitation.id, "reject")
-        }
+        onClose={() => setShowDetailModal(false)}
+        onAccept={() => {
+          setAcceptingInvitation(selectedInvitation);
+          setPasswordModalOpen(true);
+        }}
+        onReject={() => handleReject(selectedInvitation.id)}
         isLoading={respondingTo === selectedInvitation?.id}
+      />
+
+      <ProjectPasswordModal
+        isOpen={passwordModalOpen}
+        project={{ name: acceptingInvitation?.project_name }}
+        onClose={() => {
+          setPasswordModalOpen(false);
+          setAcceptingInvitation(null);
+        }}
+        onVerified={handleAcceptWithPassword}
       />
     </div>
   );

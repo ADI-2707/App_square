@@ -12,7 +12,6 @@ import CreateRecipeModal from "../Components/project/CreateRecipeModal";
 import DeleteProjectModal from "../Components/project/DeleteProjectModal";
 import InviteMembersModal from "../Components/project/InviteMembersModal";
 import SecuritySettingsModal from "../Components/SecuritySettingsModal";
-import ProjectPasswordModal from "../Components/ProjectPasswordModal";
 import RecipeTable from "../Components/project/RecipeTable";
 
 const ProjectLanding = () => {
@@ -21,8 +20,7 @@ const ProjectLanding = () => {
 
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [passwordVerified, setPasswordVerified] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
+
   const [showViewRecipe, setShowViewRecipe] = useState(false);
   const [showCreateRecipe, setShowCreateRecipe] = useState(false);
   const [showDeleteProject, setShowDeleteProject] = useState(false);
@@ -40,19 +38,6 @@ const ProjectLanding = () => {
   useEffect(() => {
     fetchProject();
   }, [projectId]);
-
-  useEffect(() => {
-    if (project) {
-      const verified = sessionStorage.getItem(
-        `project_${project.id}_verified`
-      );
-      if (verified) {
-        setPasswordVerified(true);
-      } else {
-        setShowPasswordModal(true);
-      }
-    }
-  }, [project]);
 
   useEffect(() => {
     const openView = () => setShowViewRecipe(true);
@@ -109,24 +94,6 @@ const ProjectLanding = () => {
   if (loading) return <div className="project-hero-skeleton pulse" />;
   if (!project) return <div>Project not found</div>;
 
-  if (!passwordVerified) {
-    return (
-      <>
-        <ProjectPasswordModal
-          isOpen={showPasswordModal}
-          onClose={() => {
-            navigate("/");
-          }}
-          project={project}
-          onVerified={() => {
-            setShowPasswordModal(false);
-            setPasswordVerified(true);
-          }}
-        />
-      </>
-    );
-  }
-
   return (
     <div className="page-container fade-in">
       <div className="page-inner">
@@ -166,18 +133,6 @@ const ProjectLanding = () => {
           </div>
         </section>
       </div>
-
-      {showPasswordModal && (
-        <ProjectPasswordModal
-          isOpen={showPasswordModal}
-          onClose={() => setShowPasswordModal(false)}
-          project={project}
-          onVerified={() => {
-            setShowPasswordModal(false);
-            setPasswordVerified(true);
-          }}
-        />
-      )}
 
       {showViewRecipe && (
         <ViewRecipeModal

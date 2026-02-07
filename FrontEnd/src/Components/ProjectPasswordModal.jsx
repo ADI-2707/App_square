@@ -1,9 +1,14 @@
 import React, { useState } from "react";
 import ModalPortal from "../Utility/ModalPortal";
 import { Lock, Eye, EyeOff } from "lucide-react";
-import api from "../Utility/api";
 
-const ProjectPasswordModal = ({ isOpen, onClose, project, onVerified }) => {
+const ProjectPasswordModal = ({
+  isOpen,
+  onClose,
+  projectId,
+  projectName,
+  onVerified,
+}) => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -20,30 +25,19 @@ const ProjectPasswordModal = ({ isOpen, onClose, project, onVerified }) => {
 
     setLoading(true);
     try {
-      const response = await api.post(
-        `/api/projects/${project.id}/verify-password/`,
-        { password }
-      );
-
-      sessionStorage.setItem(
-        `project_${project.id}_verified`,
-        JSON.stringify({
-          verified: true,
-          timestamp: new Date().getTime(),
-        })
-      );
+      await onVerified(password);
       setPassword("");
-      onVerified();
     } catch (err) {
       setError(
-        err.response?.data?.detail || "Invalid password. Please try again."
+        err?.response?.data?.detail ||
+          "Invalid password. Please try again."
       );
     } finally {
       setLoading(false);
     }
   };
 
-  if (!isOpen || !project) return null;
+  if (!isOpen) return null;
 
   return (
     <ModalPortal>
@@ -61,7 +55,8 @@ const ProjectPasswordModal = ({ isOpen, onClose, project, onVerified }) => {
 
           <div className="password-modal-body">
             <p className="password-modal-text">
-              Enter the project password to access <strong>{project.name}</strong>
+              Enter the project password to access{" "}
+              <strong>{projectName || "this project"}</strong>
             </p>
 
             <form onSubmit={handleSubmit} className="password-modal-form">
@@ -82,11 +77,17 @@ const ProjectPasswordModal = ({ isOpen, onClose, project, onVerified }) => {
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={loading}
                   >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    {showPassword ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
                   </button>
                 </div>
 
-                {error && <div className="password-error">{error}</div>}
+                {error && (
+                  <div className="password-error">{error}</div>
+                )}
               </div>
 
               <button

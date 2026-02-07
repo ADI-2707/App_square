@@ -12,7 +12,7 @@ import secrets
 
 from .models import Project, ProjectMember
 from .serializers import ProjectListSerializer
-from .utils import generate_project_pin
+from .utils import generate_project_pin, ensure_project_access
 
 DEFAULT_LIMIT = 10
 
@@ -464,10 +464,12 @@ def accept_invitation_with_password(request, member_id):
 
     password = request.data.get("password", "").strip()
     if not password:
-        return Response({"detail": "Password required"}, status=400)
+        return Response({"detail": "Password required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    project = member.project
 
     if not member.project.check_access_key(password):
-        return Response({"detail": "Invalid project password"}, status=401)
+        return Response({"detail": "Invalid project password"}, status=status.HTTP_401_UNAUTHORIZED)
 
     member.status = "accepted"
     member.joined_at = timezone.now()
@@ -481,39 +483,9 @@ def accept_invitation_with_password(request, member_id):
             "id": str(member.project.id),
             "name": member.project.name
         }
-    })
+    }, status=status.HTTP_200_OK)
 
-    member = get_object_or_404(
-        ProjectMember,
-        id=member_id,
-        user=request.user,
-        status="pending"
-    )
 
-    password = request.data.get("password", "").strip()
-    if not password:
-        return Response(
-            {"detail": "Project password is required"},
-            status=400
-        )
-
-    if not member.project.check_access_key(password):
-        return Response(
-            {"detail": "Invalid project password"},
-            status=401
-        )
-
-    member.status = "accepted"
-    member.joined_at = timezone.now()
-    member.save()
-
-    return Response({
-        "detail": "Invitation accepted",
-        "project": {
-            "id": str(member.project.id),
-            "name": member.project.name
-        }
-    })
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -528,7 +500,8 @@ def reject_invitation(request, member_id):
     member.status = "rejected"
     member.save()
 
-    return Response({"detail": "Invitation rejected"})
+    return Response({"detail": "Invitation rejected"},
+                    status=status.HTTP_200_OK)
 
 
 
@@ -671,15 +644,15 @@ def verify_project_password(request, project_id):
 
     password = request.data.get("password", "").strip()
     if not password:
-        return Response({"detail": "Password required"}, status=400)
+        return Response({"detail": "Password required"}, status=status.HTTP_400_BAD_REQUEST)
 
     if not project.check_access_key(password):
-        return Response({"detail": "Invalid password"}, status=401)
+        return Response({"detail": "Invalid password"}, status=status.HTTP_401_UNAUTHORIZED)
 
     ensure_project_access(request.user, project)
 
     return Response({
         "detail": "Access granted",
         "expires_in_hours": 24
-    })
+    }, status=status.HTTP_200_OK)
 
