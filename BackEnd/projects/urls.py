@@ -13,4 +13,7 @@ urlpatterns = [
     path("invitations/<int:member_id>/accept/", views.accept_invitation_with_password),
     path("invitations/<int:member_id>/reject/", views.reject_invitation),
     path("<uuid:project_id>/search-users/", views.search_users_for_invitation),
+    path("<uuid:project_id>/members/", views.get_project_members),
+    path("<uuid:project_id>/members/<int:member_id>/revoke/", views.revoke_member_access),
+    path("<uuid:project_id>/change-pin/", views.change_project_pin),
 ]

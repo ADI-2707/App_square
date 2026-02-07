@@ -17,12 +17,6 @@ from .utils import generate_project_pin, ensure_project_access
 DEFAULT_LIMIT = 10
 
 def cursor_paginate(queryset, cursor, limit, date_field='created_at'):
-    """
-    Standard cursor pagination for descending order.
-    Uses microsecond precision to prevent skip/repeat loops.
-    date_field: field to use for cursor comparison ('created_at' or 'project__created_at')
-    """
-
     if cursor:
         queryset = queryset.filter(**{f'{date_field}__lt': cursor})
     
@@ -272,11 +266,6 @@ def search_projects(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def my_projects(request):
-    """
-    Lightweight endpoint for frontend access checks.
-    Returns a flat list of all projects the user can access.
-    """
-
     owned = Project.objects.filter(root_admin=request.user)
     joined = Project.objects.filter(projectmember__user=request.user)
 
@@ -295,15 +284,6 @@ def my_projects(request):
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_project(request, project_id):
-    """
-    Delete a project with PIN verification.
-    Only the root_admin can delete a project.
-    
-    Expected request data:
-    {
-        "pin": "the_project_pin"
-    }
-    """
     project = get_object_or_404(Project, id=project_id)
 
     if project.root_admin != request.user:
@@ -338,11 +318,6 @@ def delete_project(request, project_id):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def search_users_for_invitation(request, project_id):
-    """
-    Search for registered users by email to invite them to a project.
-    Only root_admin can invite users.
-    Returns users that are not already members of the project.
-    """
     project = get_object_or_404(Project, id=project_id)
 
     if project.root_admin != request.user:
@@ -466,8 +441,6 @@ def accept_invitation_with_password(request, member_id):
     if not password:
         return Response({"detail": "Password required"}, status=status.HTTP_400_BAD_REQUEST)
 
-    project = member.project
-
     if not member.project.check_access_key(password):
         return Response({"detail": "Invalid project password"}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -508,11 +481,6 @@ def reject_invitation(request, member_id):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_project_members(request, project_id):
-    """
-    Get all members of a project (root_admin + accepted members).
-    Only root_admin can view this.
-    Supports pagination with limit and offset.
-    """
     project = get_object_or_404(Project, id=project_id)
 
     if project.root_admin != request.user:
@@ -572,10 +540,6 @@ def get_project_members(request, project_id):
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def revoke_member_access(request, project_id, member_id):
-    """
-    Revoke a member's access to the project.
-    Only root_admin can revoke access.
-    """
     project = get_object_or_404(Project, id=project_id)
     member = get_object_or_404(ProjectMember, id=member_id, project=project)
 
@@ -602,10 +566,6 @@ def revoke_member_access(request, project_id, member_id):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def change_project_pin(request, project_id):
-    """
-    Change project password (access key).
-    Only root_admin can change it.
-    """
     project = get_object_or_404(Project, id=project_id)
 
     if project.root_admin != request.user:
