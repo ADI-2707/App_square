@@ -17,4 +17,5 @@ urlpatterns = [
     path("<uuid:project_id>/members/<int:member_id>/revoke/", views.revoke_member_access),
     path("<uuid:project_id>/change-pin/", views.change_project_pin),
     path("<uuid:project_id>/delete/", views.delete_project),
+    path("<uuid:project_id>/members/<int:member_id>/role/", views.change_member_role),
 ]

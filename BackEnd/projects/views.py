@@ -625,3 +625,33 @@ def verify_project_password(request, project_id):
         "detail": "Access granted",
         "expires_in_hours": 24
     }, status=status.HTTP_200_OK)
+
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def change_member_role(request, project_id, member_id):
+    project = get_object_or_404(Project, id=project_id)
+
+    if project.root_admin != request.user:
+        return Response({"detail": "Forbidden"}, status=403)
+
+    member = get_object_or_404(
+        ProjectMember,
+        id=member_id,
+        project=project,
+        status="accepted"
+    )
+
+    new_role = request.data.get("role")
+    if new_role not in ("admin", "user"):
+        return Response({"detail": "Invalid role"}, status=400)
+
+    member.role = new_role
+    member.save()
+
+    return Response({
+        "detail": "Role updated",
+        "member_id": member.id,
+        "role": member.role
+    })

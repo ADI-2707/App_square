@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from "react";
 import ModalPortal from "../Utility/ModalPortal";
-import { Trash2, Lock, Eye, EyeOff, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Trash2,
+  Lock,
+  Eye,
+  EyeOff,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import api from "../Utility/api";
 
 const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
-
   const [members, setMembers] = useState([]);
   const [loadingMembers, setLoadingMembers] = useState(true);
   const [totalMembers, setTotalMembers] = useState(0);
@@ -28,7 +34,7 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
       setLoadingMembers(true);
       const offset = page * pageSize;
       const response = await api.get(
-        `/api/projects/${project.id}/members/?limit=${pageSize}&offset=${offset}`
+        `/api/projects/${project.id}/members/?limit=${pageSize}&offset=${offset}`,
       );
       setMembers(response.data.results || []);
       setTotalMembers(response.data.count || 0);
@@ -48,7 +54,7 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
     setRevoking(memberId);
     try {
       await api.delete(
-        `/api/projects/${project.id}/members/${memberId}/revoke/`
+        `/api/projects/${project.id}/members/${memberId}/revoke/`,
       );
       setMembers(members.filter((m) => m.id !== memberId));
       setMessage(`Access revoked for ${memberEmail}`);
@@ -60,6 +66,30 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
       setMessageType("error");
     } finally {
       setRevoking(null);
+    }
+  };
+
+  const handleRoleToggle = async (memberId, currentRole) => {
+    const newRole = currentRole === "admin" ? "user" : "admin";
+
+    if (!window.confirm(`Change role to ${newRole.toUpperCase()}?`)) {
+      return;
+    }
+
+    try {
+      await api.patch(`/api/projects/${project.id}/members/${memberId}/role/`, {
+        role: newRole,
+      });
+
+      setMembers((prev) =>
+        prev.map((m) => (m.id === memberId ? { ...m, role: newRole } : m)),
+      );
+
+      setMessage("Role updated successfully");
+      setMessageType("success");
+    } catch (err) {
+      setMessage(err.response?.data?.detail || "Failed to update role");
+      setMessageType("error");
     }
   };
 
@@ -108,7 +138,6 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
           className="modal-content security-modal"
           onClick={(e) => e.stopPropagation()}
         >
-
           <div className="security-header">
             <h2>Security Settings</h2>
             <button className="modal-close-btn" onClick={onClose}>
@@ -117,13 +146,10 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
           </div>
 
           {message && (
-            <div className={`security-message ${messageType}`}>
-              {message}
-            </div>
+            <div className={`security-message ${messageType}`}>{message}</div>
           )}
 
           <div className="security-content">
-
             <div className="security-section">
               <h3 className="section-title">Project Members</h3>
               <p className="section-subtitle">
@@ -138,7 +164,10 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
                 <>
                   <div className="members-list">
                     {members.map((member) => (
-                      <div key={`${member.id}-${member.user_id}`} className="member-item">
+                      <div
+                        key={`${member.id}-${member.user_id}`}
+                        className="member-item"
+                      >
                         <div className="member-info">
                           <div className="member-avatar">
                             {member.name?.charAt(0).toUpperCase()}
@@ -226,7 +255,9 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
-                  <p className="pin-hint">Password must be at least 6 characters</p>
+                  <p className="pin-hint">
+                    Password must be at least 6 characters
+                  </p>
                 </div>
 
                 <button
