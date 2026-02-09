@@ -67,12 +67,12 @@ class RecipeCreateSerializer(serializers.Serializer):
 
     def validate_combinations(self, value):
         for idx, combo in enumerate(value):
-            if not combo.get("id"):
+            if "id" not in combo:
                 raise serializers.ValidationError(
-                    f"Combination {idx}: missing 'id' field"
+                    f"Combination {idx}: missing id"
                 )
             if "tag_values" not in combo:
                 raise serializers.ValidationError(
-                    f"Combination {idx}: missing 'tag_values' field"
+                    f"Combination {idx}: missing tag_values"
                 )
         return value

@@ -49,6 +49,9 @@ class Recipe(models.Model):
     class Meta:
         unique_together = ("name", "project")
 
+    def __str__(self):
+        return f"{self.name} (v{self.version})"
+
 
 class RecipeCombination(models.Model):
     recipe = models.ForeignKey(
