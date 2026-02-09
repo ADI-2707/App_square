@@ -565,6 +565,24 @@ def revoke_member_access(request, project_id, member_id):
             status=status.HTTP_400_BAD_REQUEST
         )
     
+    if member.role == "admin":
+        admin_count = ProjectMember.objects.filter(
+            project=project,
+            role="admin",
+            status="accepted"
+        ).count()
+
+    if admin_count <= 1:
+        return Response(
+            {
+                "detail": (
+                    "This is the only remaining admin. "
+                    "Assign another admin before removing this user."
+                )
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
     member_email = member.user.email
     member.delete()
     
@@ -644,8 +662,27 @@ def change_member_role(request, project_id, member_id):
     )
 
     new_role = request.data.get("role")
+
     if new_role not in ("admin", "user"):
         return Response({"detail": "Invalid role"}, status=400)
+    
+    if member.role == "admin" and new_role == "user":
+        admin_count = ProjectMember.objects.filter(
+            project=project,
+            role="admin",
+            status="accepted"
+        ).count()
+
+        if admin_count <= 1:
+            return Response(
+                {
+                    "detail": (
+                        "This is the only remaining admin. "
+                        "Assign another admin before changing this role."
+                    )
+                },
+                status=400
+            )
 
     member.role = new_role
     member.save()

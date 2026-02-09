@@ -2,7 +2,7 @@ import secrets
 import string
 from datetime import timedelta
 from django.utils import timezone
-from .models import ProjectAccessSession
+from .models import ProjectAccessSession, ProjectMember
 
 SPECIAL_CHARS = "!@#$%&*"
 ACCESS_TTL_HOURS = 24
@@ -61,3 +61,11 @@ def require_project_access(user, project):
     session.expires_at = timezone.now() + timedelta(hours=ACCESS_TTL_HOURS)
     session.save()
     return True
+
+
+def get_admin_count(project):
+    return ProjectMember.objects.filter(
+        project=project,
+        role="admin",
+        status="accepted"
+    ).count()
