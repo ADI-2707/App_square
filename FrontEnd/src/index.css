@@ -859,10 +859,6 @@ input:checked + .slider {
   -webkit-backdrop-filter: blur(12px);
 }
 
-/* .sidebar.close ~ #modal-root .modal-backdrop {
-  left: 88px;
-} */
-
 [dark-mode="dark"] .modal-card {
   background: rgba(20, 20, 20, 0.95);
   color: #fff;
@@ -3626,4 +3622,50 @@ input:checked + .slider {
     width: 22px;
     height: 22px;
   }
+}
+
+.role-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.role-label {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+.role-toggle input {
+  display: none;
+}
+
+.toggle-slider {
+  width: 36px;
+  height: 18px;
+  background: var(--input-border);
+  border-radius: 999px;
+  position: relative;
+  transition: background 0.25s ease;
+}
+
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: var(--bg-color);
+  border-radius: 50%;
+  transition: transform 0.25s ease;
+}
+
+.role-toggle input:checked + .toggle-slider {
+  background: #f59e0b;
+}
+
+.role-toggle input:checked + .toggle-slider::before {
+  transform: translateX(18px);
 }

@@ -179,10 +179,25 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
                         </div>
 
                         <div className="member-meta">
-                          <span className={`role-badge-${member.role}`}>
-                            {member.role?.charAt(0).toUpperCase() +
-                              member.role?.slice(1).toLowerCase()}
-                          </span>
+                          {member.role !== "root_admin" ? (
+                            <label className="role-toggle">
+                              <span className="role-label">
+                                {member.role === "admin" ? "Admin" : "User"}
+                              </span>
+
+                              <input
+                                type="checkbox"
+                                checked={member.role === "admin"}
+                                onChange={() =>
+                                  handleRoleToggle(member.id, member.role)
+                                }
+                              />
+                              <span className="toggle-slider" />
+                            </label>
+                          ) : (
+                            <span className="role-badge-root">Root</span>
+                          )}
+
                           {member.role !== "root_admin" && (
                             <button
                               className="btn-revoke"
