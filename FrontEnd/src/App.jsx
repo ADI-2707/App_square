@@ -13,6 +13,7 @@ import Contact from "./Pages/Contact";
 import ForgetPassword from "./Pages/ForgetPassword";
 import Account from "./Pages/Account";
 import ProjectLanding from "./Pages/ProjectLanding";
+import Footer from "./Components/Footer/Footer";
 
 import { Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
@@ -42,7 +43,7 @@ const App = () => {
           <Route path="/projects/:projectId" element={<ProjectLanding />} />
         </Route>
       </Routes>
-
+      <Footer />
       <ToastContainer
         position="top-right"
         autoClose={3000}
