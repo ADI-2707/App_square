@@ -483,7 +483,9 @@ def reject_invitation(request, member_id):
 def get_project_members(request, project_id):
     project = get_object_or_404(Project, id=project_id)
 
-    if project.root_admin != request.user:
+    if project.root_admin == request.user:
+        is_admin = True
+    else:
         is_admin = ProjectMember.objects.filter(
             project=project,
             user=request.user,

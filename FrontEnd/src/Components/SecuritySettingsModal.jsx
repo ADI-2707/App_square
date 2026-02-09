@@ -14,7 +14,7 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loadingPassword, setLoadingPassword] = useState(false);
   const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState(""); // 'success' or 'error'
+  const [messageType, setMessageType] = useState("");
   const [revoking, setRevoking] = useState(null);
 
   useEffect(() => {
