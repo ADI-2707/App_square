@@ -48,7 +48,15 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
     }
   };
 
-  const handleRevokeAccess = async (memberId, memberEmail) => {
+  const handleRevokeAccess = async (memberId, memberEmail, memberRole) => {
+    if (memberRole === "admin" && adminCount <= 1) {
+      window.alert(
+        "This is the only remaining admin.\n\n" +
+          "You must assign another admin before removing this user.",
+      );
+      return;
+    }
+
     if (!window.confirm(`Revoke access for ${memberEmail}?`)) return;
 
     setRevoking(memberId);
@@ -71,6 +79,14 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
 
   const handleRoleToggle = async (memberId, currentRole) => {
     const newRole = currentRole === "admin" ? "user" : "admin";
+
+    if (currentRole === "admin" && newRole === "user" && adminCount <= 1) {
+      window.alert(
+        "This is the only remaining admin.\n\n" +
+          "You must assign another admin before changing this role.",
+      );
+      return;
+    }
 
     if (!window.confirm(`Change role to ${newRole.toUpperCase()}?`)) {
       return;
@@ -128,6 +144,7 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
   const totalPages = Math.ceil(totalMembers / pageSize);
   const canPrevious = currentPage > 0;
   const canNext = currentPage < totalPages - 1;
+  const adminCount = members.filter((m) => m.role === "admin").length;
 
   if (!isOpen || !project) return null;
 
@@ -202,7 +219,7 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
                             <button
                               className="btn-revoke"
                               onClick={() =>
-                                handleRevokeAccess(member.id, member.email)
+                                handleRevokeAccess(member.id, member.email. member.role)
                               }
                               disabled={revoking === member.id}
                               title="Revoke access"
