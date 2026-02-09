@@ -41,12 +41,12 @@ const ProjectInfoModal = ({ project, onClose }) => {
               </div>
             </div>
 
-            <div className="project-info-divider" />
+            {/* <div className="project-info-divider" />
 
-            <div className="project-info-actions">
+             <div className="project-info-actions">
               <button className="button secondary">Manage Members</button>
               <button className="button danger">Archive Project</button>
-            </div>
+            </div>  */}
           </div>
         </div>
       </div>
