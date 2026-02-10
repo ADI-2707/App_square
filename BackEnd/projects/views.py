@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.db import transaction
-from django.db.models import Q, Value, BooleanField, F
+from django.db.models import Q, Value, BooleanField
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.contrib.auth import get_user_model
@@ -33,10 +33,8 @@ def owned_projects(request):
 
     projects, has_more, next_cursor = cursor_paginate(qs, cursor, limit)
 
-    serializer = ProjectListSerializer(projects, many=True)
-
     return Response({
-        "results": serializer.data,
+        "results": ProjectListSerializer(projects, many=True).data,
         "has_more": has_more,
         "next_cursor": next_cursor,
     })
@@ -49,7 +47,7 @@ def joined_projects(request):
     cursor = parse_cursor(request.query_params.get("cursor"))
     limit = int(request.query_params.get("limit", DEFAULT_LIMIT))
 
-    memberships_qs = (
+    qs = (
         ProjectMember.objects
         .filter(
             user=request.user,
@@ -59,7 +57,7 @@ def joined_projects(request):
     )
 
     memberships, has_more, next_cursor = cursor_paginate(
-        memberships_qs,
+        qs,
         cursor,
         limit,
         date_field="project__created_at"
@@ -512,7 +510,7 @@ def get_project_members(request, project_id):
     accepted_members = (
         ProjectMember.objects
         .filter(project=project, status="accepted")
-        .select_related("user", "user__profile")
+        .select_related("user")
         .order_by("joined_at")
     )
 
