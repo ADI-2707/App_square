@@ -115,7 +115,12 @@ const Signup = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+  email: formData.email,
+  full_name: formData.fullname,
+  password: formData.password,
+  confirm_password: formData.confirmPassword,
+}),
       });
 
       const data = await response.json();
@@ -124,7 +129,7 @@ const Signup = () => {
         const firstError =
           data?.email?.[0] ||
           data?.password?.[0] ||
-          data?.confirmPassword?.[0] ||
+          data?.confirm_Password?.[0] ||
           data?.non_field_errors?.[0] ||
           "Registration failed";
 

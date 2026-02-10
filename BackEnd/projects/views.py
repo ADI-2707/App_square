@@ -6,9 +6,7 @@ from django.db import transaction
 from django.db.models import Q, Value, BooleanField, F
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from django.utils.dateparse import parse_datetime
-from django.contrib.auth.models import User
-import secrets
+from django.contrib.auth import get_user_model
 
 from .models import Project, ProjectMember
 from .serializers import ProjectListSerializer
@@ -16,7 +14,7 @@ from .utils import generate_project_pin, ensure_project_access
 from .pagination import parse_cursor, cursor_paginate
 
 DEFAULT_LIMIT = 10
-
+User = get_user_model()
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
