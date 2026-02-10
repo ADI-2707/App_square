@@ -1,8 +1,55 @@
 .app-footer {
-  width: 100%;
   margin-top: auto;
-  border-top: 1px solid var(--border-color);
   background: var(--bg-color);
+  position: relative;
+  margin-left: 250px;
+  width: calc(100% - 250px);
+  transition:
+    margin-left 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.app-footer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1200px, 92%);
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(128, 128, 128, 0.65),
+    transparent
+  );
+  box-shadow: 0 0 6px rgba(128, 128, 128, 0.25);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.sidebar-closed ~ .app-footer {
+  margin-left: 88px;
+  width: calc(100% - 88px);
+}
+
+@media (max-width: 768px) {
+  .app-footer {
+    margin-left: 72px;
+    width: calc(100% - 72px);
+  }
+}
+
+[dark-mode="dark"] .app-footer::before {
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.35),
+    transparent
+  );
+
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.18);
+  opacity: 0.9;
 }
 
 .footer-inner {
