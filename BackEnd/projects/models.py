@@ -7,7 +7,11 @@ from django.utils import timezone
 
 
 def generate_public_code():
-    return f"APSQ-{secrets.token_hex(4).upper()}"
+    from .models import Project
+    while True:
+        code = f"APSQ-{secrets.token_hex(4).upper()}"
+        if not Project.objects.filter(public_code=code).exists():
+            return code
 
 
 class Project(models.Model):
@@ -82,7 +86,17 @@ class ProjectMember(models.Model):
     joined_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        unique_together = ("user", "project")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "project"],
+                name="unique_project_member"
+            )
+        ]
+        indexes = [
+            models.Index(fields=["project", "status"]),
+            models.Index(fields=["user", "status"]),
+            models.Index(fields=["project", "role", "status"]),
+        ]
 
     def __str__(self):
         return f"{self.user.email} → {self.project.name} ({self.status})"
@@ -102,6 +116,7 @@ class ProjectAccessSession(models.Model):
         return self.expires_at > timezone.now()
 
     def extend(self, hours=24):
-        self.expires_at = timezone.now() + timedelta(hours=hours)
-        self.save()
+        if self.expires_at - timezone.now() < timedelta(hours=2):
+            self.expires_at = timezone.now() + timedelta(hours=hours)
+            self.save(update_fields=["expires_at"])
 
