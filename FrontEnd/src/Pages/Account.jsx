@@ -11,15 +11,18 @@ const Account = () => {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const [invitations, setInvitations] = useState([]);
   const [loadingInvitations, setLoadingInvitations] = useState(true);
   const [respondingTo, setRespondingTo] = useState(null);
+
   const [selectedInvitation, setSelectedInvitation] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
@@ -34,10 +37,6 @@ const Account = () => {
     }
   }, []);
 
-  useEffect(() => {
-    fetchInvitations();
-  }, []);
-
   const fetchInvitations = async () => {
     try {
       setLoadingInvitations(true);
@@ -49,6 +48,17 @@ const Account = () => {
       setLoadingInvitations(false);
     }
   };
+
+  useEffect(() => {
+    fetchInvitations();
+
+    const handler = () => fetchInvitations();
+    window.addEventListener("INVITES_UPDATED", handler);
+
+    return () => {
+      window.removeEventListener("INVITES_UPDATED", handler);
+    };
+  }, []);
 
   const handleAcceptWithPassword = async (password) => {
     if (!acceptingInvitation) return;
@@ -69,8 +79,6 @@ const Account = () => {
       setAcceptingInvitation(null);
 
       window.dispatchEvent(new CustomEvent("INVITES_UPDATED"));
-    } catch (err) {
-      throw err;
     } finally {
       setRespondingTo(null);
     }
@@ -79,9 +87,7 @@ const Account = () => {
   const handleReject = async (invitationId) => {
     setRespondingTo(invitationId);
     try {
-      await api.post(
-        `/api/projects/invitations/${invitationId}/reject/`
-      );
+      await api.post(`/api/projects/invitations/${invitationId}/reject/`);
 
       setInvitations((prev) =>
         prev.filter((inv) => inv.id !== invitationId)
@@ -138,44 +144,8 @@ const Account = () => {
 
   return (
     <div className="account-page">
-      <div className="account-intro-wrapper">
-        <div className="account-intro-card">
-          <div className="intro-avatar">
-            {user.full_name?.charAt(0).toUpperCase()}
-          </div>
-          <div className="intro-name">{user.full_name}</div>
-          <div className="intro-email">{user.email}</div>
-        </div>
-      </div>
-
       <form className="account-card card-surface" onSubmit={handleSubmit}>
         <h2 className="account-title">Security</h2>
-
-        <div className="password-grid">
-          {[
-            ["Current Password", currentPassword, setCurrentPassword, showCurrent, setShowCurrent],
-            ["New Password", newPassword, setNewPassword, showNew, setShowNew],
-            ["Confirm Password", confirmPassword, setConfirmPassword, showConfirm, setShowConfirm],
-          ].map(([label, value, setter, show, toggle], idx) => (
-            <div className="account-field" key={idx}>
-              <label>{label}</label>
-              <div className="password-wrapper">
-                <input
-                  type={show ? "text" : "password"}
-                  value={value}
-                  onChange={(e) => setter(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="password-toggle"
-                  onClick={() => toggle((v) => !v)}
-                >
-                  {show ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
 
         {error && <p className="error-text">{error}</p>}
 
@@ -206,6 +176,7 @@ const Account = () => {
                 <div className="invitation-actions">
                   <button
                     className="btn-accept"
+                    disabled={respondingTo === inv.id}
                     onClick={(e) => {
                       e.stopPropagation();
                       setAcceptingInvitation(inv);
@@ -214,8 +185,10 @@ const Account = () => {
                   >
                     <Check size={18} />
                   </button>
+
                   <button
                     className="btn-reject"
+                    disabled={respondingTo === inv.id}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleReject(inv.id);
