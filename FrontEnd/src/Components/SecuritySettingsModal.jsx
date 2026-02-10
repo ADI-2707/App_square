@@ -127,8 +127,8 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
 
     setLoadingPassword(true);
     try {
-      await api.post(`/api/projects/${project.id}/change-pin/`, {
-        new_password: newPassword,
+      await api.post(`/api/projects/${project.id}/change-access-key/`, {
+        new_access_key: newPassword,
       });
       setNewPassword("");
       setMessage("Project password updated successfully");

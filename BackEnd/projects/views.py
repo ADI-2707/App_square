@@ -501,17 +501,11 @@ def get_project_members(request, project_id):
     members_list = []
 
     root_admin = project.root_admin
-    root_admin_name = (
-        root_admin.profile.full_name
-        if hasattr(root_admin, "profile")
-        else root_admin.email
-    )
-
     members_list.append({
         "id": 0,
         "user_id": str(root_admin.id),
         "email": root_admin.email,
-        "name": root_admin_name,
+        "name": root_admin.full_name,
         "role": "root_admin",
     })
 
@@ -524,17 +518,12 @@ def get_project_members(request, project_id):
 
     for member in accepted_members:
         user = member.user
-        member_name = (
-            user.profile.full_name
-            if hasattr(user, "profile")
-            else user.email
-        )
 
         members_list.append({
             "id": member.id,
             "user_id": str(user.id),
             "email": user.email,
-            "name": member_name,
+            "name": user.full_name,
             "role": member.role,
         })
 
