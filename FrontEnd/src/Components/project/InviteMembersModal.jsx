@@ -11,55 +11,74 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
   const [inviting, setInviting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
   const debounceTimer = useRef(null);
+  const requestIdRef = useRef(0);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    setError("");
+    setSuccess("");
+
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
     }
 
-    if (email.trim().length === 0) {
+    const value = email.trim();
+
+    if (!value) {
       setSearchResults([]);
       setSelectedUser(null);
       return;
     }
 
-    if (email.trim().length < 3) {
+    if (value.length < 3) {
       setSearchResults([]);
       return;
     }
 
-    setLoading(true);
     debounceTimer.current = setTimeout(async () => {
+      const requestId = ++requestIdRef.current;
+      setLoading(true);
+
       try {
-        const response = await api.get(
+        const res = await api.get(
           `/api/projects/${project.id}/search-users/`,
-          {
-            params: { email: email.trim() }
-          }
+          { params: { email: value } }
         );
-        setSearchResults(response.data.results || []);
-        setError("");
+
+        if (!isMountedRef.current || requestId !== requestIdRef.current) return;
+
+        setSearchResults(res.data.results || []);
       } catch (err) {
+        if (!isMountedRef.current) return;
         console.error("Search error:", err);
         setError("Failed to search users");
         setSearchResults([]);
       } finally {
-        setLoading(false);
+        if (isMountedRef.current) {
+          setLoading(false);
+        }
       }
     }, 300);
 
-    return () => {
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-      }
-    };
+    return () => clearTimeout(debounceTimer.current);
   }, [email, project.id]);
 
   const handleUserSelect = (user) => {
     setSelectedUser(user);
     setEmail(user.email);
     setSearchResults([]);
+    setError("");
   };
 
   const handleInvite = async () => {
@@ -72,23 +91,21 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
     setError("");
 
     try {
-      const response = await api.post(
+      await api.post(
         `/api/projects/${project.id}/invite/`,
-        {
-          user_id: selectedUser.id
-        }
+        { user_id: selectedUser.id }
       );
 
       setSuccess(`Invitation sent to ${selectedUser.email}`);
+      window.dispatchEvent(new CustomEvent("INVITES_UPDATED"));
+
       setTimeout(() => {
-        onInvited();
+        onInvited?.();
         onClose();
-      }, 1500);
+      }, 1200);
     } catch (err) {
       console.error("Invite error:", err);
-      const errorMsg =
-        err.response?.data?.detail || "Failed to send invitation";
-      setError(errorMsg);
+      setError(err.response?.data?.detail || "Failed to send invitation");
     } finally {
       setInviting(false);
     }
@@ -143,7 +160,6 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
                     className="invite-clear-btn"
                     onClick={handleClear}
                     disabled={inviting}
-                    title="Clear"
                   >
                     <X size={18} />
                   </button>
@@ -170,7 +186,9 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
                         <div className="invite-result-name">
                           {getDisplayName(user)}
                         </div>
-                        <div className="invite-result-email">{user.email}</div>
+                        <div className="invite-result-email">
+                          {user.email}
+                        </div>
                       </div>
                       <div className="invite-result-arrow">→</div>
                     </button>
@@ -194,17 +212,8 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
                 </div>
               )}
 
-              {error && (
-                <div className="error-message invite-error">
-                  <span>❌ {error}</span>
-                </div>
-              )}
-
-              {success && (
-                <div className="success-message invite-success">
-                  <span>✅ {success}</span>
-                </div>
-              )}
+              {error && <div className="error-message">❌ {error}</div>}
+              {success && <div className="success-message">✅ {success}</div>}
             </div>
           </div>
 
@@ -221,14 +230,7 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
               onClick={handleInvite}
               disabled={!selectedUser || inviting}
             >
-              {inviting ? (
-                <>
-                  <Loader size={16} className="spinner" />
-                  Inviting...
-                </>
-              ) : (
-                "Send Invitation"
-              )}
+              {inviting ? "Inviting..." : "Send Invitation"}
             </button>
           </div>
         </div>
