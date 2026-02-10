@@ -1,3 +1,4 @@
+from enum import member
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -565,14 +566,14 @@ def revoke_member_access(request, project_id, member_id):
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    if member.role == "admin":
-        admin_count = ProjectMember.objects.filter(
-            project=project,
-            role="admin",
-            status="accepted"
-        ).count()
 
-    if admin_count <= 1:
+    admin_count = ProjectMember.objects.filter(
+        project=project,
+        role="admin",
+        status="accepted"
+    ).count()
+
+    if member.role == "admin" and admin_count <= 1:
         return Response(
             {
                 "detail": (
