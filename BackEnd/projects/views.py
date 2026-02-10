@@ -598,35 +598,62 @@ def revoke_member_access(request, project_id, member_id):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def change_project_pin(request, project_id):
+def regenerate_project_pin(request, project_id):
     project = get_object_or_404(Project, id=project_id)
 
     if project.root_admin != request.user:
         return Response(
-            {"detail": "Only project owner can change password"},
+            {"detail": "Only project owner can regenerate PIN"},
             status=status.HTTP_403_FORBIDDEN
         )
-    
-    new_password = request.data.get("new_password", "").strip()
-    
-    if not new_password:
+
+    new_pin = generate_project_pin()
+
+    project.set_pin(new_pin)
+    project.save(update_fields=["pin_hash"])
+
+    return Response(
+        {
+            "detail": "Project PIN regenerated successfully",
+            "pin": new_pin,
+        },
+        status=status.HTTP_200_OK
+    )
+
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def change_project_access_key(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+
+    if project.root_admin != request.user:
         return Response(
-            {"detail": "new_password is required"},
+            {"detail": "Only project owner can change access key"},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    new_access_key = request.data.get("new_access_key", "").strip()
+
+    if not new_access_key:
+        return Response(
+            {"detail": "new_access_key is required"},
             status=status.HTTP_400_BAD_REQUEST
         )
-    
-    if len(new_password) < 6:
+
+    if len(new_access_key) < 6:
         return Response(
-            {"detail": "Password must be at least 6 characters"},
+            {"detail": "Access key must be at least 6 characters"},
             status=status.HTTP_400_BAD_REQUEST
         )
-    
-    project.set_access_key(new_password)
-    project.save()
-    
-    return Response({
-        "detail": "Project password updated successfully"
-    })
+
+    project.set_access_key(new_access_key)
+    project.save(update_fields=["access_key_hash"])
+
+    return Response(
+        {"detail": "Project access key updated successfully"},
+        status=status.HTTP_200_OK
+    )
 
 
 

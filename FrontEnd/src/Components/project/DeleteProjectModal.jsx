@@ -24,18 +24,15 @@ const DeleteProjectModal = ({ project, onClose, onDeleted }) => {
     setError("");
 
     try {
-      const response = await api({
-        method: "delete",
-        url: `/api/projects/${project.id}/delete/`,
-        data: { pin }
+      const response = await api.post(`/api/projects/${project.id}/delete/`, {
+        pin,
       });
       setTimeout(() => {
         onDeleted();
         onClose();
       }, 500);
     } catch (err) {
-      const errorMsg =
-        err.response?.data?.detail || "Failed to delete project";
+      const errorMsg = err.response?.data?.detail || "Failed to delete project";
       setError(errorMsg);
     } finally {
       setLoading(false);
@@ -55,7 +52,10 @@ const DeleteProjectModal = ({ project, onClose, onDeleted }) => {
   return (
     <ModalPortal>
       <div className="modal-overlay" onClick={handleCancel}>
-        <div className="modal-content delete-modal" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="modal-content delete-modal"
+          onClick={(e) => e.stopPropagation()}
+        >
           {step === "confirm" ? (
             <>
               <div className="modal-header delete-confirm-header">
@@ -65,18 +65,17 @@ const DeleteProjectModal = ({ project, onClose, onDeleted }) => {
 
               <div className="modal-body">
                 <p className="delete-warning">
-                  Are you sure you want to delete <strong>{project.name}</strong>?
+                  Are you sure you want to delete{" "}
+                  <strong>{project.name}</strong>?
                 </p>
                 <p className="delete-info">
-                  This action <strong>cannot be undone</strong>. All recipes, combinations, and project data will be permanently deleted.
+                  This action <strong>cannot be undone</strong>. All recipes,
+                  combinations, and project data will be permanently deleted.
                 </p>
               </div>
 
               <div className="modal-footer delete-footer">
-                <button
-                  className="btn btn-secondary"
-                  onClick={handleCancel}
-                >
+                <button className="btn btn-secondary" onClick={handleCancel}>
                   Cancel
                 </button>
                 <button
@@ -96,10 +95,16 @@ const DeleteProjectModal = ({ project, onClose, onDeleted }) => {
 
               <div className="modal-body">
                 <p className="delete-warning">
-                  Enter the project PIN created during project setup to confirm deletion.
+                  Enter the project PIN created during project setup to confirm
+                  deletion.
                 </p>
 
-                <form onSubmit={(e) => { e.preventDefault(); handleDeleteWithPin(); }}>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleDeleteWithPin();
+                  }}
+                >
                   <div className="form-group">
                     <label htmlFor="pin-input">Project PIN</label>
                     <input

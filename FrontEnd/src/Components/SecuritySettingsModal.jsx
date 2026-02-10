@@ -7,6 +7,7 @@ import {
   EyeOff,
   ChevronLeft,
   ChevronRight,
+  AlertTriangle,
 } from "lucide-react";
 import api from "../Utility/api";
 
@@ -22,6 +23,7 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
   const [revoking, setRevoking] = useState(null);
+  const [regeneratingPin, setRegeneratingPin] = useState(false);
 
   useEffect(() => {
     if (isOpen && project?.id) {
@@ -141,6 +143,38 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
     }
   };
 
+  const handleRegeneratePin = async () => {
+    const confirmed = window.confirm(
+      "This will immediately invalidate the current project PIN.\n\n" +
+        "The new PIN will be shown only once.\n\n" +
+        "Do you want to continue?",
+    );
+
+    if (!confirmed) return;
+
+    setRegeneratingPin(true);
+
+    try {
+      const res = await api.post(`/api/projects/${project.id}/regenerate-pin/`);
+
+      alert(
+        "New Project PIN (save this now):\n\n" +
+          res.data.pin +
+          "\n\nThis PIN will not be shown again.",
+      );
+
+      setMessage("Project PIN regenerated successfully");
+      setMessageType("success");
+    } catch (err) {
+      setMessage(
+        err.response?.data?.detail || "Failed to regenerate project PIN",
+      );
+      setMessageType("error");
+    } finally {
+      setRegeneratingPin(false);
+    }
+  };
+
   const totalPages = Math.ceil(totalMembers / pageSize);
   const canPrevious = currentPage > 0;
   const canNext = currentPage < totalPages - 1;
@@ -219,7 +253,11 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
                             <button
                               className="btn-revoke"
                               onClick={() =>
-                                handleRevokeAccess(member.id, member.email, member.role)
+                                handleRevokeAccess(
+                                  member.id,
+                                  member.email,
+                                  member.role,
+                                )
                               }
                               disabled={revoking === member.id}
                               title="Revoke access"
@@ -300,6 +338,25 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
                   {loadingPassword ? "Updating..." : "Update Password"}
                 </button>
               </form>
+            </div>
+            <div className="security-section danger-zone">
+              <h3 className="section-title danger-title">
+                <AlertTriangle size={18} />
+                Danger Zone
+              </h3>
+
+              <p className="section-subtitle danger-text">
+                Regenerating the project PIN will immediately invalidate the
+                current PIN. This affects project deletion security.
+              </p>
+
+              <button
+                className="btn-danger"
+                onClick={handleRegeneratePin}
+                disabled={regeneratingPin}
+              >
+                {regeneratingPin ? "Regenerating..." : "Regenerate Project PIN"}
+              </button>
             </div>
           </div>
         </div>

@@ -48,8 +48,6 @@ class Project(models.Model):
     def check_pin(self, raw_pin: str) -> bool:
         return check_password(raw_pin, self.pin_hash)
 
-    def __str__(self):
-        return self.name
 
 
 class ProjectMember(models.Model):

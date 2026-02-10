@@ -78,7 +78,6 @@ const ProjectLanding = () => {
   };
 
   const handleDeleteProject = () => {
-    console.log("Delete button clicked");
     setShowDeleteProject(true);
   };
 
