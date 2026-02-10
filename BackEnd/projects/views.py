@@ -252,7 +252,14 @@ def my_projects(request):
     owned = Project.objects.filter(root_admin=request.user)
     joined = Project.objects.filter(projectmember__user=request.user)
 
-    qs = (owned | joined).distinct()
+    qs = (
+        Project.objects
+        .filter(
+            Q(root_admin=request.user) |
+            Q(projectmember__user=request.user)
+        )
+        .distinct()
+    )
 
     return Response([
         {
