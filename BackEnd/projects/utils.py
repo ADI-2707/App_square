@@ -31,36 +31,21 @@ def generate_project_pin(length: int = 8) -> str:
             return pin
 
 
-def ensure_project_access(user, project):
+def ensure_project_access(user, project, hours=ACCESS_TTL_HOURS):
     session, created = ProjectAccessSession.objects.get_or_create(
         user=user,
         project=project,
         defaults={
-            "expires_at": timezone.now() + timedelta(hours=ACCESS_TTL_HOURS)
+            "expires_at": timezone.now() + timedelta(hours=hours)
         }
     )
 
     if not created:
         if session.expires_at <= timezone.now():
-            session.expires_at = timezone.now() + timedelta(hours=ACCESS_TTL_HOURS)
-            session.save()
+            session.expires_at = timezone.now() + timedelta(hours=hours)
+            session.save(update_fields=["expires_at"])
 
     return session
-
-
-def require_project_access(user, project):
-    session = ProjectAccessSession.objects.filter(
-        user=user,
-        project=project,
-        expires_at__gt=timezone.now()
-    ).first()
-
-    if not session:
-        return False
-
-    session.expires_at = timezone.now() + timedelta(hours=ACCESS_TTL_HOURS)
-    session.save()
-    return True
 
 
 def get_admin_count(project):
