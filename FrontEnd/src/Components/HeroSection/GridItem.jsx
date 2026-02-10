@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 
 const GridItem = ({
   title,
@@ -14,23 +14,39 @@ const GridItem = ({
   const videoRef = useRef(null);
   const [isActivated, setIsActivated] = useState(false);
 
-  const handleMouseEnter = () => {
-    if (!isActivated) {
-      setIsActivated(true);
-      videoRef.current?.play();
+  const activate = useCallback(() => {
+    if (isActivated) return;
+
+    setIsActivated(true);
+
+    const video = videoRef.current;
+    if (!video) return;
+
+    try {
+      video.play();
+    } catch (err) {
+      console.warn("Video playback prevented:", err);
     }
-  };
+  }, [isActivated]);
 
   return (
     <div
       className={`item ${isActivated ? "activated" : ""}`}
       style={{ gridArea }}
-      onMouseEnter={handleMouseEnter}
+      onPointerEnter={activate}
+      onTouchStart={activate}
+      tabIndex={0}
+      role="group"
+      aria-label={title}
     >
       <h2 className={`uppercase ${titleClass}`}>{title}</h2>
 
       <div className="flex flex-col text-center justify-center items-center mt-6 px-5">
-        <p className={`item-description ${textClass} text-sm ${isActivated ? "activated" : ""}`}>
+        <p
+          className={`item-description ${textClass} text-sm ${
+            isActivated ? "activated" : ""
+          }`}
+        >
           {description}
         </p>
 
@@ -43,7 +59,8 @@ const GridItem = ({
             loop
             muted
             playsInline
-            preload="auto"
+            preload="metadata"
+            aria-hidden="true"
             style={{ "--accent-glow": glowColor }}
           >
             <source src={videoSrc} type="video/mp4" />
