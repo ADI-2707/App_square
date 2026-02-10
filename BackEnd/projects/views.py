@@ -1,4 +1,3 @@
-from enum import member
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -14,44 +13,15 @@ import secrets
 from .models import Project, ProjectMember
 from .serializers import ProjectListSerializer
 from .utils import generate_project_pin, ensure_project_access
+from .pagination import parse_cursor, cursor_paginate
 
 DEFAULT_LIMIT = 10
-
-def cursor_paginate(queryset, cursor, limit, date_field='created_at'):
-    if cursor:
-        queryset = queryset.filter(**{f'{date_field}__lt': cursor})
-    
-    queryset = queryset.order_by(f'-{date_field}', '-id')
-
-    items = list(queryset[: limit + 1])
-    has_more = len(items) > limit
-    results = items[:limit]
-
-    if results:
-        last_item = results[-1]
-        if '__' in date_field:
-            parts = date_field.split('__')
-            date_value = last_item
-            for part in parts:
-                date_value = getattr(date_value, part)
-        else:
-            date_value = getattr(last_item, date_field)
-        
-        next_cursor = date_value.strftime('%Y-%m-%dT%H:%M:%S.%f%z') if has_more else None
-    else:
-        next_cursor = None
-    
-    return results, has_more, next_cursor
 
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def owned_projects(request):
-    cursor_str = request.query_params.get("cursor")
-    cursor = parse_datetime(cursor_str) if cursor_str else None
-    if cursor and timezone.is_naive(cursor):
-        cursor = timezone.make_aware(cursor, timezone.get_current_timezone())
-
+    cursor = parse_cursor(request.query_params.get("cursor"))
     limit = int(request.query_params.get("limit", DEFAULT_LIMIT))
 
     qs = (
@@ -63,37 +33,39 @@ def owned_projects(request):
         )
     )
 
-    projects, has_more, next_cursor = cursor_paginate(qs, cursor, limit, 'created_at')
+    projects, has_more, next_cursor = cursor_paginate(qs, cursor, limit)
+
     serializer = ProjectListSerializer(projects, many=True)
 
     return Response({
         "results": serializer.data,
         "has_more": has_more,
-        "next_cursor": next_cursor
+        "next_cursor": next_cursor,
     })
+
 
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def joined_projects(request):
-    cursor_str = request.query_params.get("cursor")
-    cursor = parse_datetime(cursor_str) if cursor_str else None
-    if cursor and timezone.is_naive(cursor):
-        cursor = timezone.make_aware(cursor, timezone.get_current_timezone())
-
+    cursor = parse_cursor(request.query_params.get("cursor"))
     limit = int(request.query_params.get("limit", DEFAULT_LIMIT))
 
     memberships_qs = (
         ProjectMember.objects
         .filter(
             user=request.user,
-            role__in=["admin", "user"],
             status="accepted"
         )
         .select_related("project")
     )
 
-    memberships, has_more, next_cursor = cursor_paginate(memberships_qs, cursor, limit, 'project__created_at')
+    memberships, has_more, next_cursor = cursor_paginate(
+        memberships_qs,
+        cursor,
+        limit,
+        date_field="project__created_at"
+    )
 
     results = []
     for m in memberships:
@@ -109,7 +81,7 @@ def joined_projects(request):
     return Response({
         "results": results,
         "has_more": has_more,
-        "next_cursor": next_cursor
+        "next_cursor": next_cursor,
     })
 
 
