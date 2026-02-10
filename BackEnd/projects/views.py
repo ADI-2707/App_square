@@ -264,7 +264,7 @@ def my_projects(request):
 
 
 
-@api_view(["DELETE"])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def delete_project(request, project_id):
     project = get_object_or_404(Project, id=project_id)
