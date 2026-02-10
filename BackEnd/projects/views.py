@@ -230,26 +230,36 @@ def search_projects(request):
     if not q:
         return Response({"results": []})
 
-    owned_qs = Project.objects.filter(root_admin=request.user)
-    joined_qs = Project.objects.filter(projectmember__user=request.user)
-
     qs = (
-        owned_qs | joined_qs
-    ).filter(
-        Q(name__icontains=q) |
-        Q(public_code__icontains=q)
-    ).distinct().order_by("-created_at")[:10]
+        Project.objects
+        .filter(
+            Q(root_admin=request.user) |
+            Q(projectmember__user=request.user)
+        )
+        .filter(
+            Q(name__icontains=q) |
+            Q(public_code__icontains=q)
+        )
+        .select_related("root_admin")
+        .prefetch_related("projectmember_set")
+        .distinct()
+        .order_by("-created_at")[:10]
+    )
 
     results = []
+
     for project in qs:
-        if project.root_admin == request.user:
+        if project.root_admin_id == request.user.id:
             role = "root_admin"
             is_owner = True
         else:
-            membership = ProjectMember.objects.filter(
-                project=project,
-                user=request.user
-            ).first()
+            membership = next(
+                (
+                    m for m in project.projectmember_set.all()
+                    if m.user_id == request.user.id
+                ),
+                None
+            )
             role = membership.role if membership else "user"
             is_owner = False
 
