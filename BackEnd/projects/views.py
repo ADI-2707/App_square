@@ -249,8 +249,8 @@ def search_projects(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def my_projects(request):
-    owned = Project.objects.filter(root_admin=request.user)
-    joined = Project.objects.filter(projectmember__user=request.user)
+    cursor = parse_cursor(request.query_params.get("cursor"))
+    limit = int(request.query_params.get("limit", DEFAULT_LIMIT))
 
     qs = (
         Project.objects
@@ -261,13 +261,21 @@ def my_projects(request):
         .distinct()
     )
 
-    return Response([
+    projects, has_more, next_cursor = cursor_paginate(qs, cursor, limit)
+
+    results = [
         {
             "id": str(p.id),
             "name": p.name,
         }
-        for p in qs
-    ])
+        for p in projects
+    ]
+
+    return Response({
+        "results": results,
+        "has_more": has_more,
+        "next_cursor": next_cursor,
+    })
 
 
 
@@ -632,7 +640,7 @@ def verify_project_password(request, project_id):
         return Response({"detail": "Password required"}, status=status.HTTP_400_BAD_REQUEST)
 
     if not project.check_access_key(password):
-        return Response({"detail": "Invalid password"}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
     ensure_project_access(request.user, project)
 
