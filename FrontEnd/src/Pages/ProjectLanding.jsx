@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../Utility/api";
 
-import ProjectHeader from "../Components/project/ProjectHeader";
+import ProjectHeader from "../Components/ProjectHeader/ProjectHeader";
 import ProjectActionsRoot from "../Components/project/ProjectActionsRoot";
 import ProjectActionsAdmin from "../Components/project/ProjectActionsAdmin";
 import ProjectActionsUser from "../Components/project/ProjectActionsUser";
@@ -97,8 +97,8 @@ const ProjectLanding = () => {
   if (!project) return <div>Project not found</div>;
 
   return (
-    <div className="page-container fade-in">
-      <div className="page-inner">
+    <div className="page-container">
+      <div className="page-inner fade-in">
         <ProjectHeader project={project} />
 
         <section className="project-overview-section">
