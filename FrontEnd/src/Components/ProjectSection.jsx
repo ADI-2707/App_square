@@ -10,10 +10,18 @@ export default function ProjectSection({
 }) {
   const observerRef = useRef(null);
   const scrollContainerRef = useRef(null);
+  const isLoadingRef = useRef(false);
+  const observerInstanceRef = useRef(null);
 
   const handleIntersect = useCallback(
     ([entry]) => {
-      if (entry.isIntersecting && hasMore && projects.length > 0) {
+      if (
+        entry.isIntersecting &&
+        hasMore &&
+        !isLoadingRef.current &&
+        projects.length > 0
+      ) {
+        isLoadingRef.current = true;
         loadMore?.();
       }
     },
@@ -21,22 +29,34 @@ export default function ProjectSection({
   );
 
   useEffect(() => {
-    if (!hasMore || !observerRef.current) return;
+    if (!observerRef.current || !hasMore) return;
 
-    const observer = new IntersectionObserver(handleIntersect, {
+    observerInstanceRef.current = new IntersectionObserver(handleIntersect, {
       threshold: 0.1,
-      rootMargin: "100px",
+      rootMargin: "150px",
     });
 
+    observerInstanceRef.current.observe(observerRef.current);
 
-    observer.observe(observerRef.current);
-    return () => observer.disconnect();
-
+    return () => {
+      observerInstanceRef.current?.disconnect();
+      observerInstanceRef.current = null;
+    };
   }, [handleIntersect, hasMore]);
 
   useEffect(() => {
-    if (scrollContainerRef.current && projects.length > 0) {
+    isLoadingRef.current = false;
+  }, [projects.length]);
+
+  const initialLoadRef = useRef(true);
+  useEffect(() => {
+    if (
+      initialLoadRef.current &&
+      scrollContainerRef.current &&
+      projects.length > 0
+    ) {
       scrollContainerRef.current.scrollLeft = 0;
+      initialLoadRef.current = false;
     }
   }, [projects.length]);
 
@@ -45,26 +65,35 @@ export default function ProjectSection({
   return (
     <section className="project-section">
       <h2 className="project-section-title">{title}</h2>
-      <div className="project-row" ref={scrollContainerRef} style={{ overflowX: 'auto' }}>
+
+      <div
+        className="project-row"
+        ref={scrollContainerRef}
+        style={{ overflowX: "auto" }}
+      >
         {projects.map((p) => (
           <div
             key={`${title}-${p.id}`}
             className="project-card card-surface"
             onClick={() => onOpenProject?.(p)}
           >
-            <div className="project-card-icon"><Folder size={28} /></div>
+            <div className="project-card-icon">
+              <Folder size={28} />
+            </div>
             <div className="project-card-title">{p.name}</div>
-            <div className="project-card-meta">Role: {p.role.toUpperCase()}</div>
+            <div className="project-card-meta">
+              Role: {p.role.toUpperCase()}
+            </div>
           </div>
         ))}
 
         {hasMore && (
           <div ref={observerRef} className="project-card skeleton-card">
-             <div className="card-surface skeleton-surface">
-                <div className="skeleton-icon pulse"></div>
-                <div className="skeleton-title pulse"></div>
-                <div className="skeleton-meta pulse"></div>
-             </div>
+            <div className="card-surface skeleton-surface">
+              <div className="skeleton-icon pulse"></div>
+              <div className="skeleton-title pulse"></div>
+              <div className="skeleton-meta pulse"></div>
+            </div>
           </div>
         )}
       </div>
