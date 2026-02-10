@@ -1,31 +1,23 @@
-from django.conf import settings
 from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.utils import timezone
+from .managers import UserManager
 
-User = settings.AUTH_USER_MODEL
 
-
-class UserProfile(models.Model):
-    ROLE_CHOICES = (
-        ("USER", "User"),
-        ("ADMIN", "Admin"),
-    )
-
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
-        related_name="profile"
-    )
-
+class User(AbstractBaseUser, PermissionsMixin):
+    email = models.EmailField(unique=True, db_index=True)
     full_name = models.CharField(max_length=100)
 
-    role = models.CharField(
-        max_length=10,
-        choices=ROLE_CHOICES,
-        default="USER"
-    )
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    objects = UserManager()
+
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = []
+
     def __str__(self):
-        return str(self.user)
+        return self.email

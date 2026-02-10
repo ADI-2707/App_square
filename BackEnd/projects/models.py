@@ -1,7 +1,9 @@
 import uuid
 import secrets
+from datetime import timedelta
+
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.contrib.auth.hashers import make_password, check_password
 from django.utils import timezone
 
@@ -26,7 +28,7 @@ class Project(models.Model):
     )
 
     root_admin = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="root_admin_projects"
     )
@@ -49,7 +51,6 @@ class Project(models.Model):
         return check_password(raw_pin, self.pin_hash)
 
 
-
 class ProjectMember(models.Model):
     ROLE_CHOICES = (
         ("admin", "Admin"),
@@ -62,8 +63,16 @@ class ProjectMember(models.Model):
         ("rejected", "Rejected"),
     )
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE
+    )
+
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
 
     status = models.CharField(
@@ -73,7 +82,7 @@ class ProjectMember(models.Model):
     )
 
     invited_by = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -100,11 +109,17 @@ class ProjectMember(models.Model):
         return f"{self.user.email} → {self.project.name} ({self.status})"
 
 
-from datetime import timedelta
-
 class ProjectAccessSession(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE
+    )
+
     expires_at = models.DateTimeField()
 
     class Meta:
@@ -117,4 +132,3 @@ class ProjectAccessSession(models.Model):
         if self.expires_at - timezone.now() < timedelta(hours=2):
             self.expires_at = timezone.now() + timedelta(hours=hours)
             self.save(update_fields=["expires_at"])
-
