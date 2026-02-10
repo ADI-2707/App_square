@@ -1,33 +1,30 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { getInitialTheme, applyTheme } from "./theme";
 
 const Mode = () => {
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    return localStorage.getItem("mode") === "dark";
-  });
+  const [mode, setMode] = useState(getInitialTheme);
 
   useEffect(() => {
-    const mode = isDarkMode ? "dark" : "light";
-    document.documentElement.setAttribute("dark-mode", mode);
-    localStorage.setItem("mode", mode);
-  }, [isDarkMode]);
+    applyTheme(mode);
+  }, [mode]);
 
-  const toggleMode = () => setIsDarkMode(!isDarkMode);
-
-  
   return (
-  <div className='mode-toggle-container'>
-    <label className="switch">
-      <input 
-        type="checkbox" 
-        onChange={toggleMode} 
-        checked={isDarkMode} 
-      />
-      <span className="slider round"></span>
-    </label>
-    <span style={{ fontSize: '12px' }}>
-       {isDarkMode ? '🌙' : '☀️'}
-    </span>
-  </div>
-)};
+    <div className="mode-toggle-container">
+      <label className="switch">
+        <input
+          type="checkbox"
+          checked={mode === "dark"}
+          onChange={() =>
+            setMode((prev) => (prev === "dark" ? "light" : "dark"))
+          }
+        />
+        <span className="slider round"></span>
+      </label>
+      <span style={{ fontSize: "12px" }}>
+        {mode === "dark" ? "🌙" : "☀️"}
+      </span>
+    </div>
+  );
+};
 
 export default Mode;

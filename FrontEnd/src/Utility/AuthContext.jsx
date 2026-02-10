@@ -6,7 +6,7 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [authenticated, setAuthenticated] = useState(
-    !!localStorage.getItem("accessToken")
+    !!localStorage.getItem("accessToken"),
   );
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
 
@@ -54,7 +54,9 @@ export const AuthProvider = ({ children }) => {
         await api.post("/api/auth/logout/", { refresh: refreshToken });
       }
     } finally {
-      localStorage.clear();
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
       setAuthenticated(false);
       setUser(null);
       setHasProjectAccess(false);

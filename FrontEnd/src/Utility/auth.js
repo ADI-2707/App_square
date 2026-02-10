@@ -10,5 +10,7 @@ export const getUser = () => {
 };
 
 export const logout = () => {
-  localStorage.clear();
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("user");
 };
