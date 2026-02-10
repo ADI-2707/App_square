@@ -494,15 +494,15 @@ def reject_invitation(request, member_id):
 def get_project_members(request, project_id):
     project = get_object_or_404(Project, id=project_id)
 
-    if project.root_admin == request.user:
-        is_admin = True
-    else:
-        is_admin = ProjectMember.objects.filter(
+    is_admin = (
+        project.root_admin_id == request.user.id or
+        ProjectMember.objects.filter(
             project=project,
             user=request.user,
             role="admin",
             status="accepted"
         ).exists()
+    )
 
     if not is_admin:
         return Response(
@@ -512,50 +512,57 @@ def get_project_members(request, project_id):
 
     limit = int(request.query_params.get("limit", 10))
     offset = int(request.query_params.get("offset", 0))
-    
+
     members_list = []
 
-    try:
-        root_admin_name = project.root_admin.profile.full_name
-    except:
-        root_admin_name = project.root_admin.email
-    
+    root_admin = project.root_admin
+    root_admin_name = (
+        root_admin.profile.full_name
+        if hasattr(root_admin, "profile")
+        else root_admin.email
+    )
+
     members_list.append({
         "id": 0,
-        "user_id": str(project.root_admin.id),
-        "email": project.root_admin.email,
+        "user_id": str(root_admin.id),
+        "email": root_admin.email,
         "name": root_admin_name,
-        "role": "root_admin"
+        "role": "root_admin",
     })
 
-    accepted_members = ProjectMember.objects.filter(
-        project=project,
-        status='accepted'
-    ).select_related('user').order_by('joined_at')
-    
+    accepted_members = (
+        ProjectMember.objects
+        .filter(project=project, status="accepted")
+        .select_related("user", "user__profile")
+        .order_by("joined_at")
+    )
+
     for member in accepted_members:
-        try:
-            member_name = member.user.profile.full_name
-        except:
-            member_name = member.user.email
-        
+        user = member.user
+        member_name = (
+            user.profile.full_name
+            if hasattr(user, "profile")
+            else user.email
+        )
+
         members_list.append({
             "id": member.id,
-            "user_id": str(member.user.id),
-            "email": member.user.email,
+            "user_id": str(user.id),
+            "email": user.email,
             "name": member_name,
-            "role": member.role
+            "role": member.role,
         })
 
     total_count = len(members_list)
-    paginated_members = members_list[offset:offset + limit]
-    
+    paginated_members = members_list[offset: offset + limit]
+
     return Response({
         "count": total_count,
         "limit": limit,
         "offset": offset,
-        "results": paginated_members
+        "results": paginated_members,
     })
+
 
 
 @api_view(["DELETE"])
