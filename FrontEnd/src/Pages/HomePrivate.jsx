@@ -69,21 +69,13 @@ const HomePrivate = () => {
           }),
         ]);
 
-        setOwned(
-          (ownedRes.data.results || []).sort(
-            (a, b) => new Date(b.created_at) - new Date(a.created_at),
-          ),
-        );
+        setOwned(ownedRes.data.results || []);
         setOwnedCursor(ownedRes.data.next_cursor);
         setOwnedHasMore(ownedRes.data.has_more);
-
-        setJoined(
-          (joinedRes.data.results || []).sort(
-            (a, b) => new Date(b.created_at) - new Date(a.created_at),
-          ),
-        );
+        setJoined(joinedRes.data.results || []);
         setJoinedCursor(joinedRes.data.next_cursor);
         setJoinedHasMore(joinedRes.data.has_more);
+
       } catch (err) {
         console.error("Initial load failed", err);
       } finally {
@@ -105,12 +97,10 @@ const HomePrivate = () => {
         params: { cursor: ownedCursor, limit: LIMIT },
       });
 
-      setOwned((prev) => {
-        return [...prev, ...res.data.results];
-      });
-
+      setOwned((prev) => [...prev, ...(res.data.results || [])]);
       setOwnedCursor(res.data.next_cursor);
       setOwnedHasMore(res.data.has_more);
+
     } finally {
       loadingOwnedRef.current = false;
     }
@@ -125,12 +115,10 @@ const HomePrivate = () => {
         params: { cursor: joinedCursor, limit: LIMIT },
       });
 
-      setJoined((prev) => {
-        return [...prev, ...res.data.results];
-      });
-
+      setJoined((prev) => [...prev, ...(res.data.results || [])]);
       setJoinedCursor(res.data.next_cursor);
       setJoinedHasMore(res.data.has_more);
+      
     } finally {
       loadingJoinedRef.current = false;
     }

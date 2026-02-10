@@ -219,7 +219,7 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
                             <button
                               className="btn-revoke"
                               onClick={() =>
-                                handleRevokeAccess(member.id, member.email. member.role)
+                                handleRevokeAccess(member.id, member.email, member.role)
                               }
                               disabled={revoking === member.id}
                               title="Revoke access"
