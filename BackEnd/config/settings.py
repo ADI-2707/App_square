@@ -55,13 +55,25 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.AllowAny",
     ),
     "DEFAULT_THROTTLE_CLASSES": [
-        "rest_framework.throttling.UserRateThrottle",
-        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.ScopedRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "user": "100/min",
-        "anon": "30/min",
-    }
+        # Authentication
+        "login": "5/min",
+        "register": "3/min",
+        "password_change": "5/min",
+
+        # Invitations
+        "invite_send": "20/min",
+        "invite_accept": "20/min",
+        "invite_reject": "20/min",
+
+        # Search
+        "search": "60/min",
+
+        # General API
+        "general": "120/min",
+    },
 }
 
 SIMPLE_JWT = {
