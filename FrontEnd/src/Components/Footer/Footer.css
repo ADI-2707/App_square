@@ -82,7 +82,8 @@
 
 .footer-link:hover {
   color: var(--text-color);
-  opacity: 0.85;
+  opacity: 1;
+  text-decoration: underline;
 }
 
 @media (max-width: 600px) {
