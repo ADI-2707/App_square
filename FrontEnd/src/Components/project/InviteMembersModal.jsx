@@ -12,34 +12,21 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const debounceTimer = useRef(null);
-  const requestIdRef = useRef(0);
-  const isMountedRef = useRef(true);
-
-  useEffect(() => {
-    return () => {
-      isMountedRef.current = false;
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-      }
-    };
-  }, []);
+  const debounceRef = useRef(null);
 
   useEffect(() => {
     if (!project?.id) return;
-    setError("");
-    setSuccess("");
-
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
 
     const value = email.trim();
-    setSelectedUser(null);
+
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
 
     if (!value) {
       setSearchResults([]);
       setSelectedUser(null);
+      setLoading(false);
       return;
     }
 
@@ -48,40 +35,36 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
       return;
     }
 
-    debounceTimer.current = setTimeout(async () => {
-      const requestId = ++requestIdRef.current;
-      setLoading(true);
-
+    debounceRef.current = setTimeout(async () => {
       try {
+        setLoading(true);
+        setError("");
+
         const res = await api.get(
           `/api/projects/${project.id}/search-users/`,
           { params: { email: value } }
         );
 
-        if (!isMountedRef.current || requestId !== requestIdRef.current) return;
-
         setSearchResults(res.data.results || []);
-        console.log("SEARCH RESULTS:", res.data.results);
-
       } catch (err) {
-        if (!isMountedRef.current) return;
         setError("Failed to search users");
         setSearchResults([]);
       } finally {
-        if (isMountedRef.current) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     }, 300);
 
-    return () => clearTimeout(debounceTimer.current);
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
   }, [email, project?.id]);
 
   const handleUserSelect = (user) => {
     setSelectedUser(user);
     setEmail(user.email);
     setSearchResults([]);
-    setError("");
   };
 
   const handleInvite = async () => {
@@ -90,10 +73,10 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
       return;
     }
 
-    setInviting(true);
-    setError("");
-
     try {
+      setInviting(true);
+      setError("");
+
       await api.post(
         `/api/projects/${project.id}/invite/`,
         { user_id: selectedUser.id }
@@ -107,7 +90,6 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
         onClose();
       }, 1200);
     } catch (err) {
-      console.error("Invite error:", err);
       setError(err.response?.data?.detail || "Failed to send invitation");
     } finally {
       setInviting(false);
