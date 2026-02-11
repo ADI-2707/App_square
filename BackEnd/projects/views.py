@@ -7,6 +7,8 @@ from django.db.models import Q, Value, BooleanField
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.contrib.auth import get_user_model
+from rest_framework.throttling import ScopedRateThrottle
+from rest_framework.decorators import throttle_classes
 
 from .models import Project, ProjectMember
 from .serializers import ProjectListSerializer
@@ -18,7 +20,9 @@ User = get_user_model()
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
+@throttle_classes([ScopedRateThrottle])
 def owned_projects(request):
+    owned_projects.throttle_scope = "general"
     cursor = parse_cursor(request.query_params.get("cursor"))
     limit = int(request.query_params.get("limit", DEFAULT_LIMIT))
 
@@ -43,7 +47,9 @@ def owned_projects(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
+@throttle_classes([ScopedRateThrottle])
 def joined_projects(request):
+    joined_projects.throttle_scope = "general"
     cursor = parse_cursor(request.query_params.get("cursor"))
     limit = int(request.query_params.get("limit", DEFAULT_LIMIT))
 
@@ -83,7 +89,9 @@ def joined_projects(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
+@throttle_classes([ScopedRateThrottle])
 def project_overview(request, project_id):
+    project_overview.throttle_scope = "general"
     if request.path.rstrip("/").endswith(str(project_id)):
         return Response(
             {"detail": "Direct project root access not allowed"},
@@ -198,7 +206,9 @@ def create_project(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
+@throttle_classes([ScopedRateThrottle])
 def search_projects(request):
+    search_projects.throttle_scope = "general"
     q = request.query_params.get("q", "").strip()
 
     if not q:
@@ -250,7 +260,9 @@ def search_projects(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
+@throttle_classes([ScopedRateThrottle])
 def my_projects(request):
+    my_projects.throttle_scope = "general"
     cursor = parse_cursor(request.query_params.get("cursor"))
     limit = int(request.query_params.get("limit", DEFAULT_LIMIT))
 
@@ -317,7 +329,9 @@ def delete_project(request, project_id):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
+@throttle_classes([ScopedRateThrottle])
 def search_users_for_invitation(request, project_id):
+    search_users_for_invitation.throttle_scope = "general"
     project = get_object_or_404(Project, id=project_id)
 
     if project.root_admin != request.user:
@@ -358,7 +372,9 @@ def search_users_for_invitation(request, project_id):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
+@throttle_classes([ScopedRateThrottle])
 def send_project_invitation(request, project_id):
+    send_project_invitation.throttle_scope = "invite_send"
     project = get_object_or_404(Project, id=project_id)
 
     if project.root_admin != request.user:
@@ -437,7 +453,9 @@ def get_pending_invitations(request):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
+@throttle_classes([ScopedRateThrottle])
 def accept_invitation_with_password(request, member_id):
+    accept_invitation_with_password.throttle_scope = "invite_accept"
     member = get_object_or_404(
         ProjectMember,
         id=member_id,
@@ -470,7 +488,9 @@ def accept_invitation_with_password(request, member_id):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
+@throttle_classes([ScopedRateThrottle])
 def reject_invitation(request, member_id):
+    reject_invitation.throttle_scope = "invite_reject"
     member = get_object_or_404(
         ProjectMember,
         id=member_id,
@@ -488,7 +508,9 @@ def reject_invitation(request, member_id):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
+@throttle_classes([ScopedRateThrottle])
 def get_project_members(request, project_id):
+    get_project_members.throttle_scope = "general"
     project = get_object_or_404(Project, id=project_id)
 
     is_admin = (
