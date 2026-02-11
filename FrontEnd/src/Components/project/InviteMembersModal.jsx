@@ -4,7 +4,7 @@ import ModalPortal from "../../Utility/ModalPortal";
 import api from "../../Utility/api";
 
 const InviteMembersModal = ({ project, onClose, onInvited }) => {
-  const [email, setEmail] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -16,8 +16,9 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
 
   useEffect(() => {
     if (!project?.id) return;
+    if (selectedUser) return;
 
-    const value = email.trim();
+    const value = searchQuery.trim();
 
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -25,7 +26,6 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
 
     if (!value) {
       setSearchResults([]);
-      setSelectedUser(null);
       setLoading(false);
       return;
     }
@@ -59,11 +59,11 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
         clearTimeout(debounceRef.current);
       }
     };
-  }, [email, project?.id]);
+  }, [searchQuery, project?.id, selectedUser]);
 
   const handleUserSelect = (user) => {
     setSelectedUser(user);
-    setEmail(user.email);
+    setSearchQuery(user.email);
     setSearchResults([]);
   };
 
@@ -97,7 +97,7 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
   };
 
   const handleClear = () => {
-    setEmail("");
+    setSearchQuery("");
     setSelectedUser(null);
     setSearchResults([]);
     setError("");
@@ -135,12 +135,15 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
                   type="email"
                   className="invite-input"
                   placeholder="Search by email (minimum 3 characters)"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSelectedUser(null);
+                    setSearchQuery(e.target.value);
+                  }}
                   disabled={inviting}
                   autoFocus
                 />
-                {email && (
+                {searchQuery && (
                   <button
                     className="invite-clear-btn"
                     onClick={handleClear}
@@ -158,7 +161,7 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
                 </div>
               )}
 
-              {searchResults.length > 0 && (
+              {!selectedUser && searchResults.length > 0 && (
                 <div className="invite-results">
                   {searchResults.map((user) => (
                     <button
