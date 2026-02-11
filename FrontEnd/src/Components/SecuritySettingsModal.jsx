@@ -65,10 +65,18 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
       await api.delete(
         `/api/projects/${project.id}/members/${memberId}/revoke/`,
       );
-      setMembers(members.filter((m) => m.id !== memberId));
+      setMembers((prev) => prev.filter((m) => m.id !== memberId));
+      setTotalMembers((prev) => prev - 1);
       setMessage(`Access revoked for ${memberEmail}`);
       setMessageType("success");
-      setTotalMembers(totalMembers - 1);
+
+      const remainingItems = members.length - 1;
+      const totalAfterDelete = totalMembers - 1;
+      const totalPagesAfterDelete = Math.ceil(totalAfterDelete / pageSize);
+
+      if (currentPage >= totalPagesAfterDelete && currentPage > 0) {
+        fetchMembers(currentPage - 1);
+      }
     } catch (err) {
       setMessage("Failed to revoke access");
       setMessageType("error");
@@ -131,6 +139,7 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
       setNewPassword("");
       setMessage("Project password updated successfully");
       setMessageType("success");
+
       setTimeout(() => setMessage(""), 3000);
     } catch (err) {
       setMessage(err.response?.data?.detail || "Failed to change password");
