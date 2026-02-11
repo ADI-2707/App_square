@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import "./Loader.css";
 
 const Loader = ({ isLoading }) => {
   const [progress, setProgress] = useState(0);
