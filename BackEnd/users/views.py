@@ -3,6 +3,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.throttling import ScopedRateThrottle
+from rest_framework.decorators import throttle_classes
+from rest_framework.permissions import AllowAny
 
 from .serializers import (
     RegisterSerializer,
@@ -12,7 +15,10 @@ from .serializers import (
 
 
 @api_view(["POST"])
+@permission_classes([AllowAny])
+@throttle_classes([ScopedRateThrottle])
 def register(request):
+    register.throttle_scope = "register"
     serializer = RegisterSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     serializer.save()
@@ -23,7 +29,10 @@ def register(request):
 
 
 @api_view(["POST"])
+@permission_classes([AllowAny])
+@throttle_classes([ScopedRateThrottle])
 def login(request):
+    login.throttle_scope = "login"
     serializer = LoginSerializer(
         data=request.data,
         context={"request": request}
@@ -48,7 +57,9 @@ def login(request):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
+@throttle_classes([ScopedRateThrottle])
 def logout(request):
+    logout.throttle_scope = "logout"
     refresh = request.data.get("refresh")
     if refresh:
         RefreshToken(refresh).blacklist()
@@ -58,7 +69,9 @@ def logout(request):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
+@throttle_classes([ScopedRateThrottle])
 def change_password(request):
+    change_password.throttle_scope = "password_change"
     serializer = ChangePasswordSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
