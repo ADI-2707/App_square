@@ -10,23 +10,21 @@ const api = axios.create({
 });
 
 let activeRequests = 0;
-let setLoadingCallback = null;
+let loaderCallback = () => {};
 
 export const injectLoader = (callback) => {
-  setLoadingCallback = callback;
+  loaderCallback = callback;
 };
 
 const startLoading = () => {
   activeRequests++;
-  if (setLoadingCallback) {
-    setLoadingCallback(true);
-  }
+  loaderCallback(true);
 };
 
 const stopLoading = () => {
   activeRequests = Math.max(activeRequests - 1, 0);
-  if (activeRequests === 0 && setLoadingCallback) {
-    setLoadingCallback(false);
+  if (activeRequests === 0) {
+    loaderCallback(false);
   }
 };
 
@@ -78,7 +76,6 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // 🔁 Token refresh logic
     if (status === 401 && !originalRequest?._retry) {
       originalRequest._retry = true;
 
