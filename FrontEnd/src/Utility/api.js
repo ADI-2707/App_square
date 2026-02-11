@@ -9,34 +9,51 @@ const api = axios.create({
   },
 });
 
-let setLoadingCallback = () => {};
+let activeRequests = 0;
+let setLoadingCallback = null;
 
 export const injectLoader = (callback) => {
   setLoadingCallback = callback;
 };
 
+const startLoading = () => {
+  activeRequests++;
+  if (setLoadingCallback) {
+    setLoadingCallback(true);
+  }
+};
+
+const stopLoading = () => {
+  activeRequests = Math.max(activeRequests - 1, 0);
+  if (activeRequests === 0 && setLoadingCallback) {
+    setLoadingCallback(false);
+  }
+};
+
 api.interceptors.request.use(
   (config) => {
-    setLoadingCallback(true);
+    startLoading();
+
     const accessToken = localStorage.getItem("accessToken");
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
+
     return config;
   },
   (error) => {
-    setLoadingCallback(false);
+    stopLoading();
     return Promise.reject(error);
-  },
+  }
 );
 
 api.interceptors.response.use(
   (response) => {
-    setLoadingCallback(false);
+    stopLoading();
     return response;
   },
   async (error) => {
-    setLoadingCallback(false);
+    stopLoading();
 
     const originalRequest = error.config;
     const status = error.response?.status;
@@ -45,7 +62,7 @@ api.interceptors.response.use(
     if (
       status === 403 &&
       detail === "Project password required" &&
-      !originalRequest._passwordRetry
+      !originalRequest?._passwordRetry
     ) {
       originalRequest._passwordRetry = true;
 
@@ -61,8 +78,10 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    if (status === 401 && !originalRequest._retry) {
+    // 🔁 Token refresh logic
+    if (status === 401 && !originalRequest?._retry) {
       originalRequest._retry = true;
+
       try {
         const refreshToken = localStorage.getItem("refreshToken");
         if (!refreshToken) throw new Error("No refresh token");
@@ -73,6 +92,7 @@ api.interceptors.response.use(
         );
 
         localStorage.setItem("accessToken", res.data.access);
+
         originalRequest.headers.Authorization = `Bearer ${res.data.access}`;
         return api(originalRequest);
       } catch (err) {

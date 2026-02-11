@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import api, { injectLoader } from "./api";
+import api, { injectLoader } from "../Utility/api";
 import Loader from "../Components/Loader/Loader";
 
 const AuthContext = createContext(null);

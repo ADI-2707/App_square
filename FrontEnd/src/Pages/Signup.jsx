@@ -116,11 +116,11 @@ const Signup = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-  email: formData.email,
-  full_name: formData.fullname,
-  password: formData.password,
-  confirm_password: formData.confirmPassword,
-}),
+          email: formData.email,
+          full_name: formData.fullname,
+          password: formData.password,
+          confirm_password: formData.confirmPassword,
+        }),
       });
 
       const data = await response.json();

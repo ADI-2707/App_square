@@ -7,9 +7,11 @@ const Loader = ({ isLoading }) => {
 
   useEffect(() => {
     let interval;
+
     if (isLoading) {
       setShow(true);
       setProgress(15);
+
       interval = setInterval(() => {
         setProgress((prev) => {
           if (prev < 90) return prev + Math.random() * 5;
@@ -18,12 +20,15 @@ const Loader = ({ isLoading }) => {
       }, 300);
     } else {
       setProgress(100);
+
       const timeout = setTimeout(() => {
         setShow(false);
         setProgress(0);
       }, 400);
+
       return () => clearTimeout(timeout);
     }
+    
     return () => clearInterval(interval);
   }, [isLoading]);
 
