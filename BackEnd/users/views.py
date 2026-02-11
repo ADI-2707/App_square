@@ -1,11 +1,9 @@
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.throttling import ScopedRateThrottle
-from rest_framework.decorators import throttle_classes
-from rest_framework.permissions import AllowAny
 
 from .serializers import (
     RegisterSerializer,
@@ -18,7 +16,6 @@ from .serializers import (
 @permission_classes([AllowAny])
 @throttle_classes([ScopedRateThrottle])
 def register(request):
-    register.throttle_scope = "register"
     serializer = RegisterSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     serializer.save()
@@ -27,12 +24,13 @@ def register(request):
         status=status.HTTP_201_CREATED
     )
 
+register.throttle_scope = "register"
+
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
 @throttle_classes([ScopedRateThrottle])
 def login(request):
-    login.throttle_scope = "login"
     serializer = LoginSerializer(
         data=request.data,
         context={"request": request}
@@ -54,24 +52,25 @@ def login(request):
         },
     })
 
+login.throttle_scope = "login"
+
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @throttle_classes([ScopedRateThrottle])
 def logout(request):
-    logout.throttle_scope = "logout"
     refresh = request.data.get("refresh")
     if refresh:
         RefreshToken(refresh).blacklist()
 
     return Response({"detail": "Logged out"})
 
+logout.throttle_scope = "general"
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @throttle_classes([ScopedRateThrottle])
 def change_password(request):
-    change_password.throttle_scope = "password_change"
     serializer = ChangePasswordSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
@@ -84,6 +83,8 @@ def change_password(request):
         )
 
     user.set_password(serializer.validated_data["new_password"])
-    user.save()
+    user.save(update_fields=["password"])
 
     return Response({"detail": "Password changed successfully"})
+
+change_password.throttle_scope = "password_change"

@@ -59,9 +59,12 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_THROTTLE_RATES": {
         # Authentication
-        "login": "5/min",
-        "register": "3/min",
+        "login": "10/min",
+        "register": "5/min",
         "password_change": "5/min",
+
+        # Project creation and updates
+        "project_create": "20/min",
 
         # Invitations
         "invite_send": "20/min",
@@ -73,6 +76,9 @@ REST_FRAMEWORK = {
 
         # General API
         "general": "120/min",
+
+        # Role changes
+        "role_change": "10/min",
     },
 }
 

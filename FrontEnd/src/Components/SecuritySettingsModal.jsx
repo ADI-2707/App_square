@@ -42,7 +42,6 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
       setTotalMembers(response.data.count || 0);
       setCurrentPage(page);
     } catch (err) {
-      console.error("Failed to fetch members:", err);
       setMessage("Failed to load members");
       setMessageType("error");
     } finally {
@@ -71,7 +70,6 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
       setMessageType("success");
       setTotalMembers(totalMembers - 1);
     } catch (err) {
-      console.error("Failed to revoke access:", err);
       setMessage("Failed to revoke access");
       setMessageType("error");
     } finally {
@@ -135,7 +133,6 @@ const SecuritySettingsModal = ({ isOpen, onClose, project }) => {
       setMessageType("success");
       setTimeout(() => setMessage(""), 3000);
     } catch (err) {
-      console.error("Failed to change password:", err);
       setMessage(err.response?.data?.detail || "Failed to change password");
       setMessageType("error");
     } finally {
