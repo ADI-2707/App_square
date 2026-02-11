@@ -67,11 +67,11 @@ const Account = () => {
     try {
       await api.post(
         `/api/projects/invitations/${acceptingInvitation.id}/accept/`,
-        { password }
+        { password },
       );
 
       setInvitations((prev) =>
-        prev.filter((inv) => inv.id !== acceptingInvitation.id)
+        prev.filter((inv) => inv.id !== acceptingInvitation.id),
       );
 
       setPasswordModalOpen(false);
@@ -89,9 +89,7 @@ const Account = () => {
     try {
       await api.post(`/api/projects/invitations/${invitationId}/reject/`);
 
-      setInvitations((prev) =>
-        prev.filter((inv) => inv.id !== invitationId)
-      );
+      setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
 
       setShowDetailModal(false);
       window.dispatchEvent(new CustomEvent("INVITES_UPDATED"));
@@ -132,22 +130,54 @@ const Account = () => {
     }
   };
 
-  if (!user) {
+
     return (
       <div className="account-page">
-        <div className="account-card card-surface">
-          <p>Unable to load account details.</p>
-        </div>
-      </div>
-    );
-  }
+        <div className="account-intro-wrapper">
+          <div className="account-intro-card">
+            <div className="intro-avatar">
+              {user.full_name?.charAt(0)?.toUpperCase()}
+            </div>
 
-  return (
-    <div className="account-page">
+            <div className="intro-name">{user.full_name}</div>
+
+            <div className="intro-email">{user.email}</div>
+          </div>
+        </div>
+
       <form className="account-card card-surface" onSubmit={handleSubmit}>
         <h2 className="account-title">Security</h2>
 
         {error && <p className="error-text">{error}</p>}
+
+        <div className="password-grid">
+          <div className="account-field">
+            <label>Current Password</label>
+            <input
+              type={showCurrent ? "text" : "password"}
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+          </div>
+
+          <div className="account-field">
+            <label>New Password</label>
+            <input
+              type={showNew ? "text" : "password"}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+          </div>
+
+          <div className="account-field">
+            <label>Confirm Password</label>
+            <input
+              type={showConfirm ? "text" : "password"}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </div>
+        </div>
 
         <button className="primary-btn" disabled={loading}>
           {loading ? "Updating..." : "Update Password"}
