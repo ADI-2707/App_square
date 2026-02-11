@@ -425,7 +425,8 @@ def get_pending_invitations(request):
                 "project_id": str(m.project.id),
                 "project_name": m.project.name,
                 "public_code": m.project.public_code,
-                "invited_by": m.invited_by.email if m.invited_by else "unknown",
+                "invited_by_name": m.invited_by.full_name if m.invited_by else "Unknown",
+                "invited_by_email": m.invited_by.email if m.invited_by else "unknown",
                 "invited_at": m.invited_at,
                 "role": m.role,
             }
