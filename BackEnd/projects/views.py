@@ -84,6 +84,12 @@ def joined_projects(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def project_overview(request, project_id):
+    if request.path.rstrip("/").endswith(str(project_id)):
+        return Response(
+            {"detail": "Direct project root access not allowed"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
     project = get_object_or_404(Project, id=project_id)
 
     if project.root_admin == request.user:
@@ -336,11 +342,18 @@ def search_users_for_invitation(request, project_id):
         id__in=existing_members
     ).exclude(
         id=request.user.id
-    ).values('id', 'email', 'first_name', 'last_name')[:10]
+    )[:10]
     
-    return Response({
-        "results": list(users)
-    })
+    results = []
+    for user in users:
+        results.append({
+            "id": str(user.id),
+            "email": user.email,
+            "first_name": user.full_name,
+            "last_name": "",
+        })
+
+    return Response({"results": results})
 
 
 @api_view(["POST"])

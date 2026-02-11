@@ -26,6 +26,7 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
   }, []);
 
   useEffect(() => {
+    if (!project?.id) return;
     setError("");
     setSuccess("");
 
@@ -34,6 +35,7 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
     }
 
     const value = email.trim();
+    setSelectedUser(null);
 
     if (!value) {
       setSearchResults([]);
@@ -59,9 +61,10 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
         if (!isMountedRef.current || requestId !== requestIdRef.current) return;
 
         setSearchResults(res.data.results || []);
+        console.log("SEARCH RESULTS:", res.data.results);
+
       } catch (err) {
         if (!isMountedRef.current) return;
-        console.error("Search error:", err);
         setError("Failed to search users");
         setSearchResults([]);
       } finally {
@@ -72,7 +75,7 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
     }, 300);
 
     return () => clearTimeout(debounceTimer.current);
-  }, [email, project.id]);
+  }, [email, project?.id]);
 
   const handleUserSelect = (user) => {
     setSelectedUser(user);
@@ -82,7 +85,7 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
   };
 
   const handleInvite = async () => {
-    if (!selectedUser) {
+    if (!selectedUser || !project?.id) {
       setError("Please select a user to invite");
       return;
     }
@@ -173,7 +176,7 @@ const InviteMembersModal = ({ project, onClose, onInvited }) => {
                 </div>
               )}
 
-              {searchResults.length > 0 && !selectedUser && (
+              {searchResults.length > 0 && (
                 <div className="invite-results">
                   {searchResults.map((user) => (
                     <button
